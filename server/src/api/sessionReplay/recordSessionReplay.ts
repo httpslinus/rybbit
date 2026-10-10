@@ -6,6 +6,7 @@ import { usageService } from "../../services/usageService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { collectCandidateClientIps, resolveClientIp } from "../../services/tracker/resolveClientIp.js";
 import { decideSiteExclusion } from "../../services/sites/siteExclusionDecision.js";
+import { heatmapSnapshotContextSchema } from "../heatmaps/heatmapValidation.js";
 
 const recordSessionReplaySchema = z.object({
   userId: z.string(),
@@ -14,6 +15,7 @@ const recordSessionReplaySchema = z.object({
       type: z.union([z.string(), z.number()]),
       data: z.any(),
       timestamp: z.number(),
+      snapshotContext: heatmapSnapshotContextSchema.optional(),
     })
   ),
   metadata: z

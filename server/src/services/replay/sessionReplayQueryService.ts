@@ -10,6 +10,7 @@ import { FilterParams } from "@rybbit/shared";
 import { r2Storage } from "../storage/r2StorageService.js";
 import { getFilterStatement } from "../../api/analytics/utils/getFilterStatement.js";
 import { matchesUser } from "../../api/analytics/utils/effectiveUserId.js";
+import { clearHeatmapSnapshotMarkers } from "../heatmaps/heatmapSnapshotErasure.js";
 
 /**
  * Service responsible for querying/retrieving session replay data
@@ -310,6 +311,13 @@ export class SessionReplayQueryService {
    * - R2 stored data (if enabled)
    */
   async deleteSessionReplay(siteId: number, sessionId: string): Promise<void> {
+    await clearHeatmapSnapshotMarkers(siteId, `AND session_id = {sessionId:String} AND source = 'replay'`, {
+      sessionId,
+    });
+    await clickhouse.command({
+      query: `DELETE FROM heatmap_snapshots WHERE site_id = {siteId:UInt32} AND session_id = {sessionId:String} AND source = 'replay'`,
+      query_params: { siteId, sessionId },
+    });
     // First, get all R2 keys for this session if R2 is enabled
     if (r2Storage.isEnabled()) {
       try {

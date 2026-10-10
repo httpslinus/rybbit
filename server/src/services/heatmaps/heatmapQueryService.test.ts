@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 import { heatmapWidthBucket } from "@rybbit/shared";
 
-const { run } = vi.hoisted(() => ({ run: vi.fn() }));
+const { run, getSnapshot } = vi.hoisted(() => ({ run: vi.fn(), getSnapshot: vi.fn() }));
 vi.mock("../../api/analytics/utils/analyticsQuery.js", () => ({ runAnalyticsQuery: run }));
+vi.mock("./heatmapSnapshotService.js", () => ({ heatmapSnapshotService: { getSnapshot } }));
 import {
   buildHeatmapBucketsQuery,
   buildHeatmapPagesQuery,
@@ -193,6 +194,7 @@ describe("heatmap query builders", () => {
 describe("HeatmapQueryService", () => {
   beforeEach(() => {
     run.mockReset();
+    getSnapshot.mockReset().mockResolvedValue(null);
   });
   afterEach(() => vi.useRealTimers());
 
@@ -218,6 +220,37 @@ describe("HeatmapQueryService", () => {
       geometry: null,
     });
     expect(run).toHaveBeenCalledTimes(1);
+  });
+
+  it("renders captured hash-route backgrounds independently of live URL framing validation", async () => {
+    run
+      .mockResolvedValueOnce([{ hostname: "example.com", pathname: "/#/pricing", count: 1, sessions: 1 }])
+      .mockResolvedValueOnce([{ width: 375, count: 1, sessions: 1 }])
+      .mockResolvedValueOnce([
+        { count: 1, sessions: 1, viewportWidth: 375, viewportHeight: 800, documentWidth: 375, documentHeight: 3000 },
+      ])
+      .mockResolvedValueOnce([]);
+    const snapshot = {
+      hostname: "example.com",
+      pathname: "/#/pricing",
+      viewportWidth: 375,
+      viewportHeight: 800,
+      documentWidth: 375,
+      documentHeight: 3000,
+      source: "replay",
+      capturedAt: "2026-09-10T00:00:00Z",
+      node: { type: 0, id: 1, childNodes: [] },
+    };
+    getSnapshot.mockResolvedValue(snapshot);
+    const report = await new HeatmapQueryService().getHeatmaps(1, options, "example.com");
+    expect(getSnapshot).toHaveBeenCalledWith(
+      1,
+      { hostname: "example.com", pathname: "/#/pricing" },
+      375,
+      expect.any(Object),
+      expect.any(Object)
+    );
+    expect(report.background).toEqual({ url: "", width: 375, height: 3000, snapshot });
   });
 
   it.each([

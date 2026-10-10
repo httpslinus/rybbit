@@ -29,12 +29,24 @@ import type { RouteAccess } from "../lib/auth-middleware.js";
 import { apiRoutes } from "./routes.js";
 
 async function collectRoutes() {
-  const routes: { method: string; url: string; access: RouteAccess | undefined; bodyLimit?: number; rateLimit?: unknown }[] = [];
+  const routes: {
+    method: string;
+    url: string;
+    access: RouteAccess | undefined;
+    bodyLimit?: number;
+    rateLimit?: unknown;
+  }[] = [];
   const app = Fastify();
   app.addHook("onRoute", (route: RouteOptions) => {
     for (const method of [route.method].flat()) {
       if (method === "HEAD") continue;
-      routes.push({ method, url: route.url, access: route.config?.access, bodyLimit: route.bodyLimit, rateLimit: route.config?.rateLimit });
+      routes.push({
+        method,
+        url: route.url,
+        access: route.config?.access,
+        bodyLimit: route.bodyLimit,
+        rateLimit: route.config?.rateLimit,
+      });
     }
   });
   await app.register(apiRoutes, { prefix: "/api" });
@@ -56,9 +68,18 @@ const describeAccess = (access: RouteAccess | undefined) => {
 describe("API route table", () => {
   it("bounds public heatmap uploads", async () => {
     const routes = await collectRoutes();
-    expect(routes.find(route => route.method === "POST" && route.url === "/api/heatmaps/record/:siteId")).toMatchObject({
-      bodyLimit: 64 * 1024,
-      rateLimit: { max: 120, timeWindow: "1 minute" },
+    expect(routes.find(route => route.method === "POST" && route.url === "/api/heatmaps/record/:siteId")).toMatchObject(
+      {
+        bodyLimit: 64 * 1024,
+        rateLimit: { max: 120, timeWindow: "1 minute" },
+      }
+    );
+    expect(
+      routes.find(route => route.method === "POST" && route.url === "/api/heatmaps/snapshot/:siteId")
+    ).toMatchObject({
+      access: "public",
+      bodyLimit: 2 * 1024 * 1024,
+      rateLimit: { max: 10, timeWindow: "1 minute" },
     });
   });
   it("declares who may call every route", async () => {

@@ -18,7 +18,11 @@ if (!existsSync(publicDir)) {
 // alias names the contract module, not the package barrel, so nothing else in
 // @rybbit/shared can ever reach a tracked page.
 const botSignalContractSource = resolve(__dirname, "../../../shared/src/botSignalContract.ts");
-const bundleContractFromSource = { "@rybbit/shared/dist/botSignalContract.js": botSignalContractSource };
+const bundleContractFromSource = {
+  "@rybbit/shared/dist/botSignalContract.js": botSignalContractSource,
+  "@rybbit/shared/dist/heatmaps.js": resolve(__dirname, "../../../shared/src/heatmaps.ts"),
+  "@rybbit/shared/dist/heatmapSnapshot.js": resolve(__dirname, "../../../shared/src/heatmapSnapshot.ts"),
+};
 
 async function buildScript() {
   try {
@@ -51,6 +55,19 @@ async function buildScript() {
     });
 
     console.log("✅ Built script.js (minified)");
+
+    await build({
+      entryPoints: ["./heatmapSnapshot.ts"],
+      bundle: true,
+      format: "iife",
+      target: "es2020",
+      outfile: "../../public/heatmap-snapshot.js",
+      minify: true,
+      sourcemap: false,
+      platform: "browser",
+      alias: bundleContractFromSource,
+    });
+    console.log("✅ Built heatmap-snapshot.js (minified)");
   } catch (error) {
     console.error("Build failed:", error);
     process.exit(1);

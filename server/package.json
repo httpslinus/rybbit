@@ -79,6 +79,7 @@
     "react-dom": "19.2.1",
     "resend": "^4.5.1",
     "rrweb": "^2.0.0-alpha.20",
+    "rrweb-snapshot": "2.0.0-alpha.20",
     "safe-regex2": "^5.0.0",
     "sqlstring": "2.3.3",
     "stripe": "18.1.0",

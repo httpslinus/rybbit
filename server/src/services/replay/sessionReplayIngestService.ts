@@ -8,6 +8,8 @@ import { sessionsService } from "../sessions/sessionsService.js";
 import { userIdService } from "../userId/userIdService.js";
 import { r2Storage } from "../storage/r2StorageService.js";
 import { siteConfig } from "../../lib/siteConfig.js";
+import { heatmapSnapshotService } from "../heatmaps/heatmapSnapshotService.js";
+import { decideSiteExclusion } from "../sites/siteExclusionDecision.js";
 
 const logger = createServiceLogger("session-replay-ingest");
 
@@ -137,6 +139,32 @@ export class SessionReplayIngestService {
         values: eventsToInsert,
         format: "JSONEachRow",
       });
+      // Background indexing is optional; a failure must not make a recorded
+      // replay retry its entire payload and create duplicate events.
+      try {
+        const site = await siteConfig.getConfig(siteId);
+        if (site?.heatmaps && site.type !== "mobile" && site.heatmapSampleRate > 0) {
+          const candidates = events.map(event => ({ ...event }));
+          for (const event of candidates) {
+            if (String(event.type) !== "2" || !event.snapshotContext) continue;
+            const exclusion = await decideSiteExclusion(site, {
+              hostname: event.snapshotContext.hostname,
+              pathname: event.snapshotContext.pathname,
+              ipAddress: requestMeta?.ipAddress || "",
+              userAgent: requestMeta?.userAgent || "",
+            });
+            if (exclusion.excluded) event.snapshotContext = undefined;
+          }
+          await heatmapSnapshotService.indexReplay(
+            siteId,
+            candidates,
+            { sessionId, userId, identifiedUserId },
+            r2BatchKey
+          );
+        }
+      } catch (error) {
+        logger.warn({ err: error, siteId }, "Could not index replay heatmap background");
+      }
     }
 
     // Update or insert metadata
@@ -154,15 +182,7 @@ export class SessionReplayIngestService {
         screenHeight: metadata.viewportHeight || 0,
       };
 
-      await this.updateSessionMetadata(
-        siteId,
-        sessionId,
-        userId,
-        identifiedUserId,
-        metadata,
-        batchStats,
-        requestMeta
-      );
+      await this.updateSessionMetadata(siteId, sessionId, userId, identifiedUserId, metadata, batchStats, requestMeta);
     }
   }
 

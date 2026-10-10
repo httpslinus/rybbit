@@ -12,7 +12,7 @@ Heatmaps show where sampled visitors click and how far they see down a page. The
 
 Collection is off by default. The initial sample rate is **15%**, and accepts finite values from **0% to 100%**. A rate of 0 collects nothing; 100 selects every eligible session. Settings apply when the tracking script next loads. Turning collection off leaves retained samples available to read.
 
-The sampling decision is scoped to your analytics host and site. Activity keeps it stable; a page load after 30 minutes of inactivity makes a new decision. The script uses session storage with a memory fallback when storage is unavailable. Heatmap sampling is separate from replay sampling, and heatmaps alone do not load the replay recorder.
+The sampling decision is scoped to your analytics host and site. Activity keeps it stable; a page load after 30 minutes of inactivity makes a new decision. The script uses session storage with a memory fallback when storage is unavailable. Heatmap sampling is separate from replay sampling, and heatmaps alone do not load the replay recorder. When a page background needs a new capture, the script loads a separate snapshot-only module.
 
 ## Clicks and scroll reach
 
@@ -53,17 +53,21 @@ A **cohort** saves filters and a separate historical date range and timezone. Ry
 
 Viewers can read cohorts. Members can create cohorts and edit or delete their own; editors and higher roles can manage all cohorts on the site.
 
-## Live backgrounds
+## Page backgrounds
 
-**Live background** loads the current page in a sandboxed iframe. It is not a historical screenshot or a session recording. Authentication, embedding restrictions or changed layouts may prevent the page from loading or lining up with older samples. Full-document framing can also change fixed headers and sections sized to the viewport.
+**Page background** reconstructs a stored DOM snapshot from a sampled visitor. Rybbit reuses full snapshots from retained session replays whenever the page and viewport width can be attributed reliably, including SPA navigation. Backgrounds must match the selected hostname, path, width bucket and report dates. The capture time appears beside the background switch.
 
-The iframe sends no referrer and allows scripts without same-origin privileges. Rybbit validates the background URL without fetching it on the server. Masked or unsupported paths may have no background. Turn off Live background to view the geometry alone; the overlay and scroll bands remain usable when embedding is blocked. Very tall documents also use the geometry-only view.
+If no suitable replay snapshot is available, the backend nominates one sampled visitor to capture a standalone snapshot after a short replay grace period. Collection keeps at most one standalone background per page, width bucket and UTC day. It uses the same blocking, text masking and input masking settings as session replay, without starting a recording. New replay snapshots can replace standalone backgrounds.
+
+The viewer builds the snapshot inside a sandbox with scripts disabled. It does not frame the live website, so `frame-ancestors` and `X-Frame-Options` on the original page do not block the background. Captured viewport width and recorded viewport units are preserved before the background is normalized to the selected bucket and fitted to the viewer.
+
+A background represents one visitor's captured layout. External assets, fixed headers and height-based media queries can affect reconstruction; layout changes and personalized content can differ across samples. Turn off Page background to inspect the geometry alone. Pages without a suitable snapshot and extremely tall documents also use the geometry view.
 
 ## Privacy, retention and access
 
-Heatmap uploads contain coordinates, maximum visible depth, capture time, page identity and dimensions. They contain **no DOM snapshots, element text, input values or query-string values**. Page identity follows the tracker's skip and mask patterns, including hash routes with query values removed. The tracker opt-out and configured bot, IP, country, hostname and path exclusions also apply. Ordinary analytics may still record query strings if you enabled that setting.
+Click and scroll batches contain coordinates, maximum visible depth, capture time, page identity and dimensions, without DOM content or query-string values. Page backgrounds also use DOM snapshots, which can contain visible page text and asset URLs. Input values are masked by default; configured replay blocking and text masking apply to standalone captures as well as replays. Review those settings for pages with sensitive content before enabling collection. Scripts, nested frames and navigation metadata are removed from stored backgrounds. Page identity follows the tracker's skip and mask patterns, including hash routes with query values removed. The tracker opt-out and configured bot, IP, country, hostname and path exclusions also apply. Ordinary analytics may still record query strings if you enabled that setting.
 
-Heatmap events have a **30-day retention TTL**. Reports require a bounded date or time range; **All time** is not supported. Older ranges return only data still retained. Responses return at most **100 pages** and **5,000 weighted click points**, with truncation flags and totals that are calculated before those display limits.
+Heatmap events and background snapshots have a **30-day retention TTL**. Replay backgrounds are references to existing replay data; deleting or expiring the source replay makes its background unavailable. Reports require a bounded date or time range; **All time** is not supported. Older ranges return only data still retained. Responses return at most **100 pages** and **5,000 weighted click points**, with truncation flags and totals that are calculated before those display limits.
 
 Heatmaps require authenticated site access with `heatmaps:read`; public dashboards and private share links do not grant access. Bearer API keys need that scope explicitly. Selecting a cohort also requires `cohorts:read`, and selecting a saved segment requires `segments:read`. Cohort writes require `cohorts:write` and the same ownership rules as the dashboard.
 

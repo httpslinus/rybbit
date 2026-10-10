@@ -1,4 +1,4 @@
-import { heatmapWidthBucket, type HeatmapBatch } from "@rybbit/shared";
+import { heatmapWidthBucket, type HeatmapBatch, type HeatmapSnapshotRequest } from "@rybbit/shared";
 import type { IncomingHttpHeaders } from "node:http";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { toClickHouseDateTime } from "../../db/clickhouse/dateTime.js";
@@ -11,6 +11,7 @@ import { decideSiteExclusion } from "../sites/siteExclusionDecision.js";
 import { userIdService } from "../userId/userIdService.js";
 import { HeatmapBatchClaims, heatmapBatchClaims } from "./heatmapBatchClaims.js";
 import { isHeatmapBot } from "./heatmapBotExclusion.js";
+import { heatmapSnapshotClaims } from "./heatmapSnapshotClaims.js";
 
 const logger = createServiceLogger("heatmap-ingest");
 
@@ -23,7 +24,10 @@ export interface HeatmapRequestMetadata {
   receivedAt: Date;
 }
 
-export type HeatmapIngestOutcome = { status: "recorded" | "duplicate" | "excluded" | "bot" | "busy" };
+export type HeatmapIngestOutcome = {
+  status: "recorded" | "duplicate" | "excluded" | "bot" | "busy";
+  snapshotRequest?: HeatmapSnapshotRequest;
+};
 
 export class HeatmapIngestService {
   constructor(private claims: HeatmapBatchClaims = heatmapBatchClaims) {}
@@ -123,7 +127,21 @@ export class HeatmapIngestService {
       });
       if (!(await this.claims.complete(claimed.claim)))
         throw new Error("Heatmap batch processing lease expired before completion");
-      return { status: "recorded" };
+      let snapshotRequest: HeatmapSnapshotRequest | undefined;
+      try {
+        const event = events[events.length - 1];
+        const { hostname, pathname, viewportWidth, viewportHeight, documentWidth, documentHeight } = event;
+        snapshotRequest = await heatmapSnapshotClaims.nominate(
+          site.siteId,
+          { hostname, pathname, viewportWidth, viewportHeight, documentWidth, documentHeight },
+          heatmapWidthBucket(viewportWidth),
+          event.pageVisitId,
+          { sessionId, userId, identifiedUserId }
+        );
+      } catch (error) {
+        logger.warn({ err: error, siteId: site.siteId }, "Could not nominate heatmap background capture");
+      }
+      return { status: "recorded", ...(snapshotRequest ? { snapshotRequest } : {}) };
     } catch (error) {
       // A rejected/timed-out insert can still have committed. Keep its claim,
       // just as after a crash between insert and completion. Once the lease

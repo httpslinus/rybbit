@@ -298,6 +298,61 @@
     return resolvedConfig;
   }
 
+  // replayPrivacy.ts
+  function replaySlimDOMOptions(config) {
+    return config.sessionReplaySlimDOMOptions ?? {
+      script: false,
+      comment: true,
+      headFavicon: true,
+      headWhitespace: true,
+      headMetaDescKeywords: true,
+      headMetaSocial: true,
+      headMetaRobots: true,
+      headMetaHttpEquiv: true,
+      headMetaAuthorship: true,
+      headMetaVerification: true
+    };
+  }
+  function replayPrivacyOptions(config) {
+    return {
+      blockClass: config.sessionReplayBlockClass ?? "rr-block",
+      blockSelector: config.sessionReplayBlockSelector ?? null,
+      maskTextClass: config.sessionReplayMaskTextClass ?? "rr-mask",
+      maskTextSelector: config.sessionReplayMaskTextSelectors?.length ? config.sessionReplayMaskTextSelectors.join(", ") : null,
+      maskAllInputs: config.sessionReplayMaskAllInputs ?? true,
+      maskInputOptions: config.sessionReplayMaskInputOptions ?? { password: true, email: true }
+    };
+  }
+
+  // snapshotContext.ts
+  function captureSnapshotContext(config) {
+    const url = new URL(window.location.href);
+    const page = getTrackedPage(url, config);
+    if (!page) return null;
+    const rawPath = getTrackedPathname(url, config.trackUrlFragments);
+    const pathname = page.pathname === rawPath ? rawPath.split("?")[0] : page.pathname;
+    if (!pathname || pathname.length > 2048 || page.hostname.length > 253) return null;
+    const viewportWidth = Math.ceil(window.innerWidth);
+    const viewportHeight = Math.ceil(window.innerHeight);
+    if (!Number.isFinite(viewportWidth) || !Number.isFinite(viewportHeight) || viewportWidth <= 0 || viewportHeight <= 0 || viewportWidth > 65535 || viewportHeight > 65535)
+      return null;
+    let documentWidth = viewportWidth;
+    let documentHeight = viewportHeight;
+    for (const element of /* @__PURE__ */ new Set([document.documentElement, document.body, document.scrollingElement])) {
+      if (!element) continue;
+      for (const width of [element.scrollWidth, element.clientWidth, element.offsetWidth]) {
+        if (Number.isFinite(width) && width >= 0) documentWidth = Math.max(documentWidth, width);
+      }
+      for (const height of [element.scrollHeight, element.clientHeight, element.offsetHeight]) {
+        if (Number.isFinite(height) && height >= 0) documentHeight = Math.max(documentHeight, height);
+      }
+    }
+    documentWidth = Math.ceil(documentWidth);
+    documentHeight = Math.ceil(documentHeight);
+    if (documentWidth > 4294967295 || documentHeight > 4294967295) return null;
+    return { hostname: page.hostname, pathname, viewportWidth, viewportHeight, documentWidth, documentHeight };
+  }
+
   // sessionReplay.ts
   var SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
   function shouldSampleSession(sampleRate) {
@@ -378,24 +433,14 @@
           media: 800
           // Sample media interactions less frequently
         };
-        const defaultSlimDOMOptions = {
-          script: false,
-          comment: true,
-          headFavicon: true,
-          headWhitespace: true,
-          headMetaDescKeywords: true,
-          headMetaSocial: true,
-          headMetaRobots: true,
-          headMetaHttpEquiv: true,
-          headMetaAuthorship: true,
-          headMetaVerification: true
-        };
         const recordingOptions = {
           emit: (event) => {
+            const snapshotContext = event.type === 2 ? captureSnapshotContext(this.config) : null;
             this.addEvent({
               type: event.type,
               data: event.data,
-              timestamp: event.timestamp || Date.now()
+              timestamp: event.timestamp || Date.now(),
+              ...snapshotContext ? { snapshotContext } : {}
             });
           },
           recordCanvas: false,
@@ -405,20 +450,13 @@
           checkoutEveryNth: 500,
           // Checkout every 500 events
           // Use config values with fallbacks to defaults
-          blockClass: this.config.sessionReplayBlockClass ?? "rr-block",
-          blockSelector: this.config.sessionReplayBlockSelector ?? null,
+          ...replayPrivacyOptions(this.config),
           ignoreClass: this.config.sessionReplayIgnoreClass ?? "rr-ignore",
           ignoreSelector: this.config.sessionReplayIgnoreSelector ?? null,
-          maskTextClass: this.config.sessionReplayMaskTextClass ?? "rr-mask",
-          maskAllInputs: this.config.sessionReplayMaskAllInputs ?? true,
-          maskInputOptions: this.config.sessionReplayMaskInputOptions ?? { password: true, email: true },
           collectFonts: this.config.sessionReplayCollectFonts ?? true,
           sampling: this.config.sessionReplaySampling ?? defaultSampling,
-          slimDOMOptions: this.config.sessionReplaySlimDOMOptions ?? defaultSlimDOMOptions
+          slimDOMOptions: replaySlimDOMOptions(this.config)
         };
-        if (this.config.sessionReplayMaskTextSelectors && this.config.sessionReplayMaskTextSelectors.length > 0) {
-          recordingOptions.maskTextSelector = this.config.sessionReplayMaskTextSelectors.join(", ");
-        }
         this.stopRecordingFn = window.rrweb.record(recordingOptions);
         this.isRecording = true;
         this.setupBatchTimer();
@@ -472,8 +510,8 @@
         events,
         metadata: {
           pageUrl: window.location.href,
-          viewportWidth: screen.width,
-          viewportHeight: screen.height,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
           language: navigator.language
         }
       };
@@ -504,6 +542,15 @@
       this.stopRecording();
     }
   };
+
+  // ../../../shared/src/heatmaps.ts
+  var HEATMAP_WIDTH_BUCKETS = [320, 375, 425, 768, 1024, 1440, 1920];
+  var HEATMAP_MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
+  function heatmapWidthBucket(width) {
+    return HEATMAP_WIDTH_BUCKETS.reduce(
+      (nearest, bucket) => Math.abs(bucket - width) < Math.abs(nearest - width) ? bucket : nearest
+    );
+  }
 
   // keepalive.ts
   var MAX_KEEPALIVE_BYTES = 64 * 1024;
@@ -536,6 +583,34 @@
   var MAX_VIEWPORT_DIMENSION = 65535;
   var memorySamples = /* @__PURE__ */ new Map();
   var exitBytes = 0;
+  var snapshotBundleLoading;
+  function loadSnapshotBundle(analyticsHost) {
+    if (window.rybbitHeatmapSnapshot) return Promise.resolve();
+    if (snapshotBundleLoading) return snapshotBundleLoading;
+    snapshotBundleLoading = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const timer = window.setTimeout(() => {
+        script.remove();
+        reject(new Error("Heatmap snapshot bundle timed out"));
+      }, REQUEST_TIMEOUT_MS);
+      script.src = `${analyticsHost}/heatmap-snapshot.js`;
+      script.async = true;
+      script.onload = () => {
+        window.clearTimeout(timer);
+        if (window.rybbitHeatmapSnapshot) resolve();
+        else reject(new Error("Heatmap snapshot bundle did not initialize"));
+      };
+      script.onerror = () => {
+        window.clearTimeout(timer);
+        script.remove();
+        reject(new Error("Failed to load heatmap snapshot bundle"));
+      };
+      document.head.appendChild(script);
+    }).finally(() => {
+      snapshotBundleLoading = void 0;
+    });
+    return snapshotBundleLoading;
+  }
   function randomId() {
     try {
       if (crypto.randomUUID) return crypto.randomUUID();
@@ -607,6 +682,8 @@
       this.routeGeneration = 0;
       this.transition = null;
       this.suspended = false;
+      this.snapshotInFlight = false;
+      this.handledSnapshotRequests = /* @__PURE__ */ new Set();
       this.onClick = (event) => {
         if (!this.monitoring || this.suspended || !event.isTrusted || event.button !== 0) return;
         this.touchSample();
@@ -1004,6 +1081,7 @@
         );
         if (response.ok) {
           this.removeChunk(chunk);
+          if (!keepalive) void this.handleSnapshotResponse(response);
           return;
         }
         const retryAfter = response.headers?.get("Retry-After");
@@ -1031,6 +1109,60 @@
         this.debug(`Upload failed for batch ${chunk.batchId} (attempt ${chunk.attempts})`, error);
       } finally {
         window.clearTimeout(timer);
+      }
+    }
+    snapshotGeometry(request) {
+      if (!this.active || !this.monitoring || this.suspended) return null;
+      this.ensurePage();
+      if (this.transition) return null;
+      const geometry = this.geometry();
+      if (!geometry || geometry.pageVisitId !== request.pageVisitId || geometry.hostname !== request.hostname || geometry.pathname !== request.pathname || heatmapWidthBucket(geometry.viewportWidth) !== request.bucket)
+        return null;
+      return geometry;
+    }
+    async handleSnapshotResponse(response) {
+      if (this.snapshotInFlight || typeof response.json !== "function") return;
+      try {
+        const body = await response.json();
+        if (!body || typeof body !== "object") return;
+        const request = body.snapshotRequest;
+        if (!request || typeof request.key !== "string" || !request.key || request.key.length > 1024 || typeof request.token !== "string" || !request.token || request.token.length > 1024 || typeof request.pageVisitId !== "string" || typeof request.hostname !== "string" || typeof request.pathname !== "string" || !HEATMAP_WIDTH_BUCKETS.includes(request.bucket) || !this.snapshotGeometry(request))
+          return;
+        const requestId = `${request.key}:${request.token}`;
+        if (this.snapshotInFlight || this.handledSnapshotRequests.has(requestId)) return;
+        if (this.handledSnapshotRequests.size >= 128) {
+          this.handledSnapshotRequests.delete(this.handledSnapshotRequests.values().next().value);
+        }
+        this.handledSnapshotRequests.add(requestId);
+        this.snapshotInFlight = true;
+        try {
+          await loadSnapshotBundle(this.config.analyticsHost);
+          const geometry = this.snapshotGeometry(request);
+          if (!geometry) return;
+          const node = window.rybbitHeatmapSnapshot?.capture(this.config);
+          if (!node) return;
+          const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node });
+          if (new TextEncoder().encode(payload).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) return;
+          const controller = new AbortController();
+          const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+          try {
+            await fetch(`${this.config.analyticsHost}/heatmaps/snapshot/${encodeURIComponent(this.config.siteId)}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: payload,
+              mode: "cors",
+              credentials: "omit",
+              keepalive: false,
+              signal: controller.signal
+            });
+          } finally {
+            window.clearTimeout(timer);
+          }
+        } finally {
+          this.snapshotInFlight = false;
+        }
+      } catch (error) {
+        this.debug("Background capture failed", error);
       }
     }
     flushForExit() {

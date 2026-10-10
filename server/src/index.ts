@@ -126,6 +126,7 @@ server.register(oauthWellKnownRoutes);
 // still propagate quickly; the vendored libs rarely change and get a longer TTL.
 server.get("/api/script.js", async (_, reply) => reply.sendFile("script.js", { maxAge: "1h" }));
 server.get("/api/replay.js", async (_, reply) => reply.sendFile("rrweb.min.js", { maxAge: "1d" }));
+server.get("/api/heatmap-snapshot.js", async (_, reply) => reply.sendFile("heatmap-snapshot.js", { maxAge: "1h" }));
 server.get("/api/metrics.js", async (_, reply) => reply.sendFile("web-vitals.iife.js", { maxAge: "1d" }));
 
 server.post("/api/track", trackEvent);

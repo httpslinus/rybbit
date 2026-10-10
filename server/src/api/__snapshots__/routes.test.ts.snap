@@ -141,6 +141,7 @@ exports[`API route table > pins the access each route requires 1`] = `
   "POST   /api/as/activate → authenticated",
   "POST   /api/as/webhook → public",
   "POST   /api/heatmaps/record/:siteId → public",
+  "POST   /api/heatmaps/snapshot/:siteId → public",
   "POST   /api/mcp → public",
   "POST   /api/organizations/:organizationId/analytics/query → org sql:read [viewer+]",
   "POST   /api/organizations/:organizationId/analytics/query/generate → org sql:read [viewer+]",

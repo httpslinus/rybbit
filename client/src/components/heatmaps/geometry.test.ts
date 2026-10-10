@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HeatmapResponse } from "@rybbit/shared";
 import {
-  backgroundUrl,
   canvasBackingSize,
   fitHeatmap,
   MAX_SCENE_HEIGHT,
@@ -14,7 +13,7 @@ import {
 const geometry = { viewportWidth: 1440, viewportHeight: 900, documentWidth: 1440, documentHeight: 2000 };
 
 describe("heatmap geometry", () => {
-  it.each([375, 768, 1440])("aligns the iframe and already-normalized API points at width %s", bucket => {
+  it.each([375, 768, 1440])("aligns the page background and already-normalized API points at width %s", bucket => {
     const sourceWidth = bucket === 1440 ? 1366 : bucket;
     const available = Math.min(600, bucket);
     const fit = fitHeatmap({ ...geometry, viewportWidth: bucket, documentWidth: bucket }, available);
@@ -96,20 +95,5 @@ describe("heatmap geometry", () => {
         3
       ).every(band => band.percent === 100)
     ).toBe(true);
-  });
-
-  it.each([
-    "javascript:alert(1)",
-    "data:text/html,test",
-    "//foreign.example/page",
-    "https://name:password@example.com",
-    "not a url",
-  ])("rejects unsafe background %s", url => {
-    expect(backgroundUrl(url)).toBeNull();
-  });
-
-  it("accepts only absolute HTTP(S) backgrounds", () => {
-    expect(backgroundUrl("https://example.com/page#route")).toBe("https://example.com/page#route");
-    expect(backgroundUrl("http://localhost:18033/fixture")).toBe("http://localhost:18033/fixture");
   });
 });

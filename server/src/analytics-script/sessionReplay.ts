@@ -1,4 +1,6 @@
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch } from "./types.js";
+import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
+import { captureSnapshotContext } from "./snapshotContext.js";
 
 const SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
 
@@ -130,48 +132,27 @@ export class SessionReplayRecorder {
         media: 800, // Sample media interactions less frequently
       };
 
-      // Default slimDOMOptions (can be overridden via config)
-      const defaultSlimDOMOptions = {
-        script: false,
-        comment: true,
-        headFavicon: true,
-        headWhitespace: true,
-        headMetaDescKeywords: true,
-        headMetaSocial: true,
-        headMetaRobots: true,
-        headMetaHttpEquiv: true,
-        headMetaAuthorship: true,
-        headMetaVerification: true,
-      };
-
       const recordingOptions: any = {
         emit: (event: any) => {
+          const snapshotContext = event.type === 2 ? captureSnapshotContext(this.config) : null;
           this.addEvent({
             type: event.type,
             data: event.data,
             timestamp: event.timestamp || Date.now(),
+            ...(snapshotContext ? { snapshotContext } : {}),
           });
         },
         recordCanvas: false, // Always disabled to save disk space
         checkoutEveryNms: 60000, // Checkout every 60 seconds
         checkoutEveryNth: 500, // Checkout every 500 events
         // Use config values with fallbacks to defaults
-        blockClass: this.config.sessionReplayBlockClass ?? 'rr-block',
-        blockSelector: this.config.sessionReplayBlockSelector ?? null,
-        ignoreClass: this.config.sessionReplayIgnoreClass ?? 'rr-ignore',
+        ...replayPrivacyOptions(this.config),
+        ignoreClass: this.config.sessionReplayIgnoreClass ?? "rr-ignore",
         ignoreSelector: this.config.sessionReplayIgnoreSelector ?? null,
-        maskTextClass: this.config.sessionReplayMaskTextClass ?? 'rr-mask',
-        maskAllInputs: this.config.sessionReplayMaskAllInputs ?? true,
-        maskInputOptions: this.config.sessionReplayMaskInputOptions ?? { password: true, email: true },
         collectFonts: this.config.sessionReplayCollectFonts ?? true,
         sampling: this.config.sessionReplaySampling ?? defaultSampling,
-        slimDOMOptions: this.config.sessionReplaySlimDOMOptions ?? defaultSlimDOMOptions,
+        slimDOMOptions: replaySlimDOMOptions(this.config),
       };
-
-      // Add custom text masking selectors if configured
-      if (this.config.sessionReplayMaskTextSelectors && this.config.sessionReplayMaskTextSelectors.length > 0) {
-        recordingOptions.maskTextSelector = this.config.sessionReplayMaskTextSelectors.join(', ');
-      }
 
       this.stopRecordingFn = window.rrweb.record(recordingOptions);
 
@@ -242,8 +223,8 @@ export class SessionReplayRecorder {
       events,
       metadata: {
         pageUrl: window.location.href,
-        viewportWidth: screen.width,
-        viewportHeight: screen.height,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
         language: navigator.language,
       },
     };

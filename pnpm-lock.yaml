@@ -253,6 +253,9 @@ importers:
       rrweb-player:
         specifier: ^2.0.0-alpha.20
         version: 2.0.0-alpha.20
+      rrweb-snapshot:
+        specifier: 2.0.0-alpha.20
+        version: 2.0.0-alpha.20
       sql-formatter:
         specifier: ^15.7.2
         version: 15.7.2
@@ -460,6 +463,9 @@ importers:
         version: 4.8.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       rrweb:
         specifier: ^2.0.0-alpha.20
+        version: 2.0.0-alpha.20
+      rrweb-snapshot:
+        specifier: 2.0.0-alpha.20
         version: 2.0.0-alpha.20
       safe-regex2:
         specifier: ^5.0.0

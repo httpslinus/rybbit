@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { sanitizeHeatmapSnapshot } from "@rybbit/shared";
 
 const uint32Dimension = z.number().finite().int().positive().max(0xffffffff);
 const viewportDimension = z.number().finite().int().positive().max(65535);
@@ -88,3 +89,38 @@ export const recordHeatmapsSchema = z
     anonymousId: z.string().max(256).trim().min(1).optional(),
   })
   .strict();
+
+export const heatmapSnapshotContextSchema = z
+  .object({
+    hostname: geometry.hostname,
+    pathname: geometry.pathname,
+    viewportWidth: viewportDimension,
+    viewportHeight: viewportDimension,
+    documentWidth: uint32Dimension,
+    documentHeight: uint32Dimension,
+  })
+  .strict()
+  .refine(
+    context => context.documentWidth >= context.viewportWidth && context.documentHeight >= context.viewportHeight,
+    "Document dimensions cannot be smaller than the viewport"
+  );
+
+export const recordHeatmapSnapshotSchema = z
+  .object({
+    ...geometry,
+    key: z.string().regex(/^heatmap-snapshot:\d+:[a-f0-9]{64}$/),
+    token: z.string().uuid(),
+    node: z.unknown().transform((node, context) => {
+      try {
+        return sanitizeHeatmapSnapshot(node);
+      } catch {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid or oversized heatmap snapshot" });
+        return z.NEVER;
+      }
+    }),
+  })
+  .strict()
+  .refine(
+    context => context.documentWidth >= context.viewportWidth && context.documentHeight >= context.viewportHeight,
+    "Document dimensions cannot be smaller than the viewport"
+  );

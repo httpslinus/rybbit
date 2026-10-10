@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { getHeatmaps, recordHeatmaps } from "./heatmaps/index.js";
+import { getHeatmaps, recordHeatmaps, recordHeatmapSnapshot } from "./heatmaps/index.js";
 import { expandHeatmapSegmentParam } from "./analytics/segments/expandSegmentParam.js";
 import { createCohort, deleteCohort, getCohort, getCohorts, updateCohort } from "./analytics/cohorts/index.js";
 import type { Permission } from "@rybbit/shared";
@@ -468,6 +468,14 @@ async function analyticsRoutes(fastify: FastifyInstance) {
 }
 
 async function sessionReplayRoutes(fastify: FastifyInstance) {
+  fastify.post(
+    "/heatmaps/snapshot/:siteId",
+    {
+      bodyLimit: 2 * 1024 * 1024,
+      config: { access: "public" as RouteAccess, rateLimit: { max: 10, timeWindow: "1 minute" } },
+    },
+    recordHeatmapSnapshot
+  );
   fastify.post(
     "/heatmaps/record/:siteId",
     {

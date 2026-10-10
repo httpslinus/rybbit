@@ -1,3 +1,5 @@
+import type { HeatmapSnapshotContext } from "@rybbit/shared";
+
 export interface SessionReplayEvent {
   siteId: number;
   sessionId: string;
@@ -51,6 +53,7 @@ export interface RecordSessionReplayRequest {
     type: string | number;
     data: any;
     timestamp: number;
+    snapshotContext?: HeatmapSnapshotContext;
   }>;
   metadata?: {
     pageUrl: string;

@@ -2,7 +2,7 @@
 
 import type { HeatmapMode, HeatmapPage, HeatmapWidthBucket } from "@rybbit/shared";
 import { ChevronDown, Info, Layers, Maximize2, MousePointer2, PanelLeft, X } from "lucide-react";
-import { useExtracted } from "next-intl";
+import { useExtracted, useFormatter } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useGetSite } from "@/api/admin/hooks/useSites";
@@ -24,9 +24,11 @@ import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { HeatmapViewer } from "./HeatmapViewer";
 import { HeatmapLegend } from "./HeatmapLegend";
+import { pageSnapshot } from "./snapshot";
 
 export function HeatmapReport() {
   const t = useExtracted();
+  const format = useFormatter();
   const routeSite = useParams<{ site: string }>().site;
   const storeSite = useStore(state => state.site);
   const siteReady = !!storeSite && String(storeSite) === routeSite;
@@ -78,6 +80,7 @@ export function HeatmapReport() {
     enabled,
   });
   const data = enabled ? result : undefined;
+  const background = data ? pageSnapshot(data) : null;
   const pageQuery = useGetHeatmaps({
     view: "pages",
     mode,
@@ -238,32 +241,34 @@ export function HeatmapReport() {
       ) : null}
       <label className="flex cursor-pointer items-center gap-2 text-xs">
         <Switch
-          aria-label={t("Live background")}
-          checked={showBackground && !!data?.background}
-          disabled={!data?.background}
+          aria-label={t("Page background")}
+          checked={showBackground && !!background}
+          disabled={!background}
           onCheckedChange={setShowBackground}
         />
-        {t("Live background")}
+        {t("Page background")}
       </label>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              aria-label={t("About live backgrounds")}
-              className="inline-flex size-6 items-center justify-center rounded-md text-neutral-500 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-primary dark:hover:text-neutral-100"
-            >
-              <Info className="size-3.5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-72">
-            {t(
-              "Live backgrounds can differ from the recorded layout, especially fixed headers and full-screen sections. Sign-in and embedding rules may hide the page."
-            )}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      {!showBackground && data?.background && (
+      {background && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={t("Background capture time")}
+                className="inline-flex size-6 items-center justify-center rounded-md text-neutral-500 hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-primary dark:hover:text-neutral-100"
+              >
+                <Info className="size-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-72">
+              {t("Captured {date}", {
+                date: format.dateTime(new Date(background.capturedAt), { dateStyle: "medium", timeStyle: "short" }),
+              })}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {!showBackground && background && (
         <span className="text-xs text-neutral-500 dark:text-neutral-400">{t("Geometry only")}</span>
       )}
       {data?.geometry && (
@@ -319,7 +324,7 @@ export function HeatmapReport() {
             {t("Showing the {count} most frequent click points.", { count: data.limits.points.toLocaleString() })}
           </p>
         )}
-        <HeatmapViewer data={data} showBackground={showBackground && !!data.background} fullscreen={fullscreen} />
+        <HeatmapViewer data={data} showBackground={showBackground} fullscreen={fullscreen} />
       </div>
     );
   }

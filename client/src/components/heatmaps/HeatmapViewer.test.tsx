@@ -1,7 +1,7 @@
 import React from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { HeatmapResponse } from "@rybbit/shared";
+import type { HeatmapResponse, HeatmapSnapshot } from "@rybbit/shared";
 import { HeatmapViewer } from "./HeatmapViewer";
 
 vi.mock("next-intl", () => ({
@@ -10,6 +10,65 @@ vi.mock("next-intl", () => ({
     (message: string, values: Record<string, unknown> = {}) =>
       message.replace(/\{(\w+)(?:, number)?\}/g, (_, key) => String(values[key])),
 }));
+
+function snapshot(overrides: Partial<HeatmapSnapshot> = {}): HeatmapSnapshot {
+  return {
+    source: "replay",
+    capturedAt: "2026-10-11T10:00:00Z",
+    hostname: "example.com",
+    pathname: "/page",
+    viewportWidth: 1366,
+    viewportHeight: 900,
+    documentWidth: 1366,
+    documentHeight: 1900,
+    node: {
+      type: 0,
+      id: 1,
+      childNodes: [
+        { type: 1, id: 2, name: "html", publicId: "", systemId: "" },
+        {
+          type: 2,
+          id: 3,
+          tagName: "html",
+          attributes: {},
+          childNodes: [
+            {
+              type: 2,
+              id: 4,
+              tagName: "head",
+              attributes: {},
+              childNodes: [
+                {
+                  type: 2,
+                  id: 5,
+                  tagName: "style",
+                  attributes: {},
+                  childNodes: [{ type: 3, id: 6, textContent: ".hero{height:100vh;width:100vw}" }],
+                },
+              ],
+            },
+            {
+              type: 2,
+              id: 7,
+              tagName: "body",
+              attributes: {},
+              childNodes: [
+                {
+                  type: 2,
+                  id: 8,
+                  tagName: "div",
+                  attributes: { class: "hero" },
+                  childNodes: [{ type: 3, id: 9, textContent: "Masked ******" }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    ...overrides,
+  };
+}
 
 function data(overrides: Partial<HeatmapResponse> = {}): HeatmapResponse {
   return {
@@ -38,7 +97,7 @@ function data(overrides: Partial<HeatmapResponse> = {}): HeatmapResponse {
       totalSessions: 3,
     },
     geometry: { viewportWidth: 1440, viewportHeight: 900, documentWidth: 1440, documentHeight: 2000 },
-    background: { url: "https://example.com/page", width: 1440, height: 2000 },
+    background: { url: "https://example.com/page", width: 1440, height: 2000, snapshot: snapshot() },
     count: 42,
     sessions: 3,
     truncated: { pages: false, points: false },
@@ -95,14 +154,20 @@ describe("HeatmapViewer", () => {
     expect(draw.mock.lastCall![0].data).toHaveLength(600 * 500 * 4);
   });
 
-  it("applies the same fit scale to live iframe and hotspot overlay with safe embedding settings", () => {
+  it("rebuilds a script-free stored page and aligns its captured viewport with normalized hotspots", () => {
     const { container } = render(<HeatmapViewer data={data()} showBackground />);
     const iframe = container.querySelector("iframe")!;
-    expect(iframe.getAttribute("sandbox")).toBe("allow-scripts");
+    expect(iframe.getAttribute("sandbox")).toBe("allow-same-origin");
+    expect(iframe.hasAttribute("src")).toBe(false);
+    expect(iframe.hasAttribute("srcdoc")).toBe(false);
+    expect(iframe.contentDocument!.URL).toBe("about:blank");
+    expect(iframe.contentDocument!.body.textContent).toContain("Masked ******");
+    expect(iframe.contentDocument!.querySelector(".hero")).toBeTruthy();
+    expect(iframe.contentDocument!.querySelector("style")!.textContent).toBe(".hero{height:900px;width:1366px}");
     expect(iframe.getAttribute("referrerpolicy")).toBe("no-referrer");
-    expect(iframe.style.width).toBe("1440px");
-    expect(iframe.style.height).toBe("2000px");
-    expect(iframe.style.transform).toBe("scale(0.4166666666666667)");
+    expect(iframe.style.width).toBe("1366px");
+    expect(iframe.style.height).toBe("1900px");
+    expect(Number(iframe.style.transform.match(/scale\((.+)\)/)![1])).toBeCloseTo(600 / 1366, 10);
     expect(screen.getByTestId("heatmap-scene").style.width).toBe("600px");
     const bitmap = draw.mock.lastCall![0].data as Uint8ClampedArray;
     expect(Array.from(bitmap.slice((125 * 600 + 300) * 4, (125 * 600 + 300) * 4 + 4))).toEqual([249, 6, 6, 230]);
@@ -110,7 +175,7 @@ describe("HeatmapViewer", () => {
     expect(screen.getByText("42 clicks from 3 sampled sessions.")).toBeTruthy();
   });
 
-  it("keeps overlays and counts when the live background is switched off or unavailable", () => {
+  it("keeps overlays and counts when the page background is switched off or unavailable", () => {
     const props = data();
     const { container, rerender } = render(<HeatmapViewer data={props} showBackground={false} />);
     expect(container.querySelector("iframe")).toBeNull();
@@ -124,28 +189,83 @@ describe("HeatmapViewer", () => {
     const props = data();
     const { container, rerender } = render(<HeatmapViewer data={props} showBackground />);
     const iframe = container.querySelector("iframe");
+    const body = iframe!.contentDocument!.body;
     const viewport = screen.getByRole("region", { name: "Heatmap page" });
     viewport.scrollTop = 200;
     rerender(
-      <HeatmapViewer data={{ ...props, count: 43, points: [{ ...props.points[0], count: 43 }] }} showBackground />
+      <HeatmapViewer
+        data={{
+          ...props,
+          background: structuredClone(props.background),
+          count: 43,
+          points: [{ ...props.points[0], count: 43 }],
+        }}
+        showBackground
+      />
     );
     expect(container.querySelector("iframe")).toBe(iframe);
+    expect(iframe!.contentDocument!.body).toBe(body);
     expect(screen.getByRole("region", { name: "Heatmap page" })).toBe(viewport);
     expect(viewport.scrollTop).toBe(200);
   });
 
-  it.each(["javascript:alert(1)", "//foreign.example/page"])("rejects an unsafe iframe URL %s", url => {
+  it("uses geometry for legacy live URLs without a stored snapshot", () => {
     const { container } = render(
-      <HeatmapViewer data={data({ background: { url, width: 1440, height: 2000 } })} showBackground />
+      <HeatmapViewer
+        data={data({ background: { url: "https://bodybyraventracy.com/", width: 1440, height: 2000 } })}
+        showBackground
+      />
     );
     expect(container.querySelector("iframe")).toBeNull();
     expect(screen.getByText("Page background unavailable. Geometry is shown.")).toBeTruthy();
+    expect(screen.getByRole("img", { name: "Click intensity" })).toBeTruthy();
   });
 
-  it("does not claim iframe onload detects embedding blocks", () => {
-    const { container } = render(<HeatmapViewer data={data()} showBackground />);
-    fireEvent.load(container.querySelector("iframe")!);
-    expect(screen.queryByText(/loaded successfully|background ready/i)).toBeNull();
+  it.each([{ pathname: "/another-page" }, { hostname: "other.example.com" }, { viewportWidth: 375 }])(
+    "rejects a background from another page or width: %j",
+    context => {
+      const props = data();
+      props.background!.snapshot = snapshot(context);
+      const { container } = render(<HeatmapViewer data={props} showBackground />);
+      expect(container.querySelector("iframe")).toBeNull();
+      expect(screen.getByText("Page background unavailable. Geometry is shown.")).toBeTruthy();
+    }
+  );
+
+  it("removes scripts, nested frames, navigation meta and event handlers while preserving masked content", () => {
+    const props = data();
+    const body = props.background!.snapshot!.node.childNodes![1].childNodes![1];
+    body.attributes!.onload = "window.parent.heatmapUnsafe = true";
+    body.childNodes!.push(
+      {
+        type: 2,
+        id: 10,
+        tagName: "script",
+        attributes: {},
+        childNodes: [{ type: 3, id: 11, textContent: "window.parent.heatmapUnsafe = true" }],
+      },
+      { type: 2, id: 12, tagName: "iframe", attributes: { src: "https://bodybyraventracy.com/" }, childNodes: [] },
+      {
+        type: 2,
+        id: 13,
+        tagName: "meta",
+        attributes: { "http-equiv": "refresh", content: "0;url=https://bodybyraventracy.com/" },
+        childNodes: [],
+      },
+      {
+        type: 2,
+        id: 14,
+        tagName: "input",
+        attributes: { value: "******", type: "text", onchange: "alert(1)" },
+        childNodes: [],
+      }
+    );
+    const { container } = render(<HeatmapViewer data={props} showBackground />);
+    const doc = container.querySelector("iframe")!.contentDocument!;
+    expect(doc.querySelector("script, iframe, meta[http-equiv], [onload], [onchange]")).toBeNull();
+    expect(doc.querySelector("input")!.value).toBe("******");
+    expect(doc.body.textContent).toContain("Masked ******");
+    expect(body.attributes!.onload).toBeTruthy();
   });
 
   it("renders all ten scroll bands, the denominator and an accessible cumulative reach table", () => {
@@ -185,7 +305,7 @@ describe("HeatmapViewer", () => {
     const bitmap = screen.getByRole("img", { name: "Click intensity" }) as HTMLCanvasElement;
     expect(bitmap.height).toBeLessThanOrEqual(4096);
     expect(container.querySelector("iframe")).toBeNull();
-    expect(screen.getByText("This page is too long for a live background. Geometry is shown.")).toBeTruthy();
+    expect(screen.getByText("This page is too long for a page background. Geometry is shown.")).toBeTruthy();
     expect(screen.getByTestId("heatmap-scene").style.height).toBe("8000000px");
   });
 

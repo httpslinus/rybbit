@@ -1,3 +1,5 @@
+import type { HeatmapSnapshotContext } from "@rybbit/shared";
+
 export interface ScriptConfig {
   namespace: string;
   analyticsHost: string;
@@ -160,6 +162,7 @@ export interface SessionReplayEvent {
   type: string | number;
   data: any;
   timestamp: number;
+  snapshotContext?: HeatmapSnapshotContext;
 }
 
 export interface SessionReplayBatch {

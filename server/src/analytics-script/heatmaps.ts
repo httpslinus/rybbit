@@ -1,4 +1,11 @@
-import type { HeatmapBatch, HeatmapEvent, HeatmapGeometry } from "@rybbit/shared";
+import type {
+  HeatmapBatch,
+  HeatmapEvent,
+  HeatmapGeometry,
+  HeatmapSnapshotNode,
+  HeatmapSnapshotRequest,
+} from "@rybbit/shared";
+import { HEATMAP_MAX_SNAPSHOT_BYTES, HEATMAP_WIDTH_BUCKETS, heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
 import type { ScriptConfig } from "./types.js";
 import { reserveKeepalive } from "./keepalive.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
@@ -48,6 +55,41 @@ type ScrollGeometry = {
   extents: { element: Element; width: number; height: number }[];
 };
 let exitBytes = 0;
+let snapshotBundleLoading: Promise<void> | undefined;
+
+declare global {
+  interface Window {
+    rybbitHeatmapSnapshot?: { capture: (config: ScriptConfig) => HeatmapSnapshotNode | null };
+  }
+}
+
+function loadSnapshotBundle(analyticsHost: string): Promise<void> {
+  if (window.rybbitHeatmapSnapshot) return Promise.resolve();
+  if (snapshotBundleLoading) return snapshotBundleLoading;
+  snapshotBundleLoading = new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    const timer = window.setTimeout(() => {
+      script.remove();
+      reject(new Error("Heatmap snapshot bundle timed out"));
+    }, REQUEST_TIMEOUT_MS);
+    script.src = `${analyticsHost}/heatmap-snapshot.js`;
+    script.async = true;
+    script.onload = () => {
+      window.clearTimeout(timer);
+      if (window.rybbitHeatmapSnapshot) resolve();
+      else reject(new Error("Heatmap snapshot bundle did not initialize"));
+    };
+    script.onerror = () => {
+      window.clearTimeout(timer);
+      script.remove();
+      reject(new Error("Failed to load heatmap snapshot bundle"));
+    };
+    document.head.appendChild(script);
+  }).finally(() => {
+    snapshotBundleLoading = undefined;
+  });
+  return snapshotBundleLoading;
+}
 
 function randomId(): string {
   try {
@@ -117,7 +159,7 @@ function compatible(a: HeatmapGeometry, b: HeatmapGeometry): boolean {
   );
 }
 
-/** Compact interaction capture. It never reads DOM text, input values or replay data. */
+/** Compact interactions, with a lazy static background only when the server nominates this visit. */
 export class HeatmapRecorder {
   private active = false;
   private monitoring = false;
@@ -147,6 +189,8 @@ export class HeatmapRecorder {
   private transition: Transition | null = null;
   private routeTimer?: number;
   private suspended = false;
+  private snapshotInFlight = false;
+  private handledSnapshotRequests = new Set<string>();
 
   constructor(
     private config: ScriptConfig,
@@ -627,6 +671,8 @@ export class HeatmapRecorder {
       );
       if (response.ok) {
         this.removeChunk(chunk);
+        // Background capture must not hold or retry a successfully stored interaction batch.
+        if (!keepalive) void this.handleSnapshotResponse(response);
         return;
       }
       const retryAfter = response.headers?.get("Retry-After");
@@ -658,6 +704,82 @@ export class HeatmapRecorder {
       this.debug(`Upload failed for batch ${chunk.batchId} (attempt ${chunk.attempts})`, error);
     } finally {
       window.clearTimeout(timer);
+    }
+  }
+
+  private snapshotGeometry(request: HeatmapSnapshotRequest): HeatmapGeometry | null {
+    if (!this.active || !this.monitoring || this.suspended) return null;
+    this.ensurePage();
+    // Never capture the prior route's DOM while an asynchronous SPA render is settling.
+    if (this.transition) return null;
+    const geometry = this.geometry();
+    if (
+      !geometry ||
+      geometry.pageVisitId !== request.pageVisitId ||
+      geometry.hostname !== request.hostname ||
+      geometry.pathname !== request.pathname ||
+      heatmapWidthBucket(geometry.viewportWidth) !== request.bucket
+    )
+      return null;
+    return geometry;
+  }
+
+  private async handleSnapshotResponse(response: Response): Promise<void> {
+    if (this.snapshotInFlight || typeof response.json !== "function") return;
+    try {
+      const body: unknown = await response.json();
+      if (!body || typeof body !== "object") return;
+      const request = (body as { snapshotRequest?: HeatmapSnapshotRequest }).snapshotRequest;
+      if (
+        !request ||
+        typeof request.key !== "string" ||
+        !request.key ||
+        request.key.length > 1024 ||
+        typeof request.token !== "string" ||
+        !request.token ||
+        request.token.length > 1024 ||
+        typeof request.pageVisitId !== "string" ||
+        typeof request.hostname !== "string" ||
+        typeof request.pathname !== "string" ||
+        !HEATMAP_WIDTH_BUCKETS.includes(request.bucket) ||
+        !this.snapshotGeometry(request)
+      )
+        return;
+      const requestId = `${request.key}:${request.token}`;
+      if (this.snapshotInFlight || this.handledSnapshotRequests.has(requestId)) return;
+      if (this.handledSnapshotRequests.size >= 128) {
+        this.handledSnapshotRequests.delete(this.handledSnapshotRequests.values().next().value!);
+      }
+      this.handledSnapshotRequests.add(requestId);
+      this.snapshotInFlight = true;
+      try {
+        await loadSnapshotBundle(this.config.analyticsHost);
+        const geometry = this.snapshotGeometry(request);
+        if (!geometry) return;
+        const node = window.rybbitHeatmapSnapshot?.capture(this.config);
+        if (!node) return;
+        const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node });
+        if (new TextEncoder().encode(payload).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) return;
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        try {
+          await fetch(`${this.config.analyticsHost}/heatmaps/snapshot/${encodeURIComponent(this.config.siteId)}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload,
+            mode: "cors",
+            credentials: "omit",
+            keepalive: false,
+            signal: controller.signal,
+          });
+        } finally {
+          window.clearTimeout(timer);
+        }
+      } finally {
+        this.snapshotInFlight = false;
+      }
+    } catch (error) {
+      this.debug("Background capture failed", error);
     }
   }
 

@@ -6,6 +6,7 @@ import { filterParamError } from "../../api/analytics/utils/getFilterStatement.j
 import { validateFilters } from "../../api/analytics/utils/query-validation.js";
 import type { TimeWindow, TimeWindowParams } from "../../api/analytics/utils/timeWindow.js";
 import { buildHeatmapBackground } from "./heatmapBackground.js";
+import { heatmapSnapshotService } from "./heatmapSnapshotService.js";
 import {
   buildHeatmapCohortScope,
   buildHeatmapCohortSummaryQuery,
@@ -433,6 +434,26 @@ export class HeatmapQueryService {
           documentHeight: summary.documentHeight,
         }
       : null;
+    let background: HeatmapResponse["background"] = geometry
+      ? buildHeatmapBackground({
+          configuredDomain,
+          ...selectedPage,
+          width: geometry.viewportWidth,
+          height: geometry.documentHeight,
+        })
+      : null;
+    if (geometry) {
+      const snapshot = await heatmapSnapshotService.getSnapshot(siteId, selectedPage, selectedBucket, window, geometry);
+      if (snapshot) {
+        const scale = selectedBucket / snapshot.viewportWidth;
+        background = {
+          url: background?.url ?? "",
+          width: selectedBucket,
+          height: snapshot.documentHeight * scale,
+          snapshot,
+        };
+      }
+    }
     return {
       ...empty,
       buckets,
@@ -445,14 +466,7 @@ export class HeatmapQueryService {
         histogram: scrollRows.map(({ depth, count, reach }) => ({ depth, count, reach })),
         totalSessions: scrollRows[0]?.totalSessions ?? 0,
       },
-      background: geometry
-        ? buildHeatmapBackground({
-            configuredDomain,
-            ...selectedPage,
-            width: geometry.viewportWidth,
-            height: geometry.documentHeight,
-          })
-        : null,
+      background,
       truncated: { pages: pageRows.length > pageLimit, points: pointRows.length > pointLimit },
     };
   }

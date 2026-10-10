@@ -81,11 +81,11 @@ This setting applies to future events; previously discarded fragments cannot be 
 
 ### Heatmap Collection
 
-Enable **Heatmaps** in your site's **Tracking** settings and save a **Heatmap sample rate** from 0 to 100 percent. Collection is off by default; the initial sample rate is 15 percent. No script tag changes are needed. Heatmaps run independently of session replay and do not load the replay recorder when replay is off.
+Enable **Heatmaps** in your site's **Tracking** settings and save a **Heatmap sample rate** from 0 to 100 percent. Collection is off by default; the initial sample rate is 15 percent. No script tag changes are needed. Heatmaps run independently of session replay. They reuse suitable full replay snapshots for page backgrounds. When one is missing, the backend requests an occasional standalone DOM capture through a separate snapshot-only module; this does not start replay recording.
 
 The script makes one sampling decision per analytics host and site, kept through activity. A page load after 30 minutes of inactivity makes a new decision. It uses session storage when available and falls back to memory when storage is unavailable. A rate of 0 collects nothing; 100 selects every eligible session. The tracker opt-out also disables heatmaps.
 
-Heatmap payloads contain trusted primary click coordinates, maximum visible scroll depth, capture time, page identity and viewport/document dimensions. They contain no DOM snapshots, element text, input values or query-string values. Heatmaps honor `data-skip-patterns` and `data-mask-patterns`. Hash-route query values are omitted even when ordinary analytics includes URL parameters.
+Click and scroll payloads contain trusted primary click coordinates, maximum visible scroll depth, capture time, page identity and viewport/document dimensions, without DOM content or query-string values. Background snapshots contain page DOM and visible text, using the configured replay blocking, text masking and input masking settings. Input values are masked by default. Scripts and nested frames are excluded from reconstructed backgrounds. Standalone capture is limited to one snapshot per page, width bucket and UTC day. Heatmaps honor `data-skip-patterns` and `data-mask-patterns`. Hash-route query values are omitted even when ordinary analytics includes URL parameters.
 
 Uploads use bounded batches and retries. Add `data-debug="true"` to the script tag to log failed heatmap uploads. See [Heatmaps](/docs/feature-guides/heatmaps) for report definitions, retention and filters.
 

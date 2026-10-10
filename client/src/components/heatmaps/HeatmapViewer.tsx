@@ -4,7 +4,9 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useExtracted } from "next-intl";
 import type { HeatmapResponse } from "@rybbit/shared";
 import { drawClickHotspots, intensityColor } from "./clickCanvas";
-import { backgroundUrl, fitHeatmap, pageGeometry, scrollReachBands, visibleDocumentTop } from "./geometry";
+import { fitHeatmap, pageGeometry, scrollReachBands, visibleDocumentTop } from "./geometry";
+import { pageSnapshot, prepareSnapshot } from "./snapshot";
+import { SnapshotBackground } from "./SnapshotBackground";
 
 export interface HeatmapViewerProps {
   data: HeatmapResponse;
@@ -26,10 +28,22 @@ function HeatmapView({ data, showBackground }: HeatmapViewerProps) {
   const scrollFrame = useRef<number | null>(null);
   const [size, setSize] = useState({ width: 0, height: 600, dpr: 1 });
   const [scrollTop, setScrollTop] = useState(0);
+  const [failedBackground, setFailedBackground] = useState<string | null>(null);
   const geometry = useMemo(() => pageGeometry(data), [data]);
   const fit = useMemo(() => fitHeatmap(geometry, size.width), [geometry, size.width]);
   const bands = useMemo(() => scrollReachBands(data.scroll.histogram, data.scroll.totalSessions), [data.scroll]);
-  const liveUrl = showBackground && !fit.virtual ? backgroundUrl(data.background?.url) : null;
+  const snapshot = useMemo(() => {
+    const source = pageSnapshot(data);
+    if (!source) return null;
+    try {
+      return { ...source, node: prepareSnapshot(source) };
+    } catch {
+      return null;
+    }
+  }, [data]);
+  const backgroundKey = snapshot ? `${snapshot.source}\0${snapshot.capturedAt}` : null;
+  const background = showBackground && !fit.virtual && backgroundKey !== failedBackground ? snapshot : null;
+  const backgroundScale = background ? (data.selectedBucket! / background.viewportWidth) * fit.scale : 1;
   const visibleTop = visibleDocumentTop(scrollTop, size.height, fit);
 
   useEffect(() => {
@@ -97,28 +111,18 @@ function HeatmapView({ data, showBackground }: HeatmapViewerProps) {
           style={{
             width: fit.width,
             height: fit.sceneHeight,
-            backgroundImage: liveUrl
+            backgroundImage: background
               ? undefined
               : "linear-gradient(rgba(128,128,128,.09) 1px, transparent 1px), linear-gradient(90deg, rgba(128,128,128,.09) 1px, transparent 1px)",
             backgroundSize: "32px 32px",
           }}
         >
-          {liveUrl && (
-            <iframe
-              key={liveUrl}
-              src={liveUrl}
-              title={t("Live page background")}
-              sandbox="allow-scripts"
-              referrerPolicy="no-referrer"
-              tabIndex={-1}
-              aria-hidden="true"
-              className="pointer-events-none absolute left-0 top-0 border-0 bg-white"
-              style={{
-                width: geometry.viewportWidth,
-                height: geometry.documentHeight,
-                transform: `scale(${fit.scale})`,
-                transformOrigin: "top left",
-              }}
+          {background && (
+            <SnapshotBackground
+              key={backgroundKey}
+              snapshot={background}
+              scale={backgroundScale}
+              onError={() => setFailedBackground(backgroundKey)}
             />
           )}
           {data.mode === "click" ? (
@@ -160,10 +164,10 @@ function HeatmapView({ data, showBackground }: HeatmapViewerProps) {
           )}
         </div>
       </div>
-      {showBackground && !liveUrl && (
+      {showBackground && !background && (
         <p className="shrink-0 px-2.5 py-1.5 text-xs text-muted-foreground">
           {fit.virtual
-            ? t("This page is too long for a live background. Geometry is shown.")
+            ? t("This page is too long for a page background. Geometry is shown.")
             : t("Page background unavailable. Geometry is shown.")}
         </p>
       )}

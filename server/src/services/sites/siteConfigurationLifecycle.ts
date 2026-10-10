@@ -8,6 +8,8 @@ import { IS_CLOUD } from "../../lib/const.js";
 import { validateIPPattern } from "../../lib/ipUtils.js";
 import { detectPlatform } from "../lifecycleEmails/platformDetect.js";
 import { heatmapBatchClaims } from "../heatmaps/heatmapBatchClaims.js";
+import { heatmapSnapshotClaims } from "../heatmaps/heatmapSnapshotClaims.js";
+import { clearHeatmapSnapshotMarkers } from "../heatmaps/heatmapSnapshotErasure.js";
 import { usageService } from "../usageService.js";
 import { siteConfig, type SiteConfigData } from "../../lib/siteConfig.js";
 
@@ -581,6 +583,8 @@ class SiteConfigurationLifecycle {
 
   private async deleteInteractionData(siteId: number): Promise<void> {
     await heatmapBatchClaims.clearAttributions(siteId);
+    await heatmapSnapshotClaims.clear(siteId);
+    await clearHeatmapSnapshotMarkers(siteId);
     await Promise.all([
       clickhouse.command({
         query: "DELETE FROM session_replay_events WHERE site_id = {id:UInt32}",
@@ -592,6 +596,10 @@ class SiteConfigurationLifecycle {
       }),
       clickhouse.command({
         query: "DELETE FROM heatmap_events WHERE site_id = {id:UInt32}",
+        query_params: { id: siteId },
+      }),
+      clickhouse.command({
+        query: "DELETE FROM heatmap_snapshots WHERE site_id = {id:UInt32}",
         query_params: { id: siteId },
       }),
     ]);

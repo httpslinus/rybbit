@@ -42,7 +42,7 @@ Batch IDs, page-visit IDs and paths cannot contain control characters. Every com
 
 A **click** also requires finite, nonnegative `clientX`, `clientY`, `pageX` and `pageY` coordinates. Client coordinates must fit the viewport; page coordinates must fit the document and be at least their corresponding client coordinates. The tracker captures only trusted primary clicks.
 
-A **scroll** also requires finite `maxDepth` from 0 to 100, the maximum visible depth for that geometry. The initial viewport counts, including 100 for a document that fits in the viewport. Send no DOM snapshots, selectors, text, input values or query-string values.
+A **scroll** also requires finite `maxDepth` from 0 to 100, the maximum visible depth for that geometry. The initial viewport counts, including 100 for a document that fits in the viewport. Send no DOM snapshots, selectors, text, input values or query-string values in this batch. Background snapshots use the separate [Record Heatmap Snapshot](/docs/api/heatmaps/snapshot) endpoint.
 
 ## Example
 
@@ -74,6 +74,8 @@ curl -X POST "https://analytics.example.com/api/heatmaps/record/1" \
 ```json title="Response"
 { "success": true }
 ```
+
+The response can also include `snapshotRequest` with `key`, `token`, `pageVisitId`, `hostname`, `pathname` and `bucket`. This nominates one visitor to fill a missing page background after the replay grace period. Capture only while that page visit and width bucket are still current, apply the configured replay privacy settings, and upload to [Record Heatmap Snapshot](/docs/api/heatmaps/snapshot). Do not start session recording for this request.
 
 ## Retries and deduplication
 

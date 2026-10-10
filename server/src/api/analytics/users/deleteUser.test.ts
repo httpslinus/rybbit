@@ -1,3 +1,9 @@
+vi.mock("../../../services/heatmaps/heatmapSnapshotClaims.js", () => ({
+  heatmapSnapshotClaims: { clear: vi.fn(async () => undefined) },
+}));
+vi.mock("../../../services/heatmaps/heatmapSnapshotErasure.js", () => ({
+  clearHeatmapSnapshotMarkers: vi.fn(async () => undefined),
+}));
 import { createClient } from "@clickhouse/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -88,7 +94,7 @@ describe("deleteUser heatmap erasure", () => {
     await deleteUser(request() as never, res as never);
 
     expect(res.payload).toEqual({ success: true });
-    expect(mocks.command).toHaveBeenCalledTimes(4);
+    expect(mocks.command).toHaveBeenCalledTimes(5);
     expect(mocks.clearAttributions).toHaveBeenCalledWith(1, "alice", ["alice", "dev-shared", "dev-other"]);
     expect(mocks.clearAttributions.mock.invocationCallOrder[0]).toBeLessThan(mocks.command.mock.invocationCallOrder[0]);
     expect(mocks.command.mock.calls.map(([value]) => value.query.split(" ")[2])).toEqual([
@@ -96,6 +102,7 @@ describe("deleteUser heatmap erasure", () => {
       "session_replay_events",
       "session_replay_metadata_v2",
       "heatmap_events",
+      "heatmap_snapshots",
     ]);
     const deletion = heatmapDelete();
     expect(deletion.query).toMatch(/site_id = \{siteId:UInt32\}\s+AND/);
@@ -138,7 +145,7 @@ describe("deleteUser heatmap erasure", () => {
     await deleteUser(req as never, res as never);
 
     expect(heatmapDelete().query_params.siteId).toBe(1);
-    expect(mocks.command).toHaveBeenCalledTimes(4);
+    expect(mocks.command).toHaveBeenCalledTimes(5);
     expect(req.log.error).toHaveBeenCalledTimes(1);
     expect(res.payload).toEqual({ success: true });
   });

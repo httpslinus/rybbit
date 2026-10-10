@@ -31,7 +31,38 @@ export const HEATMAP_TABLE_SQL = `
   SETTINGS index_granularity = 8192
 `;
 
+// Replay backgrounds contain pointers only; standalone backgrounds keep one
+// masked DOM per page/width/day. Both expire with the interaction data.
+export const HEATMAP_SNAPSHOT_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS heatmap_snapshots (
+    site_id UInt32,
+    snapshot_key String,
+    timestamp DateTime64(3, 'UTC'),
+    hostname LowCardinality(String),
+    pathname LowCardinality(String),
+    viewport_bucket UInt16,
+    viewport_width UInt32,
+    viewport_height UInt32,
+    document_width UInt32,
+    document_height UInt32,
+    source LowCardinality(String),
+    session_id String,
+    user_id String,
+    identified_user_id String,
+    source_timestamp DateTime64(3, 'UTC'),
+    source_sequence UInt32,
+    source_hash String,
+    event_data_key String,
+    batch_index UInt32,
+    snapshot_data String CODEC(ZSTD(3))
+  ) ENGINE = ReplacingMergeTree(timestamp)
+  PARTITION BY toYYYYMM(timestamp)
+  ORDER BY (site_id, hostname, pathname, viewport_bucket, snapshot_key, source)
+  TTL timestamp + INTERVAL 30 DAY
+`;
+
 export async function initializeHeatmapTables(): Promise<void> {
   await execClickhouseInitStep("create heatmap_events", HEATMAP_TABLE_SQL);
   await ensureUtcTimeColumns("heatmap_events", UTC_TIME_COLUMNS.heatmap_events);
+  await execClickhouseInitStep("create heatmap_snapshots", HEATMAP_SNAPSHOT_TABLE_SQL);
 }

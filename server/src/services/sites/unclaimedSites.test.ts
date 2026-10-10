@@ -1,3 +1,7 @@
+vi.mock("../heatmaps/heatmapSnapshotClaims.js", () => ({
+  heatmapSnapshotClaims: { clear: vi.fn(async () => undefined) },
+}));
+vi.mock("../heatmaps/heatmapSnapshotErasure.js", () => ({ clearHeatmapSnapshotMarkers: vi.fn(async () => undefined) }));
 import { and, eq, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -213,7 +217,7 @@ describe("cleanup", () => {
     expect(await readSite(fresh.siteId)).toBeDefined();
     expect(await readSite(legacy.siteId)).toBeDefined();
     expect(await readSite(claimed.siteId)).toBeDefined();
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(4);
     expect(mocks.clearAttributions).toHaveBeenCalledWith(expired.siteId);
     expect(mocks.clearAttributions.mock.invocationCallOrder[0]).toBeLessThan(
       mocks.clickhouseCommand.mock.invocationCallOrder[0]
@@ -252,7 +256,7 @@ describe("cleanup", () => {
     await (client as any).query("INSERT INTO import_status VALUES ('imp_1', $1, 'org_1')", [site.siteId]);
     await lifecycle.delete(site.siteId);
     expect(await readSite(site.siteId)).toBeUndefined();
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(4);
     expect(mocks.clickhouseCommand).toHaveBeenCalledWith(
       expect.objectContaining({ query: expect.stringContaining("DELETE FROM heatmap_events") })
     );

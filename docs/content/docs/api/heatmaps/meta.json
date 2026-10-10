@@ -1,4 +1,8 @@
 {
   "title": "Heatmaps",
-  "pages": ["get", "record"]
+  "pages": [
+    "get",
+    "record",
+    "snapshot"
+  ]
 }

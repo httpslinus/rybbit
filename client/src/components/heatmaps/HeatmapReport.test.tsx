@@ -31,6 +31,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({ useParams: () => ({ site: mocks.routeSite }) }));
 
 vi.mock("next-intl", () => ({
+  useFormatter: () => ({ dateTime: () => "Oct 11, 2026, 10:00 AM" }),
   useExtracted:
     () =>
     (message: string, values: Record<string, string | number> = {}) =>
@@ -122,7 +123,7 @@ vi.mock("./HeatmapViewer", () => ({
       mocks.viewerMount();
     }, []);
     mocks.viewer(props);
-    return <div data-testid="heatmap-viewer">{props.showBackground ? "Live fixture" : "Geometry fixture"}</div>;
+    return <div data-testid="heatmap-viewer">{props.showBackground ? "Saved fixture" : "Geometry fixture"}</div>;
   },
 }));
 
@@ -145,7 +146,22 @@ function response(): HeatmapResponse {
     points: [],
     scroll: { histogram: [], totalSessions: 3 },
     geometry: { viewportWidth: 375, viewportHeight: 600, documentWidth: 375, documentHeight: 2000 },
-    background: { url: "https://fixture.test/a", width: 375, height: 2000 },
+    background: {
+      url: "https://fixture.test/a",
+      width: 375,
+      height: 2000,
+      snapshot: {
+        source: "replay",
+        capturedAt: "2026-10-11T10:00:00Z",
+        hostname: "fixture.test",
+        pathname: "/a",
+        viewportWidth: 375,
+        viewportHeight: 600,
+        documentWidth: 375,
+        documentHeight: 2000,
+        node: { type: 0, id: 1, childNodes: [] },
+      },
+    },
     count: 12,
     sessions: 3,
     truncated: { pages: false, points: false },
@@ -252,18 +268,18 @@ describe("heatmap report", () => {
   it("offers geometry-only rendering and communicates report limits", () => {
     mocks.response!.truncated = { pages: true, points: true };
     render(<HeatmapReport />);
-    fireEvent.click(screen.getByRole("switch", { name: "Live background" }));
+    fireEvent.click(screen.getByRole("switch", { name: "Page background" }));
     expect(mocks.viewer).toHaveBeenLastCalledWith(expect.objectContaining({ showBackground: false }));
     expect(screen.getByText("Geometry only")).toBeTruthy();
     expect(screen.getByText("Showing the top 100 pages. Search to find another page.")).toBeTruthy();
     expect(screen.getByText("Showing the 5,000 most frequent click points.")).toBeTruthy();
   });
 
-  it("disables live background when unavailable without hiding the overlay", () => {
+  it("disables page background when unavailable without hiding the overlay", () => {
     mocks.response!.background = null;
     render(<HeatmapReport />);
-    expect((screen.getByRole("switch", { name: "Live background" }) as HTMLButtonElement).disabled).toBe(true);
-    expect(mocks.viewer).toHaveBeenLastCalledWith(expect.objectContaining({ showBackground: false }));
+    expect((screen.getByRole("switch", { name: "Page background" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(mocks.viewer).toHaveBeenLastCalledWith(expect.objectContaining({ showBackground: true }));
     expect(screen.getByTestId("heatmap-viewer")).toBeTruthy();
   });
 

@@ -19,7 +19,7 @@ Supply one bounded time window using the [ordinary analytics time parameters](/d
 - `start_datetime` and `end_datetime` as UTC `YYYY-MM-DD HH:mm:ss`, with `time_zone`; the end is exclusive.
 - `past_minutes_start` and `past_minutes_end` as finite, nonnegative numbers, with start greater than end.
 
-All-time requests return **400**. Heatmap events have a 30-day TTL; queries only return retained data.
+All-time requests return **400**. Heatmap events and backgrounds have a 30-day TTL; queries only return retained data.
 
 | Parameter              | Type                         | Default                         | Meaning                                                                               |
 | ---------------------- | ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------- |
@@ -93,7 +93,34 @@ curl --get "https://analytics.example.com/api/sites/1/heatmaps" \
     ],
     "scroll": { "histogram": [], "totalSessions": 0 },
     "geometry": { "viewportWidth": 1440, "viewportHeight": 900, "documentWidth": 1440, "documentHeight": 2400 },
-    "background": { "url": "https://example.com/pricing", "width": 1440, "height": 2400 },
+    "background": {
+      "url": "https://example.com/pricing",
+      "width": 1440,
+      "height": 2400,
+      "snapshot": {
+        "capturedAt": "2026-10-10T10:00:00.000Z",
+        "source": "replay",
+        "hostname": "example.com",
+        "pathname": "/pricing",
+        "viewportWidth": 1366,
+        "viewportHeight": 854,
+        "documentWidth": 1366,
+        "documentHeight": 2277,
+        "node": {
+          "type": 0,
+          "id": 1,
+          "childNodes": [
+            {
+              "type": 2, "id": 2, "tagName": "html", "attributes": {},
+              "childNodes": [
+                { "type": 2, "id": 3, "tagName": "head", "attributes": {}, "childNodes": [] },
+                { "type": 2, "id": 4, "tagName": "body", "attributes": {}, "childNodes": [] }
+              ]
+            }
+          ]
+        }
+      }
+    },
     "count": 42,
     "sessions": 12,
     "truncated": { "pages": false, "points": false },
@@ -112,7 +139,11 @@ In scroll mode, `points` is empty. `scroll.histogram` contains depths at 0, 10, 
 
 `truncated.pages` and `truncated.points` indicate omitted display rows; `limits` records the applied bounds. When a cohort is selected, `cohort` includes `cohortId`, `name`, `members`, `startDate`, `endDate` and `timeZone`. Membership counts matching effective visitors in retained historical analytics.
 
-`background` is a validated live URL and geometry, or `null` for an unsupported or masked path. The API does not fetch it or capture a screenshot. Embed it without a referrer, using a sandbox that allows scripts but not same-origin privileges. Current layouts, authentication and embedding policies can prevent alignment; geometry-only rendering remains available.
+`background` includes geometry and an optional `snapshot`, or is `null` when no background is available. The legacy `url` field describes the selected page; do not load it as an iframe source. `snapshot` contains `capturedAt` (UTC ISO timestamp), `source` (`replay` or `standalone`), captured hostname/path, original viewport/document dimensions and a sanitized rrweb serialized document in `node`.
+
+Reconstruct `node` in an inert iframe with `sandbox="allow-same-origin"`, without `allow-scripts`, a live `src` or a referrer. Preserve the captured viewport width for responsive layout. Snapshot dimensions are original capture dimensions: multiply by `selectedBucket / snapshot.viewportWidth`, then apply the viewer fit scale. Click points are already bucket-normalized and need only that fit scale. Do not use snapshots from another page or width bucket. The dashboard also freezes CSS viewport units at capture dimensions before expanding the iframe to the full document.
+
+The backend prefers replay references and retrieves their DOM from existing storage. Source deletion or expiry invalidates a replay background. Suitable legacy replays can be used only when adjacent metadata establishes the page reliably; session-level URLs do not establish SPA attribution. A standalone snapshot fills gaps independently of replay sampling. Snapshot selection follows the page, bucket and report window; analytics filters select heatmap observations but do not filter the representative background visitor. Geometry-only rendering remains available when no suitable snapshot is retained.
 
 ## Errors
 

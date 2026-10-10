@@ -42,7 +42,10 @@ export async function recordHeatmaps(
         .status(503)
         .send({ error: "Heatmap batch is still being recorded", code: "HEATMAP_BATCH_BUSY" });
     }
-    return reply.send({ success: true });
+    return reply.send({
+      success: true,
+      ...(outcome.snapshotRequest ? { snapshotRequest: outcome.snapshotRequest } : {}),
+    });
   } catch (error) {
     if (error instanceof z.ZodError) return reply.status(400).send({ error: error.errors });
     request.log.error({ err: error, siteId: request.params.siteId }, "Error recording heatmaps");

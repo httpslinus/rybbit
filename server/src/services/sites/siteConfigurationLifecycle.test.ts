@@ -1,3 +1,7 @@
+vi.mock("../heatmaps/heatmapSnapshotClaims.js", () => ({
+  heatmapSnapshotClaims: { clear: vi.fn(async () => undefined) },
+}));
+vi.mock("../heatmaps/heatmapSnapshotErasure.js", () => ({ clearHeatmapSnapshotMarkers: vi.fn(async () => undefined) }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({
@@ -159,7 +163,7 @@ describe("siteConfigurationLifecycle", () => {
     await siteConfigurationLifecycle.delete(1);
 
     expect(state.deletes).toBe(2);
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(4);
     expect(mocks.clearAttributions).toHaveBeenCalledWith(1);
     expect(mocks.clearAttributions.mock.invocationCallOrder[0]).toBeLessThan(
       mocks.clickhouseCommand.mock.invocationCallOrder[0]

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { HeatmapBatch, HeatmapEvent } from "@rybbit/shared";
+import type { HeatmapBatch, HeatmapEvent, HeatmapSnapshotRequest } from "@rybbit/shared";
+import { HEATMAP_MAX_SNAPSHOT_BYTES, heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
 import { HeatmapRecorder, HEATMAP_MAX_BATCH_BYTES } from "./heatmaps.js";
 import type { ScriptConfig } from "./types.js";
 
@@ -54,7 +55,33 @@ describe("HeatmapRecorder", () => {
   }
 
   function batches(): HeatmapBatch[] {
-    return vi.mocked(fetch).mock.calls.map(([, init]) => JSON.parse(init!.body as string));
+    return vi
+      .mocked(fetch)
+      .mock.calls.filter(([url]) => String(url).includes("/heatmaps/record/"))
+      .map(([, init]) => JSON.parse(init!.body as string));
+  }
+
+  function snapshotUploads() {
+    return vi.mocked(fetch).mock.calls.filter(([url]) => String(url).includes("/heatmaps/snapshot/"));
+  }
+
+  function nominateSnapshot(onUpload: () => Promise<Response> = async () => ({ ok: true }) as Response) {
+    let nominated = false;
+    vi.mocked(fetch).mockImplementation(async (url, init) => {
+      if (String(url).includes("/heatmaps/snapshot/")) return onUpload();
+      const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
+      const snapshotRequest: HeatmapSnapshotRequest = {
+        key: "snapshot-key",
+        token: "lease-token",
+        pageVisitId: event.pageVisitId,
+        hostname: event.hostname,
+        pathname: event.pathname,
+        bucket: heatmapWidthBucket(event.viewportWidth),
+      };
+      const body = nominated ? {} : { snapshotRequest };
+      nominated = true;
+      return { ok: true, status: 200, json: async () => body } as Response;
+    });
   }
 
   function events(): HeatmapEvent[] {
@@ -68,6 +95,8 @@ describe("HeatmapRecorder", () => {
     location = { href: "https://example.com/page?password=secret" };
     Object.defineProperty(window, "location", { value: location, configurable: true });
     document.body.innerHTML = '<button data-private="secret">Private text</button><input value="private input">';
+    delete window.rybbitHeatmapSnapshot;
+    document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
     listeners = vi.spyOn(document, "addEventListener");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
     recorders = [];
@@ -119,6 +148,8 @@ describe("HeatmapRecorder", () => {
     vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
     for (const recorder of recorders) recorder.cleanup();
     for (const recorder of recorders) await recorder.flush();
+    delete window.rybbitHeatmapSnapshot;
+    document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -845,5 +876,198 @@ describe("HeatmapRecorder", () => {
     expect(events().filter(event => event.pathname === "/next-after-growth")).toMatchObject([
       { documentHeight: 1000, maxDepth: 50 },
     ]);
+  });
+
+  it("captures only a nominated background with capture-time geometry and leaves ordinary batches compact", async () => {
+    const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitHeatmapSnapshot = { capture };
+    nominateSnapshot();
+    const recorder = start({ sessionReplayMaskTextSelectors: [".private"] });
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(capture).toHaveBeenCalledOnce();
+    expect(capture).toHaveBeenCalledWith(expect.objectContaining({ sessionReplayMaskTextSelectors: [".private"] }));
+    expect(snapshotUploads()).toHaveLength(1);
+    const [url, init] = snapshotUploads()[0];
+    expect(url).toBe(`https://analytics.example.com/heatmaps/snapshot/${config.siteId}`);
+    expect(init).toMatchObject({ credentials: "omit", keepalive: false });
+    expect(JSON.parse(init!.body as string)).toMatchObject({
+      key: "snapshot-key",
+      token: "lease-token",
+      pageVisitId: batches()[0].events[0].pageVisitId,
+      hostname: "example.com",
+      pathname: "/page",
+      viewportWidth: 375,
+      viewportHeight: 500,
+      documentWidth: 375,
+      documentHeight: 2000,
+      node: { type: 0, id: 1, childNodes: [] },
+    });
+    expect(batches()[0]).not.toHaveProperty("node");
+    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+  });
+
+  it.each(["navigation", "skip", "return", "resize", "identity", "cleanup", "pagehide"])(
+    "discards nominated backgrounds after %s during lazy bundle loading",
+    async race => {
+      nominateSnapshot();
+      const recorder = start({ skipPatterns: ["/private/**"] });
+      click();
+      await recorder.flush();
+      await vi.advanceTimersByTimeAsync(0);
+      const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
+      expect(script?.src).toBe("https://analytics.example.com/heatmap-snapshot.js");
+      if (race === "navigation" || race === "skip" || race === "return") {
+        location.href = race === "skip" ? "https://example.com/private/account" : "https://example.com/next";
+        recorder.onPageChange();
+        if (race === "return") {
+          location.href = "https://example.com/page";
+          recorder.onPageChange();
+        }
+      } else if (race === "resize") size(1024);
+      else if (race === "identity") recorder.updateUserId("new-user");
+      else if (race === "cleanup") recorder.cleanup();
+      else window.dispatchEvent(new Event("pagehide"));
+      const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+      window.rybbitHeatmapSnapshot = { capture };
+      script!.dispatchEvent(new Event("load"));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(capture).not.toHaveBeenCalled();
+      expect(snapshotUploads()).toHaveLength(0);
+    }
+  );
+
+  it("does not hold or retry successful interaction batches when snapshot upload fails", async () => {
+    window.rybbitHeatmapSnapshot = { capture: () => ({ type: 0, id: 1, childNodes: [] }) };
+    let rejectUpload!: (error: Error) => void;
+    nominateSnapshot(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectUpload = reject;
+        })
+    );
+    const recorder = start();
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(snapshotUploads()).toHaveLength(1);
+    expect((recorder as unknown as { chunks: unknown[] }).chunks).toHaveLength(0);
+    click();
+    await recorder.flush();
+    expect(batches()).toHaveLength(2);
+    rejectUpload(new Error("offline"));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(snapshotUploads()).toHaveLength(1);
+    expect(batches()).toHaveLength(2);
+  });
+
+  it("rejects oversized static backgrounds without changing interaction delivery", async () => {
+    window.rybbitHeatmapSnapshot = {
+      capture: () => ({
+        type: 0,
+        id: 1,
+        childNodes: [{ type: 3, id: 2, textContent: "x".repeat(HEATMAP_MAX_SNAPSHOT_BYTES) }],
+      }),
+    };
+    nominateSnapshot();
+    const recorder = start();
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(snapshotUploads()).toHaveLength(0);
+    expect(batches()).toHaveLength(1);
+    expect((recorder as unknown as { chunks: unknown[] }).chunks).toHaveLength(0);
+  });
+
+  it("ignores nominations received through unload keepalive responses", async () => {
+    window.rybbitHeatmapSnapshot = { capture: vi.fn(() => ({ type: 0, id: 1, childNodes: [] })) };
+    nominateSnapshot();
+    start();
+    click();
+    window.dispatchEvent(new Event("pagehide"));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(window.rybbitHeatmapSnapshot.capture).not.toHaveBeenCalled();
+    expect(snapshotUploads()).toHaveLength(0);
+  });
+
+  it("does not load a capture bundle after navigation while a nomination response is still parsing", async () => {
+    let resolveBody!: (body: unknown) => void;
+    let request: HeatmapSnapshotRequest;
+    vi.mocked(fetch).mockImplementationOnce(async (_url, init) => {
+      const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
+      request = {
+        key: "snapshot-key",
+        token: "lease-token",
+        pageVisitId: event.pageVisitId,
+        hostname: event.hostname,
+        pathname: event.pathname,
+        bucket: heatmapWidthBucket(event.viewportWidth),
+      };
+      return {
+        ok: true,
+        status: 200,
+        json: () =>
+          new Promise(resolve => {
+            resolveBody = resolve;
+          }),
+      } as Response;
+    });
+    const recorder = start();
+    click();
+    await recorder.flush();
+    location.href = "https://example.com/next";
+    recorder.onPageChange();
+    resolveBody({ snapshotRequest: request! });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+    expect(snapshotUploads()).toHaveLength(0);
+  });
+
+  it("does not retry interactions or reload the bundle when its capture script fails", async () => {
+    nominateSnapshot();
+    const recorder = start();
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
+    script!.dispatchEvent(new Event("error"));
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+    expect(snapshotUploads()).toHaveLength(0);
+    expect(batches()).toHaveLength(1);
+  });
+
+  it("honors a snapshot grant only once even if a later successful batch repeats it", async () => {
+    const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitHeatmapSnapshot = { capture };
+    vi.mocked(fetch).mockImplementation(async (url, init) => {
+      if (String(url).includes("/heatmaps/snapshot/")) return { ok: true } as Response;
+      const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          snapshotRequest: {
+            key: "snapshot-key",
+            token: "lease-token",
+            pageVisitId: event.pageVisitId,
+            hostname: event.hostname,
+            pathname: event.pathname,
+            bucket: heatmapWidthBucket(event.viewportWidth),
+          },
+        }),
+      } as Response;
+    });
+    const recorder = start();
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    click();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(batches()).toHaveLength(2);
+    expect(capture).toHaveBeenCalledOnce();
+    expect(snapshotUploads()).toHaveLength(1);
   });
 });

@@ -1,0 +1,52 @@
+---
+title: Record Heatmap Snapshot
+description: Upload one nominated, masked DOM background for a heatmap page
+full: true
+method: POST
+---
+
+```text
+POST /api/heatmaps/snapshot/:siteId
+```
+
+This public tracker endpoint accepts a standalone background only with a nomination from [Record Heatmaps](/docs/api/heatmaps/record). It requires no bearer key. Collection must still be enabled on the web site, and site-wide bot, IP, country, hostname and path exclusions apply again at upload time.
+
+Rybbit prefers existing full replay snapshots. When a page and viewport width lack coverage, a 90-second replay grace period allows recording to supply a background before one sampled visitor is nominated. At most one standalone snapshot is retained per site, hostname, path, width bucket and UTC day.
+
+## Request body
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `key`, `token` | strings | Opaque nomination values returned in `snapshotRequest`; keep unchanged |
+| `timestamp` | nonnegative integer | Capture time in Unix milliseconds |
+| `pageVisitId`, `hostname`, `pathname` | strings | Current nominated page visit and tracked page identity |
+| `viewportWidth`, `viewportHeight` | positive integers | Original capture viewport in CSS pixels, at most 65,535 each |
+| `documentWidth`, `documentHeight` | positive integers | Original document dimensions, at least the corresponding viewport dimensions |
+| `node` | object | Masked rrweb serialized document, with a document root (`type: 0`) |
+
+The nomination binds the upload to the site, page visit, hostname, path and width bucket. Capture only while those still match. If navigation or resizing changes the context before capture completes, discard the snapshot. Do not send a client session or visitor ID; attribution comes from the accepted event batch that created the nomination. Unknown body fields are rejected.
+
+The built-in snapshot module applies the same input masking, text masking and blocking configuration as session replay. Inputs are masked by default. It inlines accessible stylesheets and does not record canvas pixels or inline images. The server removes scripts, nested frames, active navigation metadata and event handlers before storing the bounded DOM tree. Visible page text and external asset URLs may remain unless configured masking or blocking removes them.
+
+The complete HTTP body is limited to **2 MiB**. The serialized tree is limited to **50,000 nodes** and **200 levels**. Uploads are rate limited to **10 requests per minute**.
+
+```json title="Response"
+{ "success": true }
+```
+
+Disabled or excluded uploads can return success without storing a background. An expired, mismatched or completed nomination returns **409**. Repeated uploads cannot extend a consumed nomination or replace an already accepted standalone capture.
+
+## Retention and rendering
+
+Standalone backgrounds have a **30-day TTL**, independently of replay collection. The [Get Heatmaps](/docs/api/heatmaps/get) response returns a matching sanitized snapshot when available. The viewer reconstructs it in a sandbox with scripts disabled, so the original site's frame restrictions do not block it. New replay snapshots may become the preferred background without duplicating their DOM storage.
+
+## Errors
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Invalid body, geometry or snapshot tree |
+| `404` | Site not found |
+| `409` | Nomination expired, mismatched or already completed |
+| `413` | Body exceeds 2 MiB |
+| `429` | Upload rate limit exceeded |
+| `503` | Snapshot storage is temporarily unavailable |

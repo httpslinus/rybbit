@@ -4,6 +4,8 @@ import { clickhouse } from "../../../db/clickhouse/clickhouse.js";
 import { db } from "../../../db/postgres/postgres.js";
 import { userAliases, userProfiles } from "../../../db/postgres/schema.js";
 import { heatmapBatchClaims } from "../../../services/heatmaps/heatmapBatchClaims.js";
+import { heatmapSnapshotClaims } from "../../../services/heatmaps/heatmapSnapshotClaims.js";
+import { clearHeatmapSnapshotMarkers } from "../../../services/heatmaps/heatmapSnapshotErasure.js";
 import { r2Storage } from "../../../services/storage/r2StorageService.js";
 import { processResults } from "../utils/utils.js";
 
@@ -43,6 +45,8 @@ export async function deleteUser(req: FastifyRequest<DeleteUserRequest>, res: Fa
     const queryParams = { siteId, userId, deviceIds };
 
     await heatmapBatchClaims.clearAttributions(siteId, userId, deviceIds);
+    await heatmapSnapshotClaims.clear(siteId, userId, deviceIds);
+    await clearHeatmapSnapshotMarkers(siteId, `AND (${userCondition})`, queryParams);
 
     // Delete R2-stored replay payloads first (cloud deployments); best-effort —
     // proceed with ClickHouse deletion even if R2 cleanup fails.
@@ -66,11 +70,12 @@ export async function deleteUser(req: FastifyRequest<DeleteUserRequest>, res: Fa
     }
 
     await Promise.all(
-      ["events", "session_replay_events", "session_replay_metadata_v2", "heatmap_events"].map(table =>
-        clickhouse.command({
-          query: `DELETE FROM ${table} WHERE ${userCondition}`,
-          query_params: queryParams,
-        })
+      ["events", "session_replay_events", "session_replay_metadata_v2", "heatmap_events", "heatmap_snapshots"].map(
+        table =>
+          clickhouse.command({
+            query: `DELETE FROM ${table} WHERE ${userCondition}`,
+            query_params: queryParams,
+          })
       )
     );
 
