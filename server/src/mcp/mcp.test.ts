@@ -1,4 +1,6 @@
 import Fastify, { type FastifyInstance } from "fastify";
+import { Agent, request as httpRequest, type IncomingHttpHeaders } from "node:http";
+import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createMcpAuthenticator, extractBearerToken } from "./auth.js";
 import { mcpRoutes, type McpRouteOptions } from "./index.js";
@@ -33,6 +35,42 @@ const MCP_HEADERS = {
   accept: "application/json, text/event-stream",
   authorization: "Bearer rb_test_key",
 };
+
+const httpAgents = new WeakMap<FastifyInstance, Agent>();
+
+/** Exercise the MCP transport with real sockets; REST proxies still use inject internally. */
+async function requestMcp(
+  app: FastifyInstance,
+  options: { method: "GET" | "POST"; url: string; headers: Record<string, string>; payload?: unknown }
+): Promise<{ statusCode: number; headers: IncomingHttpHeaders; json: () => any }> {
+  const address = app.server.address();
+  if (!address || typeof address === "string") throw new Error("MCP fixture must listen on a loopback port");
+  const body = options.payload === undefined ? undefined : JSON.stringify(options.payload);
+  return new Promise((resolve, reject) => {
+    const request = httpRequest(
+      {
+        hostname: "127.0.0.1",
+        port: address.port,
+        path: options.url,
+        method: options.method,
+        agent: httpAgents.get(app),
+        headers: { ...options.headers, ...(body ? { "content-length": Buffer.byteLength(body) } : {}) },
+      },
+      response => {
+        const chunks: Buffer[] = [];
+        response.on("data", chunk => chunks.push(Buffer.from(chunk)));
+        response.once("error", reject);
+        response.once("end", () => {
+          const text = Buffer.concat(chunks).toString("utf8");
+          resolve({ statusCode: response.statusCode ?? 0, headers: response.headers, json: () => JSON.parse(text) });
+        });
+      }
+    );
+    request.setTimeout(2000, () => request.destroy(new Error("MCP fixture HTTP request timed out")));
+    request.once("error", reject);
+    request.end(body);
+  });
+}
 
 function rpc(method: string, params?: unknown, id = 1) {
   return { jsonrpc: "2.0", id, method, ...(params !== undefined ? { params } : {}) };
@@ -71,7 +109,7 @@ const authenticate = createMcpAuthenticator({
 });
 
 async function callTool(app: FastifyInstance, name: string, args: Record<string, unknown> = {}) {
-  const response = await app.inject({
+  const response = await requestMcp(app, {
     method: "POST",
     url: "/api/mcp",
     headers: MCP_HEADERS,
@@ -85,7 +123,7 @@ async function listTools(
   app: FastifyInstance,
   authorization = MCP_HEADERS.authorization
 ): Promise<{ name: string; annotations?: Record<string, unknown>; outputSchema?: unknown }[]> {
-  const response = await app.inject({
+  const response = await requestMcp(app, {
     method: "POST",
     url: "/api/mcp",
     headers: { ...MCP_HEADERS, authorization },
@@ -155,7 +193,16 @@ describe("mcp endpoint", () => {
           captured.query = request.query as Record<string, unknown>;
           // The API returns `sessions` plus the deprecated `visitors` alias.
           return {
-            data: [{ step_number: 1, step_name: "Step 1", sessions: 10, visitors: 10, conversion_rate: 100, dropoff_rate: 0 }],
+            data: [
+              {
+                step_number: 1,
+                step_name: "Step 1",
+                sessions: 10,
+                visitors: 10,
+                conversion_rate: 100,
+                dropoff_rate: 0,
+              },
+            ],
           };
         });
 
@@ -171,7 +218,16 @@ describe("mcp endpoint", () => {
           captured.url = request.url;
           captured.query = request.query as Record<string, unknown>;
           return {
-            data: [{ query: "acme\u202Eanalytics", page: "https://acme.com/pricing", clicks: 12, impressions: 300, ctr: 0.04, position: 3.2 }],
+            data: [
+              {
+                query: "acme\u202Eanalytics",
+                page: "https://acme.com/pricing",
+                clicks: 12,
+                impressions: 300,
+                ctr: 0.04,
+                position: 3.2,
+              },
+            ],
           };
         });
 
@@ -220,7 +276,8 @@ describe("mcp endpoint", () => {
       },
       { prefix: "/api" }
     );
-    await instance.ready();
+    await instance.listen({ host: "127.0.0.1", port: 0 });
+    httpAgents.set(instance, new Agent({ keepAlive: true, maxSockets: 1 }));
     return instance;
   }
 
@@ -230,11 +287,12 @@ describe("mcp endpoint", () => {
   });
 
   afterEach(async () => {
+    httpAgents.get(app)?.destroy();
     await app.close();
   });
 
   it("rejects requests without an Authorization header", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: { "content-type": "application/json", accept: MCP_HEADERS.accept },
@@ -248,7 +306,7 @@ describe("mcp endpoint", () => {
   });
 
   it("rejects invalid API keys before processing any MCP message", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: { ...MCP_HEADERS, authorization: "Bearer rb_wrong_key" },
@@ -261,7 +319,7 @@ describe("mcp endpoint", () => {
   });
 
   it("accepts OAuth access tokens as the bearer credential", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: { ...MCP_HEADERS, authorization: "Bearer oauth_valid_token" },
@@ -273,7 +331,7 @@ describe("mcp endpoint", () => {
   });
 
   it("rejects expired OAuth access tokens", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: { ...MCP_HEADERS, authorization: "Bearer oauth_expired_token" },
@@ -287,7 +345,7 @@ describe("mcp endpoint", () => {
     const previousBaseUrl = process.env.BASE_URL;
     process.env.BASE_URL = "https://rybbit.example.com";
     try {
-      const response = await app.inject({
+      const response = await requestMcp(app, {
         method: "POST",
         url: "/api/mcp",
         headers: { ...MCP_HEADERS, authorization: "Bearer rb_wrong_key" },
@@ -309,7 +367,7 @@ describe("mcp endpoint", () => {
   });
 
   it("maps rate-limited keys to 429 with Retry-After", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: { ...MCP_HEADERS, authorization: "Bearer rb_limited_key" },
@@ -321,12 +379,12 @@ describe("mcp endpoint", () => {
   });
 
   it("rejects GET requests (stateless server)", async () => {
-    const response = await app.inject({ method: "GET", url: "/api/mcp", headers: MCP_HEADERS });
+    const response = await requestMcp(app, { method: "GET", url: "/api/mcp", headers: MCP_HEADERS });
     expect(response.statusCode).toBe(405);
   });
 
   it("responds to initialize and keeps responses out of caches", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: MCP_HEADERS,
@@ -343,6 +401,10 @@ describe("mcp endpoint", () => {
     expect(result.serverInfo.name).toBe("rybbit");
     expect(result.instructions).toContain("list_sites");
     expect(result.instructions).toContain("run_query");
+    // Keep the real connection alive beyond Hono's 500ms drain deadline, then
+    // exercise another MCP request instead of letting delayed errors escape teardown.
+    await delay(650);
+    expect(await listTools(app)).toHaveLength(44);
   });
 
   it("lists all 44 tools with output schemas", async () => {
@@ -542,7 +604,16 @@ describe("mcp endpoint", () => {
     });
     // Search queries are typed by strangers: bidi overrides are stripped like other analytics labels.
     expect(result.structuredContent).toEqual({
-      data: [{ query: "acme analytics", page: "https://acme.com/pricing", clicks: 12, impressions: 300, ctr: 0.04, position: 3.2 }],
+      data: [
+        {
+          query: "acme analytics",
+          page: "https://acme.com/pricing",
+          clicks: 12,
+          impressions: 300,
+          ctr: 0.04,
+          position: 3.2,
+        },
+      ],
     });
   });
 
@@ -566,7 +637,10 @@ describe("mcp endpoint", () => {
   });
 
   it("get_sessions prunes rows to the requested fields", async () => {
-    const result = await callTool(app, "get_sessions", { site_id: 5, fields: ["user_id", "entry_page", "not_a_column"] });
+    const result = await callTool(app, "get_sessions", {
+      site_id: 5,
+      fields: ["user_id", "entry_page", "not_a_column"],
+    });
 
     expect(result.isError).toBeFalsy();
     const row = result.structuredContent.data[0];
@@ -705,7 +779,7 @@ describe("mcp endpoint", () => {
   });
 
   it("rejects invalid tool arguments before hitting the API", async () => {
-    const response = await app.inject({
+    const response = await requestMcp(app, {
       method: "POST",
       url: "/api/mcp",
       headers: MCP_HEADERS,

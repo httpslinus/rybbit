@@ -338,7 +338,10 @@ describe("the recipient", () => {
 
   it("is refused after the link expires", async () => {
     const { body } = await startTransfer();
-    await (pgClient as any).exec(`UPDATE site_transfers SET expires_at = now() - interval '1 minute'`);
+    // Transfer timestamps are stored as UTC strings, independent of the DB session timezone.
+    await (pgClient as any).exec(
+      `UPDATE site_transfers SET expires_at = (now() AT TIME ZONE 'UTC') - interval '1 minute'`
+    );
     const reply = replyStub();
 
     await acceptSiteTransfer(

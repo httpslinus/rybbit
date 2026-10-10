@@ -5,6 +5,8 @@ import { admin, emailOTP, organization } from "better-auth/plugins";
 import { Kysely, PostgresDialect, type PostgresPoolClient } from "kysely";
 import { createHash, createHmac } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createOAuthPlugins, getAuthBaseUrl } from "./oauth.js";
 import { teamMembershipKey } from "./teamMembership.js";
@@ -14,9 +16,24 @@ const resource = `${origin}/api/mcp`;
 const secret = "test-only-auth-173-secret-at-least-32-characters";
 const existingApiKey = "existing-api-key-at-least-32-characters";
 const migrationDirectory = new URL("../../drizzle/", import.meta.url);
+const { prepareValue } = createRequire(import.meta.url)("pg/lib/utils.js") as {
+  prepareValue(value: Date | string): string;
+};
 
 describe("Better Auth 1.7 migration and OAuth integration", () => {
-  const database = new PGlite();
+  // The pool shim bypasses pg's wire codecs. Use them for timestamps so Dates
+  // round-trip as they do in production, including when Node runs outside UTC.
+  const database = new PGlite({
+    postgresqlconf: "timezone = 'UTC'",
+    serializers: {
+      [pg.types.builtins.TIMESTAMP]: prepareValue,
+      [pg.types.builtins.TIMESTAMPTZ]: prepareValue,
+    },
+    parsers: {
+      [pg.types.builtins.TIMESTAMP]: pg.types.getTypeParser(pg.types.builtins.TIMESTAMP),
+      [pg.types.builtins.TIMESTAMPTZ]: pg.types.getTypeParser(pg.types.builtins.TIMESTAMPTZ),
+    },
+  });
   // Exercise the production Kysely PostgreSQL adapter using a disposable
   // PostgreSQL engine. No application DB, network or live credentials.
   const kysely = new Kysely({
@@ -110,6 +127,31 @@ describe("Better Auth 1.7 migration and OAuth integration", () => {
   afterAll(async () => {
     await kysely.destroy();
     await database.close();
+  });
+
+  it("round-trips pg timestamp parameters across winter and summer offsets", async () => {
+    const originalTimezone = process.env.TZ;
+    const dates = [new Date("2026-01-15T12:34:56.789Z"), new Date("2026-07-15T12:34:56.789Z")];
+    try {
+      for (const { timezone, offsets } of [
+        { timezone: "UTC", offsets: [0, 0] },
+        { timezone: "Europe/Tirane", offsets: [-60, -120] },
+        { timezone: "America/New_York", offsets: [300, 240] },
+      ]) {
+        process.env.TZ = timezone;
+        expect(dates.map(date => date.getTimezoneOffset())).toEqual(offsets);
+        for (const date of dates) {
+          const { rows } = await database.query<{ timestamp: Date; timestamptz: Date }>(
+            `SELECT $1::timestamp AS timestamp, $2::timestamptz AS timestamptz`,
+            [date, date]
+          );
+          expect(rows[0]).toEqual({ timestamp: date, timestamptz: date });
+        }
+      }
+    } finally {
+      if (originalTimezone === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTimezone;
+    }
   });
 
   it("keeps pre-migration session cookies and API keys usable", async () => {

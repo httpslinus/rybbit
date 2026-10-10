@@ -196,8 +196,9 @@ describe("CommandPalette", () => {
 
     expect(names).toContain("Sessions, rybbit.com");
     expect(names).toContain("Main, rybbit.com, Current");
-    // Cloud-only sections stay hidden on a self-hosted build, as in the sidebar.
-    expect(names).not.toContain("Pages, rybbit.com");
+    expect(names).toContain("Pages, rybbit.com");
+    expect(names).toContain("Bots, rybbit.com");
+    // Query remains unavailable on this self-hosted build.
     expect(names).not.toContain("Query, rybbit.com");
     // The open site is not offered as a site to switch to.
     expect(names).toContain("Docs, docs.rybbit.com, Switch site");
