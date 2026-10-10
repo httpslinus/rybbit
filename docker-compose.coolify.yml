@@ -4,9 +4,18 @@ services:
     build:
       context: .
       dockerfile: server/Dockerfile
-    env_file:
-      - ${RYBBIT_STATE_DIR:-/srv/rybbit}/credentials/backend.env
     environment:
+      NODE_ENV: ${NODE_ENV}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_QUERY_PASSWORD: ${CLICKHOUSE_QUERY_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       POSTGRES_HOST: postgres-ngf5qoiio1rvzlp5cyg99spg
       CLICKHOUSE_HOST: http://clickhouse-ngf5qoiio1rvzlp5cyg99spg:8123
       REDIS_HOST: redis-ngf5qoiio1rvzlp5cyg99spg
@@ -20,6 +29,8 @@ services:
       timeout: 5s
       retries: 12
       start_period: 120s
+    networks:
+      - storage
     mem_limit: 2g
     restart: unless-stopped
     logging: &logging
@@ -48,6 +59,8 @@ services:
       timeout: 5s
       retries: 6
       start_period: 30s
+    networks:
+      - storage
     mem_limit: 1g
     restart: unless-stopped
     logging: *logging
@@ -62,10 +75,12 @@ services:
         condition: service_healthy
       rybbit-dashboard:
         condition: service_healthy
+    networks:
+      - storage
     mem_limit: 128m
     restart: unless-stopped
     logging: *logging
 networks:
-  default:
+  storage:
     external: true
     name: ngf5qoiio1rvzlp5cyg99spg
