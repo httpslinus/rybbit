@@ -14,9 +14,6 @@ services:
       DISABLE_SIGNUP: "true"
       DISABLE_TELEMETRY: "true"
       CLUSTER_WORKERS: "2"
-    networks:
-      - default
-      - storage
     healthcheck:
       test: [CMD, wget, --no-verbose, --tries=1, --spider, http://127.0.0.1:3001/api/health]
       interval: 10s
@@ -69,6 +66,6 @@ services:
     restart: unless-stopped
     logging: *logging
 networks:
-  storage:
+  default:
     external: true
     name: ngf5qoiio1rvzlp5cyg99spg
