@@ -33,4 +33,4 @@
 
 ## Web Vitals
 
-This personal fork aims to enable Web Vitals for self-hosted deployments, a feature upstream reserves for Rybbit Cloud. The self-hosting changes are not implemented yet.
+This personal fork enables Web Vitals for self-hosted deployments, including the Performance dashboard and per-site tracking toggle. Enable Web Vitals in each site's tracking settings to collect LCP, CLS, INP, FCP, and TTFB from new visits.
