@@ -1,0 +1,74 @@
+# Application containers only. Persistent databases stay in their existing Coolify service.
+services:
+  rybbit-api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    env_file:
+      - ${RYBBIT_STATE_DIR:-/srv/rybbit}/credentials/backend.env
+    environment:
+      POSTGRES_HOST: postgres-ngf5qoiio1rvzlp5cyg99spg
+      CLICKHOUSE_HOST: http://clickhouse-ngf5qoiio1rvzlp5cyg99spg:8123
+      REDIS_HOST: redis-ngf5qoiio1rvzlp5cyg99spg
+      BASE_URL: ${BASE_URL:-https://data.linus.systems}
+      DISABLE_SIGNUP: "true"
+      DISABLE_TELEMETRY: "true"
+      CLUSTER_WORKERS: "2"
+    networks:
+      - default
+      - storage
+    healthcheck:
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://127.0.0.1:3001/api/health]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
+    mem_limit: 2g
+    restart: unless-stopped
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+  rybbit-dashboard:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL: ${BASE_URL:-https://data.linus.systems}
+        NEXT_PUBLIC_DISABLE_SIGNUP: "true"
+        NEXT_PUBLIC_CLOUD: "false"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_BACKEND_URL: ${BASE_URL:-https://data.linus.systems}
+      NEXT_PUBLIC_DISABLE_SIGNUP: "true"
+    depends_on:
+      rybbit-api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, --no-verbose, --tries=1, --spider, http://127.0.0.1:3002/login]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    mem_limit: 1g
+    restart: unless-stopped
+    logging: *logging
+  rybbit-proxy:
+    build:
+      context: .
+      dockerfile: ops/Dockerfile.proxy
+    ports:
+      - "127.0.0.1:${RYBBIT_PROXY_PORT:-18032}:80"
+    depends_on:
+      rybbit-api:
+        condition: service_healthy
+      rybbit-dashboard:
+        condition: service_healthy
+    mem_limit: 128m
+    restart: unless-stopped
+    logging: *logging
+networks:
+  storage:
+    external: true
+    name: ngf5qoiio1rvzlp5cyg99spg

@@ -20,7 +20,7 @@ const batchImportRequestSchema = z
     }),
     body: z.object({
       events: z.union([
-        z.array(UmamiImportMapper.umamiEventKeyOnlySchema),
+        z.array(UmamiImportMapper.migrationEventKeyOnlySchema),
         z.array(SimpleAnalyticsImportMapper.simpleAnalyticsEventKeyOnlySchema),
         z.array(PlausibleImportMapper.plausibleEventKeyOnlySchema),
       ]),

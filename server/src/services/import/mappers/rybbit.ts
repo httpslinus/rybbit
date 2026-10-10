@@ -1,6 +1,7 @@
 export interface RybbitEvent {
   site_id: number;
   timestamp: string;
+  timestamp_ms?: string;
   session_id: string;
   user_id: string;
   hostname: string;

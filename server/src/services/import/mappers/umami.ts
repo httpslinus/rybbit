@@ -5,7 +5,7 @@ import { RybbitEvent } from "./rybbit.js";
 import { z } from "zod";
 import { deriveKeyOnlySchema } from "./utils.js";
 
-export type UmamiEvent = z.input<typeof UmamiImportMapper.umamiEventKeyOnlySchema>;
+export type UmamiEvent = z.input<typeof UmamiImportMapper.migrationEventKeyOnlySchema>;
 
 export class UmamiImportMapper {
   private static readonly browserMap: Record<string, string> = {
@@ -115,6 +115,34 @@ export class UmamiImportMapper {
 
   static readonly umamiEventKeyOnlySchema = deriveKeyOnlySchema(UmamiImportMapper.umamiEventSchema);
 
+  private static readonly migrationFields = z.object({
+    visit_id: z.string().uuid().optional(),
+    source_created_at: z.string().datetime().optional(),
+    referrer_query: z.string().max(2048).optional(),
+    props_json: z
+      .string()
+      .optional()
+      .transform((value, context) => {
+        try {
+          const properties = JSON.parse(value ?? "{}");
+          if (properties === null || typeof properties !== "object" || Array.isArray(properties)) {
+            throw new Error("Expected a properties object");
+          }
+          return properties as Record<string, unknown>;
+        } catch {
+          context.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid event properties JSON" });
+          return z.NEVER;
+        }
+      }),
+  });
+
+  static readonly migrationEventKeyOnlySchema = UmamiImportMapper.umamiEventKeyOnlySchema.extend({
+    visit_id: z.string().optional(),
+    source_created_at: z.string().optional(),
+    referrer_query: z.string().optional(),
+    props_json: z.string().optional(),
+  });
+
   // Match case-insensitively like osMap does — raw umami exports vary in casing.
   private static deriveOsVersion(rawOs: string): string {
     const key = rawOs.toLowerCase();
@@ -123,14 +151,14 @@ export class UmamiImportMapper {
 
   static transform(events: UmamiEvent[], site: number, importId: string): RybbitEvent[] {
     return events.reduce<RybbitEvent[]>((acc, event) => {
-      const parsed = UmamiImportMapper.umamiEventSchema.safeParse(event);
+      const parsed = UmamiImportMapper.umamiEventSchema.merge(UmamiImportMapper.migrationFields).safeParse(event);
       if (!parsed.success) {
         return acc;
       }
 
       const data = parsed.data;
       const referrer = clearSelfReferrer(
-        data.referrer_domain + data.referrer_path,
+        data.referrer_domain + data.referrer_path + (data.referrer_query ? `?${data.referrer_query}` : ""),
         data.hostname.replace(/^www\./, "")
       );
       const [screenWidth, screenHeight] = data.screen ? data.screen.split("x") : ["0", "0"];
@@ -138,8 +166,11 @@ export class UmamiImportMapper {
       acc.push({
         site_id: site,
         timestamp: toClickHouseDateTime(data.created_at),
-        session_id: data.session_id,
-        user_id: data.distinct_id,
+        timestamp_ms: data.source_created_at
+          ? new Date(data.source_created_at).toISOString().replace("T", " ").slice(0, 23)
+          : `${data.created_at}.000`,
+        session_id: data.visit_id ?? data.session_id,
+        user_id: data.distinct_id || data.session_id,
         hostname: data.hostname,
         pathname: data.url_path,
         querystring: data.url_query,
@@ -162,7 +193,7 @@ export class UmamiImportMapper {
         device_type: data.device,
         type: data.event_type === "1" ? "pageview" : "custom_event",
         event_name: data.event_type === "1" ? "" : data.event_name,
-        props: {},
+        props: data.props_json,
         import_id: importId,
       });
 
