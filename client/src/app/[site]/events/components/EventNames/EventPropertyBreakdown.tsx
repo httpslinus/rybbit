@@ -35,7 +35,7 @@ function PropertyColumn({
         </span>
         <span className="shrink-0 text-neutral-500 dark:text-neutral-400">
           {showCoverage
-            ? t("{count, plural, one {# value} other {# values}} · on {share} of events", {
+            ? t("{count, plural, one {# value} other {# values}} on {share} of events", {
                 count: group.values.length,
                 share: formatShare(coverage),
               })

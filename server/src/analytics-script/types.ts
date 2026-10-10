@@ -12,6 +12,9 @@ export interface ScriptConfig {
   enableWebVitals: boolean;
   trackErrors: boolean;
   enableSessionReplay: boolean;
+  enableHeatmaps?: boolean;
+  heatmapSampleRate?: number;
+  debug?: boolean;
   sessionReplayBatchSize: number;
   sessionReplayBatchInterval: number;
   sessionReplayMaskTextSelectors: string[];

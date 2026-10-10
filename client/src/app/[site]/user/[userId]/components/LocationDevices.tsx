@@ -194,7 +194,7 @@ export function LocationDevices({
                   <OperatingSystem os={device.operating_system} size={13} />
                 </span>
               }
-              label={[device.browser, device.operating_system].filter(Boolean).join(" · ") || device.device_type}
+              label={[device.browser, device.operating_system].filter(Boolean).join(", ") || device.device_type}
               share={share}
               barWidth={barWidth}
               title={[
@@ -206,7 +206,7 @@ export function LocationDevices({
                 t("{count} sessions", { count: String(device.sessions) }),
               ]
                 .filter(Boolean)
-                .join(" · ")}
+                .join("; ")}
             />
           )}
         />

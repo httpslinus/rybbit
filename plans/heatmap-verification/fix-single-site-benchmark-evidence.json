@@ -1,0 +1,80 @@
+{
+  "benchmark": "one-million-single-site",
+  "sites": 1,
+  "pages": 1000,
+  "batches": 10000,
+  "interactionsPerBatch": 100,
+  "selectedInteractions": 1000,
+  "maxThreads": 2,
+  "results": {
+    "candidateBatches": [
+      {
+        "elapsedMs": 62.55774999999994,
+        "rowsRead": 2000000,
+        "bytesRead": 16000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 78.40762499999983,
+        "rowsRead": 2000000,
+        "bytesRead": 16000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 196.6111669999991,
+        "rowsRead": 2000000,
+        "bytesRead": 16000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 67.48725000000195,
+        "rowsRead": 2000000,
+        "bytesRead": 16000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 58.78045900000143,
+        "rowsRead": 2000000,
+        "bytesRead": 16000000,
+        "count": 1000
+      }
+    ],
+    "siteWide": [
+      {
+        "elapsedMs": 4924.930794,
+        "rowsRead": 1000000,
+        "bytesRead": 8000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 6049.662045000001,
+        "rowsRead": 1000000,
+        "bytesRead": 8000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 5568.550044000003,
+        "rowsRead": 1000000,
+        "bytesRead": 8000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 4225.695502000002,
+        "rowsRead": 1000000,
+        "bytesRead": 8000000,
+        "count": 1000
+      },
+      {
+        "elapsedMs": 5134.399210999996,
+        "rowsRead": 1000000,
+        "bytesRead": 8000000,
+        "count": 1000
+      }
+    ]
+  },
+  "limitations": "Generated SELECT fixture measures aggregation CPU and input rows; it does not measure MergeTree primary-index pruning, disk IO, metadata joins, or production concurrency.",
+  "mediansMs": {
+    "candidateBatches": 67.48725000000195,
+    "siteWide": 5134.399210999996
+  }
+}

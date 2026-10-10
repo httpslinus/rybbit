@@ -212,7 +212,7 @@ describe("NoData", () => {
 
     await firstPageviewLands();
 
-    expect(await screen.findByText("from Germany · Firefox")).toBeTruthy();
+    expect(await screen.findByText("from Germany using Firefox")).toBeTruthy();
   });
 
   it("moves focus into the confirmation when it was inside the waiting card", async () => {

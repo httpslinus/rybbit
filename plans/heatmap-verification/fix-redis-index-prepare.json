@@ -1,0 +1,51 @@
+{
+  "mode": "prepare",
+  "startedAt": "2026-10-10T21:12:55.359Z",
+  "checks": [
+    {
+      "name": "Production erasure traverses real Redis cursor pages, prunes expired entries and preserves other identities/sites",
+      "passed": true,
+      "observed": {
+        "activeBefore": 1800,
+        "expiredPruned": 20,
+        "matchedErased": 1500,
+        "bobRetained": 300,
+        "foreignRetained": 100,
+        "completedNotIndexed": 200,
+        "pages": [
+          {
+            "inputCursor": "0",
+            "outputCursor": "706",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "706",
+            "outputCursor": "1393",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "1393",
+            "outputCursor": "171",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "171",
+            "outputCursor": "0",
+            "indexedMembers": 300
+          }
+        ],
+        "returnedMembers": 1800
+      }
+    },
+    {
+      "name": "Prepared a separate multi-page context population for the HTTP erasure endpoint",
+      "passed": true,
+      "observed": {
+        "activeContexts": 1800
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:12:56.264Z"
+}

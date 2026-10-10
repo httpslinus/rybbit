@@ -206,6 +206,9 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
     enableWebVitals: false,
     trackErrors: false,
     enableSessionReplay: false,
+    enableHeatmaps: false,
+    heatmapSampleRate: 15,
+    debug: scriptTag.getAttribute("data-debug") === "true",
     trackButtonClicks: false,
     trackCopy: false,
     trackFormInteractions: false,
@@ -252,6 +255,14 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
         enableWebVitals: apiConfig.webVitals ?? defaultConfig.enableWebVitals,
         trackErrors: apiConfig.trackErrors ?? defaultConfig.trackErrors,
         enableSessionReplay: apiConfig.sessionReplay ?? defaultConfig.enableSessionReplay,
+        enableHeatmaps: apiConfig.heatmaps === true,
+        heatmapSampleRate:
+          typeof apiConfig.heatmapSampleRate === "number" &&
+          Number.isFinite(apiConfig.heatmapSampleRate) &&
+          apiConfig.heatmapSampleRate >= 0 &&
+          apiConfig.heatmapSampleRate <= 100
+            ? apiConfig.heatmapSampleRate
+            : defaultConfig.heatmapSampleRate,
         trackButtonClicks: apiConfig.trackButtonClicks ?? defaultConfig.trackButtonClicks,
         trackCopy: apiConfig.trackCopy ?? defaultConfig.trackCopy,
         trackFormInteractions: apiConfig.trackFormInteractions ?? defaultConfig.trackFormInteractions,

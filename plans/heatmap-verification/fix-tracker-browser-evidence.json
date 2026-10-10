@@ -1,0 +1,40 @@
+{
+  "startedAt": "2026-10-10T21:07:39.485Z",
+  "checks": [
+    {
+      "name": "Delayed SPA rendering never inherits old 100% reach",
+      "depths": [
+        12.5
+      ]
+    },
+    {
+      "name": "Canceled beforeunload leaves collection active"
+    },
+    {
+      "name": "Repeated persisted pageshow resumes without duplicate click listeners"
+    },
+    {
+      "name": "Loading skeleton followed by page growth carries geometry for corrected visit reach",
+      "uploaded": [
+        {
+          "height": 500,
+          "depth": 100
+        },
+        {
+          "height": 4000,
+          "depth": 12.5
+        }
+      ],
+      "correctedVisitDepth": 12.5
+    },
+    {
+      "name": "Actual navigation dispatches final click while normal upload is unresolved",
+      "clicks": 2,
+      "requestsIssued": 3,
+      "acknowledgedFirstRequest": false
+    }
+  ],
+  "runtimeErrors": [],
+  "passed": true,
+  "completedAt": "2026-10-10T21:08:06.844Z"
+}

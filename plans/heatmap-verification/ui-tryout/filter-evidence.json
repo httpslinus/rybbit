@@ -1,0 +1,1261 @@
+{
+  "startedAt": "2026-10-10T18:15:33.598Z",
+  "siteId": 26,
+  "source": "Actual local dashboard, normal authenticated APIs, fixture background only; no report mocks or CSS overrides",
+  "checks": [
+    {
+      "name": "Default toolbar contains mode only; Sample details has an explicit label",
+      "passed": true
+    },
+    {
+      "name": "Existing Filter popover contains ordinary choices, event type, bounce and a Cohorts tab",
+      "passed": true
+    },
+    {
+      "name": "Event type applies through the normal API and remains visible as a removable chip",
+      "passed": true
+    },
+    {
+      "name": "Bounce/event chips reset only their own selectors and preserve page/width",
+      "passed": true
+    },
+    {
+      "name": "Cohort creation closes Filter, keeps dialog focused and applies retained real historical membership",
+      "passed": true,
+      "cohortId": 16
+    },
+    {
+      "name": "Cohort chip edits through existing dialog, persists after refresh and removes only membership",
+      "passed": true
+    },
+    {
+      "name": "375px header, Sample details, Filter and Cohorts stay within the viewport",
+      "passed": true,
+      "sampleBounds": {
+        "left": 87.53515625,
+        "right": 230.703125,
+        "top": 193,
+        "bottom": 286.1000061035156
+      },
+      "filterBounds": {
+        "left": 83.63096618652344,
+        "right": 230.703125,
+        "top": 193,
+        "bottom": 288.63885498046875
+      },
+      "overflow": 0
+    },
+    {
+      "name": "320px header, Sample details, Filter and Cohorts stay within the viewport",
+      "passed": true,
+      "sampleBounds": {
+        "left": 32.53515625,
+        "right": 175.703125,
+        "top": 225,
+        "bottom": 318.1000061035156
+      },
+      "filterBounds": {
+        "left": 28.637147903442383,
+        "right": 175.70312690734863,
+        "top": 225,
+        "bottom": 320.63482666015625
+      },
+      "overflow": 0
+    },
+    {
+      "name": "Main retains its existing two-tab Filter behavior",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-default.png",
+      "viewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-options.png",
+      "viewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-active.png",
+      "viewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohorts.png",
+      "viewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohort-details.png",
+      "viewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-default.png",
+      "viewport": {
+        "width": 375,
+        "height": 900,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-options.png",
+      "viewport": {
+        "width": 375,
+        "height": 900,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-default.png",
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "deviceScaleFactor": 2
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-options.png",
+      "viewport": {
+        "width": 320,
+        "height": 900,
+        "deviceScaleFactor": 2
+      }
+    }
+  ],
+  "apiResponses": [
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all",
+        "analytics_event_type": "pageview"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all",
+        "analytics_event_type": "pageview",
+        "exclude_bounce": "true"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "POST",
+      "status": 201,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all",
+        "cohort_id": "16"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all",
+        "cohort_id": "16"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {},
+      "path": "/api/sites/26/cohorts"
+    },
+    {
+      "method": "GET",
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      },
+      "path": "/api/sites/26/heatmaps"
+    }
+  ],
+  "runtimeErrors": [
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+  ],
+  "runtimeErrorDetails": [
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&filters=[{%22parameter%22:%22hostname%22,%22type%22:%22equals%22,%22value%22:[%22tryout-8a7eef3c.heatmap.test%22]}]&bucket=day&stat=users"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&filters=[{%22parameter%22:%22hostname%22,%22type%22:%22equals%22,%22value%22:[%22tryout-8a7eef3c.heatmap.test%22]}]&bucket=day&stat=users&heatmap_cohort=16"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/main?timeMode=day&wellKnown=today&bucket=hour&stat=users"
+    }
+  ],
+  "history": [
+    {
+      "startedAt": "2026-10-10T17:42:44.052Z",
+      "siteId": 26,
+      "source": "Actual local dashboard, normal authenticated APIs, fixture background only; no report mocks or CSS overrides",
+      "checks": [
+        {
+          "name": "Default toolbar contains mode only; Sample details has an explicit label",
+          "passed": true
+        },
+        {
+          "name": "Existing Filter popover contains ordinary choices, event type, bounce and a Cohorts tab",
+          "passed": true
+        },
+        {
+          "name": "Event type applies through the normal API and remains visible as a removable chip",
+          "passed": true
+        },
+        {
+          "name": "Bounce/event chips reset only their own selectors and preserve page/width",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-default.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-options.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-active.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohorts.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview",
+            "exclude_bounce": "true"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "status": "failed",
+      "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ CdpElementHandle {\n+   Symbol(_isElementHandle): true,\n+   handle: CdpJSHandle {},\n+   isolatedHandle: undefined\n+ }\n- null\n\n    at file:///Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/filter-check.mjs:240:10",
+      "completedAt": "2026-10-10T17:42:55.997Z"
+    },
+    {
+      "startedAt": "2026-10-10T17:43:46.403Z",
+      "siteId": 26,
+      "source": "Actual local dashboard, normal authenticated APIs, fixture background only; no report mocks or CSS overrides",
+      "checks": [
+        {
+          "name": "Default toolbar contains mode only; Sample details has an explicit label",
+          "passed": true
+        },
+        {
+          "name": "Existing Filter popover contains ordinary choices, event type, bounce and a Cohorts tab",
+          "passed": true
+        },
+        {
+          "name": "Event type applies through the normal API and remains visible as a removable chip",
+          "passed": true
+        },
+        {
+          "name": "Bounce/event chips reset only their own selectors and preserve page/width",
+          "passed": true
+        },
+        {
+          "name": "Cohort creation closes Filter, keeps dialog focused and applies retained real historical membership",
+          "passed": true,
+          "cohortId": 14
+        },
+        {
+          "name": "Cohort chip edits through existing dialog, persists after refresh and removes only membership",
+          "passed": true
+        },
+        {
+          "name": "375px header, Sample details, Filter and Cohorts stay within the viewport",
+          "passed": true,
+          "sampleBounds": {
+            "left": 87.53515625,
+            "right": 230.703125,
+            "top": 193,
+            "bottom": 286.1000061035156
+          },
+          "filterBounds": {
+            "left": 84.33715057373047,
+            "right": 230.70311737060547,
+            "top": 193,
+            "bottom": 288.17962646484375
+          },
+          "overflow": 0
+        },
+        {
+          "name": "320px header, Sample details, Filter and Cohorts stay within the viewport",
+          "passed": true,
+          "sampleBounds": {
+            "left": 32.53515625,
+            "right": 175.703125,
+            "top": 225,
+            "bottom": 318.1000061035156
+          },
+          "filterBounds": {
+            "left": 28.52017593383789,
+            "right": 175.70312881469727,
+            "top": 225,
+            "bottom": 320.71087646484375
+          },
+          "overflow": 0
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-default.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-options.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-active.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohorts.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohort-details.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-default.png",
+          "viewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-options.png",
+          "viewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-default.png",
+          "viewport": {
+            "width": 320,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-options.png",
+          "viewport": {
+            "width": 320,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview",
+            "exclude_bounce": "true"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "POST",
+          "status": 201,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "cohort_id": "14"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "cohort_id": "14"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "retainedLocalCohort": {
+        "cohortId": 14,
+        "name": "Filter UI QA mv2oo95t"
+      },
+      "status": "failed",
+      "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'Referrers',\n+   'Channels',\n+   'Pages',\n+   'Titles',\n+   'Entries',\n+   'Exits',\n+   'Hostnames',\n+   'Browsers',\n+   'Devices',\n+   'Operating Systems',\n+   'Screen Dimensions',\n+   'Countries',\n+   'Regions',\n+   'Cities',\n+   'Languages',\n+   'Map',\n+   'Timezones',\n    'Filters',\n    'Segments'\n  ]\n\n    at file:///Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/filter-check.mjs:317:10",
+      "completedAt": "2026-10-10T17:44:08.405Z"
+    },
+    {
+      "startedAt": "2026-10-10T17:59:48.662Z",
+      "siteId": 26,
+      "source": "Actual local dashboard, normal authenticated APIs, fixture background only; no report mocks or CSS overrides",
+      "checks": [
+        {
+          "name": "Default toolbar contains mode only; Sample details has an explicit label",
+          "passed": true
+        },
+        {
+          "name": "Existing Filter popover contains ordinary choices, event type, bounce and a Cohorts tab",
+          "passed": true
+        },
+        {
+          "name": "Event type applies through the normal API and remains visible as a removable chip",
+          "passed": true
+        },
+        {
+          "name": "Bounce/event chips reset only their own selectors and preserve page/width",
+          "passed": true
+        },
+        {
+          "name": "Cohort creation closes Filter, keeps dialog focused and applies retained real historical membership",
+          "passed": true,
+          "cohortId": 15
+        },
+        {
+          "name": "Cohort chip edits through existing dialog, persists after refresh and removes only membership",
+          "passed": true
+        },
+        {
+          "name": "375px header, Sample details, Filter and Cohorts stay within the viewport",
+          "passed": true,
+          "sampleBounds": {
+            "left": 87.53515625,
+            "right": 230.703125,
+            "top": 193,
+            "bottom": 286.1000061035156
+          },
+          "filterBounds": {
+            "left": 85.58384704589844,
+            "right": 230.703125,
+            "top": 193,
+            "bottom": 287.368896484375
+          },
+          "overflow": 0
+        },
+        {
+          "name": "320px header, Sample details, Filter and Cohorts stay within the viewport",
+          "passed": true,
+          "sampleBounds": {
+            "left": 32.53515625,
+            "right": 175.703125,
+            "top": 225,
+            "bottom": 318.1000061035156
+          },
+          "filterBounds": {
+            "left": 29.347625732421875,
+            "right": 175.703125,
+            "top": 225,
+            "bottom": 320.17279052734375
+          },
+          "overflow": 0
+        },
+        {
+          "name": "Main retains its existing two-tab Filter behavior",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-default.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-options.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-active.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohorts.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-desktop-cohort-details.png",
+          "viewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-default.png",
+          "viewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-375-options.png",
+          "viewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-default.png",
+          "viewport": {
+            "width": 320,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/filter-mobile-320-options.png",
+          "viewport": {
+            "width": 320,
+            "height": 900,
+            "deviceScaleFactor": 2
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "analytics_event_type": "pageview",
+            "exclude_bounce": "true"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "POST",
+          "status": 201,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "cohort_id": "15"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all",
+            "cohort_id": "15"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "filters": "[{\"parameter\":\"hostname\",\"type\":\"equals\",\"value\":[\"tryout-8a7eef3c.heatmap.test\"]}]",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {},
+          "path": "/api/sites/26/cohorts"
+        },
+        {
+          "method": "GET",
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "UTC",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          },
+          "path": "/api/sites/26/heatmaps"
+        }
+      ],
+      "runtimeErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "retainedLocalCohort": {
+        "cohortId": 15,
+        "name": "Filter UI QA mv2p905d"
+      },
+      "newRuntimeErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+      ],
+      "status": "failed",
+      "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n2 !== 0\n\n    at file:///Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/filter-check.mjs:330:10",
+      "completedAt": "2026-10-10T18:00:17.993Z"
+    }
+  ],
+  "retainedLocalCohort": {
+    "cohortId": 16,
+    "name": "Filter UI QA mv2pt6j7"
+  },
+  "newRuntimeErrors": [],
+  "status": "passed",
+  "completedAt": "2026-10-10T18:15:58.068Z"
+}

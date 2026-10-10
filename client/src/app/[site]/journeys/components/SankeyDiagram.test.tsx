@@ -51,9 +51,9 @@ describe("SankeyDiagram", () => {
     render(<SankeyDiagram journeys={JOURNEYS} steps={4} maxJourneys={50} domain="example.com" />);
 
     expect(screen.getByText("550 sessions")).toBeTruthy();
-    expect(screen.getByText("500 · 70% end here")).toBeTruthy();
+    expect(screen.getByText("500 (70% end here)")).toBeTruthy();
     // /demo at step 2 and /pricing at step 3: everyone on the shown paths went on.
-    expect(screen.getAllByText("100 · all continue")).toHaveLength(2);
+    expect(screen.getAllByText("100 (all continue)")).toHaveLength(2);
     // The last step may have been cut short: a count, no exit share.
     expect(screen.getByText("100")).toBeTruthy();
   });
@@ -76,7 +76,7 @@ describe("SankeyDiagram", () => {
     render(<SankeyDiagram journeys={JOURNEYS} steps={4} maxJourneys={50} domain="example.com" />);
 
     fireEvent.mouseEnter(label("/pricing").closest("g")!);
-    expect(tooltip()).toContain("500 sessions · 50.0% of sessions with 2+ pages");
+    expect(tooltip()).toContain("500 sessions (50.0% of sessions with 2+ pages)");
     expect(tooltip()).toContain("350 ended the session here (70%)");
   });
 
@@ -85,7 +85,7 @@ describe("SankeyDiagram", () => {
 
     // "/" → "/pricing" is the first band: 450 of the 550 sessions on "/".
     fireEvent.mouseEnter(container.querySelector('path[stroke="transparent"]')!);
-    expect(tooltip()).toContain("450 sessions · 81.8% of those on / at step 1");
+    expect(tooltip()).toContain("450 sessions (81.8% of those on / at step 1)");
   });
 
   it("fades everything off the hovered path", () => {

@@ -26,7 +26,7 @@ function MobileSidebarContent() {
     <div className="md:hidden flex items-center gap-2">
       <Sheet>
         <SheetTrigger asChild>
-          <Button size="icon" variant="outline">
+          <Button size="icon" variant="outline" aria-label={t("Open navigation")}>
             <Menu />
           </Button>
         </SheetTrigger>

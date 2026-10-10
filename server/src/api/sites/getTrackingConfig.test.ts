@@ -27,6 +27,8 @@ describe("getTrackingConfig", () => {
       siteId: 123,
       type: "web",
       sessionReplay: false,
+      heatmaps: false,
+      heatmapSampleRate: 15,
       webVitals: false,
       trackErrors: false,
       trackOutbound: true,
@@ -63,5 +65,45 @@ describe("getTrackingConfig", () => {
     await getTrackingConfig(request, reply);
 
     expect(reply.send).toHaveBeenCalledWith(expect.objectContaining({ trackUrlFragments: enabled }));
+  });
+
+  it("keeps heatmap collection enabled when replay is disabled by its entitlement", async () => {
+    mocks.getConfig.mockResolvedValue({
+      ...(await mocks.getConfig()),
+      sessionReplay: true,
+      heatmaps: true,
+      heatmapSampleRate: 15,
+    });
+    mocks.isSiteWithoutReplay.mockReturnValue(true);
+    const request = { params: { siteId: "123" }, log: { error: vi.fn() } } as any;
+    const reply = { send: vi.fn(), status: vi.fn().mockReturnThis() } as any;
+
+    await getTrackingConfig(request, reply);
+
+    expect(reply.send).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionReplay: false, heatmaps: true, heatmapSampleRate: 15 })
+    );
+  });
+
+  it.each([0, 15, 100])("passes through the independent heatmap sample rate %s", async rate => {
+    mocks.getConfig.mockResolvedValue({ ...(await mocks.getConfig()), heatmaps: true, heatmapSampleRate: rate });
+    const request = { params: { siteId: "123" }, log: { error: vi.fn() } } as any;
+    const reply = { send: vi.fn(), status: vi.fn().mockReturnThis() } as any;
+
+    await getTrackingConfig(request, reply);
+
+    expect(reply.send).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionReplay: false, heatmaps: true, heatmapSampleRate: rate })
+    );
+  });
+
+  it("disables heatmaps for mobile sites even if the persisted setting is enabled", async () => {
+    mocks.getConfig.mockResolvedValue({ ...(await mocks.getConfig()), type: "mobile", heatmaps: true });
+    const request = { params: { siteId: "123" }, log: { error: vi.fn() } } as any;
+    const reply = { send: vi.fn(), status: vi.fn().mockReturnThis() } as any;
+
+    await getTrackingConfig(request, reply);
+
+    expect(reply.send).toHaveBeenCalledWith(expect.objectContaining({ heatmaps: false, heatmapSampleRate: 15 }));
   });
 });

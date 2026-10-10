@@ -1,0 +1,123 @@
+---
+title: Get Heatmaps
+description: Return sampled click points or scroll reach for a bounded analytics window
+full: true
+method: GET
+---
+
+```text
+GET /api/sites/:siteId/heatmaps
+```
+
+Requires authenticated site access with `heatmaps:read`. Bearer API keys must include that scope. Public dashboards and private share links cannot read heatmaps. Collection can be disabled while retained samples remain readable. Mobile sites are unsupported.
+
+## Query parameters
+
+Supply one bounded time window using the [ordinary analytics time parameters](/docs/api/getting-started):
+
+- `start_date` and `end_date` as `YYYY-MM-DD`, with an IANA `time_zone`; both calendar dates are included.
+- `start_datetime` and `end_datetime` as UTC `YYYY-MM-DD HH:mm:ss`, with `time_zone`; the end is exclusive.
+- `past_minutes_start` and `past_minutes_end` as finite, nonnegative numbers, with start greater than end.
+
+All-time requests return **400**. Heatmap events have a 30-day TTL; queries only return retained data.
+
+| Parameter              | Type                         | Default                         | Meaning                                                                               |
+| ---------------------- | ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------- |
+| `mode`                 | `click` or `scroll`          | `click`                         | Heatmap interaction type                                                              |
+| `hostname`, `pathname` | strings                      | Most represented page           | Select a page; supply both together. Maximum 253 and 2,048 characters respectively    |
+| `bucket`               | number                       | Most represented observed width | One of `320`, `375`, `425`, `768`, `1024`, `1440`, `1920`                             |
+| `search`               | string                       | —                               | Case-insensitive hostname/path search for the page list, up to 200 characters         |
+| `page_limit`           | integer, 1–100               | `100`                           | Maximum returned pages                                                                |
+| `point_limit`          | integer, 1–5,000             | `5000`                          | Maximum returned weighted click points                                                |
+| `filters`              | JSON array of filters        | `[]`                            | Ordinary analytics filter format                                                      |
+| `match`                | `all` or `any`               | `all`                           | How ad hoc filters combine                                                            |
+| `segment_id`           | integer                      | —                               | Required saved-segment filter group; bearer keys also need `segments:read`            |
+| `analytics_event_type` | `pageview` or `custom_event` | —                               | Require a session containing this ordinary analytics event type in the report window  |
+| `exclude_bounce`       | string `true` or `false`     | `false`                         | Require more than one ordinary pageview in the report window                          |
+| `cohort_id`            | positive integer             | —                               | Require membership in a saved historical cohort; bearer keys also need `cohorts:read` |
+
+### Filter behavior
+
+Filters use `{ "parameter": "country", "type": "equals", "value": ["DE"] }`. Values within one filter use the ordinary analytics matching rules. Supported operators are `equals`, `not_equals`, `contains`, `not_contains`, `starts_with`, `ends_with`, `regex`, `not_regex`, `is_null`, `is_not_null`, `greater_than`, `less_than`, `greater_than_or_equal` and `less_than_or_equal`.
+
+| Parameters                                                                                                              | Scope                                                           |
+| ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `hostname`, `pathname`, `user_id`                                                                                       | Captured heatmap rows                                           |
+| `event_name`, `page_title`, `querystring`, `tag`                                                                        | Eligible ordinary analytics sessions in the report window       |
+| `browser`, `browser_version`, `operating_system`, `operating_system_version`, `device_type`, `dimensions`, `language`   | Ordinary session metadata in the report window                  |
+| `country`, `region`, `city`, `lat`, `lon`, `timezone`                                                                   | Ordinary session location metadata in the report window         |
+| `referrer`, `channel`, `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `entry_page`, `exit_page` | Shared session and acquisition attribution in the report window |
+| `feature_flag:<key>`                                                                                                    | Shared session feature-flag filtering in the report window      |
+
+`match=any` applies only to ad hoc filters. The saved segment is an additional required group, with all its filters required. The cohort, site/time bounds, selected page and bucket also remain required.
+
+Heatmap-only sessions can appear without ordinary analytics. Event and metadata predicates, including negative predicates, require eligible ordinary analytics sessions in the bounded window. Under `match=any`, a row predicate may still match such a session.
+
+The analytics event type and bounce restriction are session eligibility conditions, separate from `mode`. Cohorts are evaluated from retained historical analytics using their own saved window and effective visitor identity, including the same identified visitor across devices. Empty historical membership yields an empty report. See [Cohorts](/docs/api/cohorts/list).
+
+## Example
+
+```bash title="Request"
+curl --get "https://analytics.example.com/api/sites/1/heatmaps" \
+  -H "Authorization: Bearer your_api_key_here" \
+  --data-urlencode "start_date=2026-10-01" \
+  --data-urlencode "end_date=2026-10-10" \
+  --data-urlencode "time_zone=Europe/Tirane" \
+  --data-urlencode "mode=click" \
+  --data-urlencode "hostname=example.com" \
+  --data-urlencode "pathname=/pricing" \
+  --data-urlencode "bucket=1440" \
+  --data-urlencode 'filters=[{"parameter":"country","type":"equals","value":["DE"]}]' \
+  --data-urlencode "match=all" \
+  --data-urlencode "exclude_bounce=true"
+```
+
+```json title="Response"
+{
+  "data": {
+    "mode": "click",
+    "pages": [{ "hostname": "example.com", "pathname": "/pricing", "count": 42, "sessions": 12 }],
+    "buckets": [{ "width": 1440, "count": 42, "sessions": 12 }],
+    "selectedBucket": 1440,
+    "selectedPage": { "hostname": "example.com", "pathname": "/pricing" },
+    "points": [
+      {
+        "x": 260,
+        "y": 420,
+        "viewportWidth": 1440,
+        "viewportHeight": 900,
+        "documentWidth": 1440,
+        "documentHeight": 2400,
+        "count": 42
+      }
+    ],
+    "scroll": { "histogram": [], "totalSessions": 0 },
+    "geometry": { "viewportWidth": 1440, "viewportHeight": 900, "documentWidth": 1440, "documentHeight": 2400 },
+    "background": { "url": "https://example.com/pricing", "width": 1440, "height": 2400 },
+    "count": 42,
+    "sessions": 12,
+    "truncated": { "pages": false, "points": false },
+    "limits": { "pages": 100, "points": 5000 }
+  }
+}
+```
+
+## Response definitions
+
+`pages` is ranked by sampled sessions, then count, and remains independent of the selected page and bucket. `buckets` contains observed widths for the selected page, ranked by sampled sessions, then count. `count` and `sessions` summarize the selected page/bucket before point truncation; displayed arrays must not be used to reconstruct totals.
+
+In click mode, `count` counts logical clicks and `points` contains weighted document coordinates. Coordinates and dimensions are already normalized to the selected width bucket; apply only the viewer fit scale. `geometry` contains the maximum normalized dimensions across the selected data, including points omitted by the display limit.
+
+In scroll mode, `points` is empty. `scroll.histogram` contains depths at 0, 10, …, 100. Each entry's `count` is the number of sampled sessions whose maximum depth falls in that 10% bin; the 100 bin contains sessions reaching exactly 100%. Its `reach` is the cumulative number of sessions reaching at least that depth. Display reach as `reach / scroll.totalSessions × 100`. Thresholds are inclusive. Each session/hostname/path/bucket contributes its maximum visible depth; the initial viewport contributes, and a short page starts at 100%. `count` in scroll mode counts those session/page/bucket observations, while `sessions` counts distinct sessions.
+
+`truncated.pages` and `truncated.points` indicate omitted display rows; `limits` records the applied bounds. When a cohort is selected, `cohort` includes `cohortId`, `name`, `members`, `startDate`, `endDate` and `timeZone`. Membership counts matching effective visitors in retained historical analytics.
+
+`background` is a validated live URL and geometry, or `null` for an unsupported or masked path. The API does not fetch it or capture a screenshot. Embed it without a referrer, using a sandbox that allows scripts but not same-origin privileges. Current layouts, authentication and embedding policies can prevent alignment; geometry-only rendering remains available.
+
+## Errors
+
+| Status        | Meaning                                               |
+| ------------- | ----------------------------------------------------- |
+| `400`         | Invalid query, unbounded time range or mobile site    |
+| `401` / `403` | Missing authentication, site access or required scope |
+| `404`         | Site, segment or cohort unavailable to the caller     |

@@ -8,6 +8,13 @@ const SEGMENTS_READ = { resource: "segments", action: "read" } as const;
 
 const filterKey = (filter: Filter) => JSON.stringify([filter.parameter, filter.type, filter.value]);
 
+declare module "fastify" {
+  interface FastifyRequest {
+    /** Authorized stored predicates; never taken from request query parameters. */
+    heatmapSegmentFilters?: Filter[];
+  }
+}
+
 /**
  * Segment filters first, then any ad-hoc filters that are not already part of
  * the segment. Order matters only for readability of the expanded URL; every
@@ -25,6 +32,16 @@ export function mergeSegmentFilters(segmentFilters: Filter[], extra: Filter[]): 
  * caller without site access only expands public segments.
  */
 export async function expandSegmentParam(request: FastifyRequest, reply: FastifyReply) {
+  return expandSegment(request, reply, false);
+}
+
+/** Heatmaps keep the saved segment required when ad-hoc filters use match:any. */
+export async function expandHeatmapSegmentParam(request: FastifyRequest, reply: FastifyReply) {
+  request.heatmapSegmentFilters = [];
+  return expandSegment(request, reply, true);
+}
+
+async function expandSegment(request: FastifyRequest, reply: FastifyReply, requiredGroup: boolean) {
   const query = request.query as Record<string, unknown> | undefined;
   const raw = query?.segment_id;
   if (raw === undefined || raw === null || raw === "") {
@@ -69,5 +86,13 @@ export async function expandSegmentParam(request: FastifyRequest, reply: Fastify
     }
   }
 
-  query!.filters = JSON.stringify(mergeSegmentFilters(loaded.segment.filters, existing));
+  if (requiredGroup) {
+    const storedKeys = new Set(loaded.segment.filters.map(filterKey));
+    request.heatmapSegmentFilters = loaded.segment.filters;
+    // The shared filter bar includes copies of selected segment predicates.
+    // Remove only those exact copies from the ad-hoc any/all group.
+    query!.filters = JSON.stringify(existing.filter(filter => !storedKeys.has(filterKey(filter))));
+  } else {
+    query!.filters = JSON.stringify(mergeSegmentFilters(loaded.segment.filters, existing));
+  }
 }

@@ -244,10 +244,12 @@ export function QueryLogTable() {
           <SheetHeader>
             <SheetTitle>Query Details</SheetTitle>
             {selectedEntry && (
-              <SheetDescription>
-                {DateTime.fromSQL(selectedEntry.eventTime, { zone: "utc" }).toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)}
-                {" \u00b7 "}{selectedEntry.queryKind || "Other"}
-                {" \u00b7 "}{selectedEntry.type === "ExceptionWhileProcessing" ? "Error" : "OK"}
+              <SheetDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>
+                  {DateTime.fromSQL(selectedEntry.eventTime, { zone: "utc" }).toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS)}{" "}
+                </span>
+                <span>{selectedEntry.queryKind || "Other"}{" "}</span>
+                <span>{selectedEntry.type === "ExceptionWhileProcessing" ? "Error" : "OK"}</span>
               </SheetDescription>
             )}
           </SheetHeader>

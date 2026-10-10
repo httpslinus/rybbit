@@ -80,8 +80,8 @@ describe("Funnel", () => {
     expect(container.textContent).toContain("3,984");
     expect(container.textContent).toContain("4.7%");
     // What a step matches, under its name.
-    expect(screen.getByText("Page · /pricing")).toBeTruthy();
-    expect(screen.getByText("Event · signup · plan = pro")).toBeTruthy();
+    expect(screen.getByText("Page /pricing")).toBeTruthy();
+    expect(screen.getByText("Event signup (plan = pro)")).toBeTruthy();
   });
 
   it("puts the drop-off on the step people left", () => {
@@ -91,11 +91,11 @@ describe("Funnel", () => {
     const firstStep = screen.getByRole("button", { name: /Any page/ });
     const afterFirst = firstStep.nextElementSibling as HTMLElement;
     expect(afterFirst.textContent).toContain("21.3%continue");
-    expect(afterFirst.textContent).toContain("66,290 dropped here · 78.7%");
+    expect(afterFirst.textContent).toContain("66,290 dropped here (78.7%)");
     expect(afterFirst.textContent).toContain("58s median to next step");
 
     const afterPricing = screen.getByRole("button", { name: /Pricing/ }).nextElementSibling as HTMLElement;
-    expect(afterPricing.textContent).toContain("13,936 dropped here · 77.8%");
+    expect(afterPricing.textContent).toContain("13,936 dropped here (77.8%)");
     expect(afterPricing.textContent).toContain("1m 21s median to next step");
   });
 

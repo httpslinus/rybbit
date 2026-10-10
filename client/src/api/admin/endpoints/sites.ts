@@ -28,6 +28,8 @@ export type SiteResponse = {
   requiresPlan?: boolean;
   // Analytics features
   sessionReplay?: boolean;
+  heatmaps?: boolean;
+  heatmapSampleRate?: number;
   webVitals?: boolean;
   trackErrors?: boolean;
   trackOutbound?: boolean;
@@ -102,6 +104,8 @@ export function addSite(
     saltUserIds?: boolean;
     blockBots?: boolean;
     sessionReplay?: boolean;
+    heatmaps?: boolean;
+    heatmapSampleRate?: number;
     webVitals?: boolean;
     trackErrors?: boolean;
     trackOutbound?: boolean;
@@ -126,6 +130,8 @@ export function addSite(
       saltUserIds: settings?.saltUserIds || false,
       blockBots: settings?.blockBots === undefined ? true : settings?.blockBots,
       sessionReplay: settings?.sessionReplay,
+      heatmaps: settings?.heatmaps,
+      heatmapSampleRate: settings?.heatmapSampleRate,
       webVitals: settings?.webVitals,
       trackErrors: settings?.trackErrors,
       trackOutbound: settings?.trackOutbound,
@@ -176,6 +182,8 @@ export function updateSiteConfig(
     excludedASNs?: string[];
     excludedQueryParams?: string[];
     sessionReplay?: boolean;
+    heatmaps?: boolean;
+    heatmapSampleRate?: number;
     webVitals?: boolean;
     trackErrors?: boolean;
     trackOutbound?: boolean;

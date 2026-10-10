@@ -1,0 +1,25 @@
+---
+title: Update Cohort
+description: Change fields in a saved historical cohort definition
+full: true
+method: PUT
+---
+
+```text
+PUT /api/sites/:siteId/cohorts/:cohortId
+```
+
+Requires `cohorts:write` and [permission to edit the definition](/docs/api/cohorts/list#response-fields-and-ownership). Members can edit their own cohorts; editors and higher roles can edit any cohort on the site. Bearer keys need the explicit write scope.
+
+The body accepts any nonempty subset of `name`, `startDate`, `endDate`, `timeZone` and `filters`, using the [create constraints](/docs/api/cohorts/create#request-body). Omitted fields remain unchanged. The resulting historical window must remain valid even when only one date is supplied. Unknown fields and an empty body return **400**.
+
+```bash title="Request"
+curl -X PUT "https://analytics.example.com/api/sites/1/cohorts/7" \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"September checkout visitors"}'
+```
+
+Returns **200** with the updated cohort object described in [Get Cohorts](/docs/api/cohorts/list). Insufficient edit permission returns **403**. An unavailable cohort or a cohort from another site returns **404**.
+
+Changes affect membership on the next report read; the definition has no frozen member list.

@@ -191,15 +191,16 @@ export function UserSessions({ userId, breakdown, selectedDay, onClearDay, total
                     <header className="flex min-h-8 items-center justify-between gap-3 bg-neutral-50 px-3 py-1.5 text-xs dark:bg-neutral-850/60">
                       <h3>
                         <span className="font-medium text-neutral-900 dark:text-neutral-100">{title.name}</span>
-                        {title.date && <span className="text-neutral-500 dark:text-neutral-400"> · {title.date}</span>}
+                        {title.date && <span className="text-neutral-500 dark:text-neutral-400"> ({title.date})</span>}
                       </h3>
                       <span className="text-right tabular-nums text-neutral-500 dark:text-neutral-400">
                         {t("{count, plural, one {# session} other {# sessions}}", { count: group.sessions.length })}
                         <span className="hidden sm:inline">
-                          {" · "}
+                          {" ("}
                           {formatGroupDuration(group.duration)}
-                          {" · "}
+                          {", "}
                           {t("{count, plural, one {# pageview} other {# pageviews}}", { count: group.pageviews })}
+                          {")"}
                         </span>
                       </span>
                     </header>

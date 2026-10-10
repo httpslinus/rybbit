@@ -85,10 +85,12 @@ export const PERMISSIONS = {
   "goals:read": { minRole: "viewer", scope: read("goals") },
   "annotations:read": { minRole: "viewer", scope: read("annotations") },
   "segments:read": { minRole: "viewer", scope: read("segments") },
+  "cohorts:read": { minRole: "viewer", scope: read("cohorts") },
   "dashboards:read": { minRole: "viewer", scope: read("dashboards") },
   "flags:read": { minRole: "viewer", scope: read("flags") },
   "experiments:read": { minRole: "viewer", scope: read("experiments") },
   "replay:read": { minRole: "viewer", scope: read("replay") },
+  "heatmaps:read": { minRole: "viewer", scope: read("heatmaps") },
   "gsc:read": { minRole: "viewer", scope: read("gsc") },
   "sites:read": { minRole: "viewer", scope: read("sites") },
   "sql:read": { minRole: "viewer", scope: read("sql") },
@@ -102,11 +104,13 @@ export const PERMISSIONS = {
   "dashboards:write": { minRole: "member", scope: write("dashboards") },
   "annotations:write": { minRole: "member", scope: write("annotations") },
   "segments:write": { minRole: "member", scope: write("segments") },
+  "cohorts:write": { minRole: "member", scope: write("cohorts") },
 
   // Configuring a site, and managing saved segments and annotations other people
   // created (org-wide ones are checked against the organization role).
   "annotations:manage": { minRole: "editor", scope: write("annotations") },
   "segments:manage": { minRole: "editor", scope: write("segments") },
+  "cohorts:manage": { minRole: "editor", scope: write("cohorts") },
   "users:delete": { minRole: "editor", scope: write("users") },
   "replay:delete": { minRole: "editor", scope: write("replay") },
   "flags:write": { minRole: "editor", scope: write("flags") },

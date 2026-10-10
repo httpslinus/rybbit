@@ -115,7 +115,6 @@ function renderInlineHTML(c: Config) {
   <span class="pulse pulse-sm"></span>
   <span class="count" id="count">—</span>
   <span class="muted">online</span>
-  <span class="sep">·</span>
   <a href="https://rybbit.com" target="_blank" rel="noopener noreferrer">
     <img src="${logo}" alt="Rybbit web analytics" width="50" height="10" />
   </a>
@@ -137,8 +136,7 @@ function renderInlineHTML(c: Config) {
   }
   .w.inline .count { font-weight: 600; }
   .w.inline .muted { color: ${col.muted}; margin-left: -4px; }
-  .w.inline .sep { color: ${col.muted}; opacity: 0.6; }
-  .w.inline a { color: ${col.muted}; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; }
+  .w.inline a { color: ${col.muted}; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; border-left: 1px solid ${col.border}; margin-left: 2px; padding-left: 10px; }
   .w.inline a img { display: block; opacity: 0.7; }
 </style>`;
 }
@@ -236,7 +234,7 @@ ${body}
     for (var j = 0; j < series.length; j++) {
       var s = series[j];
       var h = Math.max(2, (s.users / max) * 86);
-      var label = s.users + " users · " + formatTime(s.time, cfg.minutes);
+      var label = s.users + " users at " + formatTime(s.time, cfg.minutes);
       html +=
         '<div class="bar" style="height:' + h + 'px" title="' + label.replace(/"/g, "&quot;") + '"></div>';
     }

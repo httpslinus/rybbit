@@ -139,7 +139,7 @@ export function EditSubscriptionOverrideDialog({
                 <SelectContent>
                   {plans.data?.map(plan => (
                     <SelectItem key={plan.name} value={plan.name}>
-                      {plan.name} · {formatter(plan.eventLimit)} {t("events")}
+                      {plan.name} ({formatter(plan.eventLimit)} {t("events")})
                     </SelectItem>
                   ))}
                 </SelectContent>

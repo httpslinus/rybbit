@@ -2,9 +2,11 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useExtracted } from "next-intl";
-import { useState, useCallback, ReactNode } from "react";
+import { Fragment, type ReactNode, useCallback, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 
 import { updateSiteConfig, SiteResponse } from "@/api/admin/endpoints";
@@ -31,6 +33,7 @@ interface ToggleConfig {
   key: keyof SiteResponse;
   enabledMessage?: string;
   disabledMessage?: string;
+  errorMessage?: string;
   disabled?: boolean;
   badge?: ReactNode;
 }
@@ -48,6 +51,7 @@ export function TrackingTab({
 
   const [toggleStates, setToggleStates] = useState({
     sessionReplay: siteMetadata.sessionReplay || false,
+    heatmaps: siteMetadata.heatmaps ?? false,
     webVitals: siteMetadata.webVitals || false,
     trackErrors: siteMetadata.trackErrors || false,
     trackOutbound: siteMetadata.trackOutbound ?? true,
@@ -61,12 +65,28 @@ export function TrackingTab({
   });
 
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const [savedHeatmapSampleRate, setSavedHeatmapSampleRate] = useState(siteMetadata.heatmapSampleRate ?? 15);
+  const [heatmapSampleRate, setHeatmapSampleRate] = useState(String(siteMetadata.heatmapSampleRate ?? 15));
+  const parsedHeatmapSampleRate = heatmapSampleRate.trim() === "" ? NaN : Number(heatmapSampleRate);
+  const heatmapSampleRateValid =
+    Number.isFinite(parsedHeatmapSampleRate) && parsedHeatmapSampleRate >= 0 && parsedHeatmapSampleRate <= 100;
+
+  const refreshSite = useCallback(() => {
+    if (!adminMode) {
+      refetch();
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["admin-organizations"] });
+    }
+    // Prefix match so both string- and number-keyed useGetSite instances update.
+    queryClient.invalidateQueries({ queryKey: ["get-site"] });
+  }, [adminMode, refetch, queryClient]);
 
   const handleToggle = useCallback(
     async (
       key: keyof typeof toggleStates,
       checked: boolean,
-      successMessage?: { enabled: string; disabled: string }
+      successMessage?: { enabled: string; disabled: string },
+      errorMessage?: string
     ) => {
       setLoadingStates(prev => ({ ...prev, [key]: true }));
       try {
@@ -78,23 +98,41 @@ export function TrackingTab({
             : successMessage.disabled
           : `${key.replace(/([A-Z])/g, " $1").toLowerCase()} ${checked ? "enabled" : "disabled"}`;
         toast.success(message);
-        if (!adminMode) {
-          refetch();
-        } else {
-          queryClient.invalidateQueries({ queryKey: ["admin-organizations"] });
-        }
-        // Prefix match so both string- and number-keyed useGetSite instances update
-        queryClient.invalidateQueries({ queryKey: ["get-site"] });
+        refreshSite();
       } catch (error) {
         console.error(`Error updating ${key}:`, error);
-        toast.error(`Failed to update ${key.replace(/([A-Z])/g, " $1").toLowerCase()}`);
+        toast.error(errorMessage ?? `Failed to update ${key.replace(/([A-Z])/g, " $1").toLowerCase()}`);
         setToggleStates(prev => ({ ...prev, [key]: !checked }));
       } finally {
         setLoadingStates(prev => ({ ...prev, [key]: false }));
       }
     },
-    [siteMetadata.siteId, refetch, queryClient, adminMode]
+    [siteMetadata.siteId, refreshSite]
   );
+
+  const handleHeatmapSampleRate = async () => {
+    if (
+      !heatmapSampleRateValid ||
+      parsedHeatmapSampleRate === savedHeatmapSampleRate ||
+      disabled ||
+      loadingStates.heatmapSampleRate
+    )
+      return;
+    setLoadingStates(prev => ({ ...prev, heatmapSampleRate: true }));
+    try {
+      await updateSiteConfig(siteMetadata.siteId, { heatmapSampleRate: parsedHeatmapSampleRate });
+      setSavedHeatmapSampleRate(parsedHeatmapSampleRate);
+      setHeatmapSampleRate(String(parsedHeatmapSampleRate));
+      toast.success(t("Heatmap sample rate updated"));
+      refreshSite();
+    } catch (error) {
+      console.error("Error updating heatmap sample rate:", error);
+      setHeatmapSampleRate(String(savedHeatmapSampleRate));
+      toast.error(t("Failed to update heatmap sample rate"));
+    } finally {
+      setLoadingStates(prev => ({ ...prev, heatmapSampleRate: false }));
+    }
+  };
 
   const { data: subscription, isLoading: isSubscriptionLoading } = useStripeSubscription();
   const effectiveSubscription = adminSubscription ?? subscription;
@@ -130,6 +168,16 @@ export function TrackingTab({
       : []),
     ...(!isMobileSite
       ? [
+          {
+            id: "heatmaps",
+            label: t("Heatmaps"),
+            description: t("Collect clicks and scroll reach"),
+            value: toggleStates.heatmaps,
+            key: "heatmaps",
+            enabledMessage: t("Heatmaps enabled"),
+            disabledMessage: t("Heatmaps disabled"),
+            errorMessage: t("Failed to update heatmaps"),
+          } as ToggleConfig,
           {
             id: "webVitals",
             label: t("Web Vitals"),
@@ -255,31 +303,76 @@ export function TrackingTab({
       : []),
   ];
 
+  const heatmapSampleRateControl = (
+    <SettingRow label={t("Heatmap sample rate")} htmlFor="heatmapSampleRate">
+      <form
+        className="flex items-center gap-2"
+        onSubmit={event => {
+          event.preventDefault();
+          void handleHeatmapSampleRate();
+        }}
+      >
+        <Input
+          id="heatmapSampleRate"
+          type="number"
+          min={0}
+          max={100}
+          step="any"
+          required
+          aria-describedby="heatmapSampleRateUnit"
+          className="w-20"
+          value={heatmapSampleRate}
+          disabled={disabled || loadingStates.heatmapSampleRate}
+          onChange={event => setHeatmapSampleRate(event.target.value)}
+        />
+        <span id="heatmapSampleRateUnit" className="text-sm text-muted-foreground">
+          %
+        </span>
+        <Button
+          type="submit"
+          size="sm"
+          variant="secondary"
+          disabled={
+            disabled ||
+            loadingStates.heatmapSampleRate ||
+            !heatmapSampleRateValid ||
+            parsedHeatmapSampleRate === savedHeatmapSampleRate
+          }
+        >
+          {t("Save")}
+        </Button>
+      </form>
+    </SettingRow>
+  );
+
   const renderToggleSection = (toggles: ToggleConfig[], title: string) => (
     <SettingsSection title={title}>
       {toggles.map(toggle => (
-        <SettingRow
-          key={toggle.id}
-          label={toggle.label}
-          htmlFor={toggle.id}
-          description={toggle.description}
-          badge={IS_CLOUD ? toggle.badge : undefined}
-        >
-          <Switch
-            id={toggle.id}
-            checked={toggle.value}
-            disabled={loadingStates[toggle.key] || disabled || toggle.disabled}
-            onCheckedChange={checked =>
-              handleToggle(
-                toggle.key as keyof typeof toggleStates,
-                checked,
-                toggle.enabledMessage && toggle.disabledMessage
-                  ? { enabled: toggle.enabledMessage, disabled: toggle.disabledMessage }
-                  : undefined
-              )
-            }
-          />
-        </SettingRow>
+        <Fragment key={toggle.id}>
+          <SettingRow
+            label={toggle.label}
+            htmlFor={toggle.id}
+            description={toggle.description}
+            badge={IS_CLOUD ? toggle.badge : undefined}
+          >
+            <Switch
+              id={toggle.id}
+              checked={toggle.value}
+              disabled={loadingStates[toggle.key] || disabled || toggle.disabled}
+              onCheckedChange={checked =>
+                handleToggle(
+                  toggle.key as keyof typeof toggleStates,
+                  checked,
+                  toggle.enabledMessage && toggle.disabledMessage
+                    ? { enabled: toggle.enabledMessage, disabled: toggle.disabledMessage }
+                    : undefined,
+                  toggle.errorMessage
+                )
+              }
+            />
+          </SettingRow>
+          {toggle.id === "heatmaps" && heatmapSampleRateControl}
+        </Fragment>
       ))}
     </SettingsSection>
   );

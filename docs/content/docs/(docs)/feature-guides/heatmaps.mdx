@@ -1,0 +1,70 @@
+---
+title: Heatmaps
+description: View sampled clicks and scroll reach by page and viewport width
+---
+
+Heatmaps show where sampled visitors click and how far they see down a page. They are available for web sites, including self-hosted Rybbit, independently of session replay and its quota.
+
+## Setup
+
+1. Open your site's **Settings → Tracking**, enable **Heatmaps**, and save the **Heatmap sample rate**.
+2. Open **Heatmaps**, choose a date range and a page, then select **Clicks** or **Scroll** and an observed viewport width.
+
+Collection is off by default. The initial sample rate is **15%**, and accepts finite values from **0% to 100%**. A rate of 0 collects nothing; 100 selects every eligible session. Settings apply when the tracking script next loads. Turning collection off leaves retained samples available to read.
+
+The sampling decision is scoped to your analytics host and site. Activity keeps it stable; a page load after 30 minutes of inactivity makes a new decision. The script uses session storage with a memory fallback when storage is unavailable. Heatmap sampling is separate from replay sampling, and heatmaps alone do not load the replay recorder.
+
+## Clicks and scroll reach
+
+**Clicks** counts trusted primary clicks, including taps that produce a primary click. Each capture records its coordinates and the viewport and document dimensions at that moment. Hotter areas have more clicks. Open **Sample details** in the selected page header to see the click or scroll sample count and sampled sessions for the viewport being viewed. One session can contribute many clicks.
+
+**Scroll** measures the furthest visible point as a percentage of document height, including the viewport's lower edge. The initial viewport counts before any scrolling. A page that fits in the viewport starts at **100%**.
+
+The report keeps the maximum depth per sampled session, hostname, path and width bucket. Returning to the same page in the same session does not add another session to that bucket's denominator. Resizes and changes to document height are captured with their geometry.
+
+Scroll reach uses inclusive thresholds every 10%, through **100%**. A session reaching exactly 50% counts toward 50% reach. For example, sessions reaching 30%, 60% and 100% produce 100% reach at 30%, 67% at 50%, and 33% at 100%. The percentages use sampled sessions with scroll observations, not all site visitors.
+
+## Viewport widths
+
+Recorded widths are assigned to the nearest bucket: **320, 375, 425, 768, 1024, 1440 or 1920 pixels**. Equal distances use the smaller bucket. The selector shows only observed buckets, with their counts, and initially chooses the most represented width.
+
+Click coordinates and document geometry are normalized to the selected bucket. The viewer fits both the overlay and its background to the same scale. Different responsive layouts stay in separate buckets.
+
+## Filters and cohorts
+
+Open **Filter** to choose an analytics event type, exclude bounced sessions, or add ordinary analytics filters. The **Segments** tab applies saved filters; the **Cohorts** tab selects or creates a historical audience. Applied choices appear as removable chips above the report. Open a cohort chip to inspect its historical window and filters, or edit its definition.
+
+Use the ordinary analytics filters and saved segments alongside the heatmap controls:
+
+| Filter                                                                                                        | What it matches                                                                 |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Hostname, path, user                                                                                          | Captured heatmap rows                                                           |
+| Event name, page title, query string, tag                                                                     | Sessions with matching ordinary analytics events in the report's date range     |
+| Browser and version, operating system and version, device, screen dimensions, language, location and timezone | Ordinary analytics session metadata in the report's date range                  |
+| Referrer, channel, UTM fields, entry page, exit page                                                          | The ordinary analytics session and attribution rules in the report's date range |
+
+**Match all** requires every added filter; **Match any** accepts any of them. The selector appears beside the filter chips when two or more added filters are active, or when a link uses Match any. A saved segment remains a required group even with Match any. A selected cohort is also required. Site, date range, selected page and width remain required in both modes.
+
+**Analytics event type** selects sessions containing a pageview or a custom event in the report's range. It is separate from the Clicks/Scroll mode. **Exclude bounced sessions** requires more than one ordinary pageview in that range; it does not count heatmap clicks as pageviews.
+
+Unfiltered heatmaps can include sessions that have no ordinary analytics events. Metadata and event predicates require matching ordinary analytics in the same bounded range, including negative predicates. Such a session can still match a row filter under Match any.
+
+A **cohort** saves filters and a separate historical date range and timezone. Rybbit evaluates matching visitors from retained ordinary analytics in that historical window, then shows their heatmaps in the report's current range. Identified visitors can match across devices through the same effective identity. Membership is evaluated when you read the report, rather than frozen when you save the definition. An empty or expired historical window gives zero matching visitors and an empty report.
+
+Viewers can read cohorts. Members can create cohorts and edit or delete their own; editors and higher roles can manage all cohorts on the site.
+
+## Live backgrounds
+
+**Live background** loads the current page in a sandboxed iframe. It is not a historical screenshot or a session recording. Authentication, embedding restrictions or changed layouts may prevent the page from loading or lining up with older samples. Full-document framing can also change fixed headers and sections sized to the viewport.
+
+The iframe sends no referrer and allows scripts without same-origin privileges. Rybbit validates the background URL without fetching it on the server. Masked or unsupported paths may have no background. Turn off Live background to view the geometry alone; the overlay and scroll bands remain usable when embedding is blocked. Very tall documents also use the geometry-only view.
+
+## Privacy, retention and access
+
+Heatmap uploads contain coordinates, maximum visible depth, capture time, page identity and dimensions. They contain **no DOM snapshots, element text, input values or query-string values**. Page identity follows the tracker's skip and mask patterns, including hash routes with query values removed. The tracker opt-out and configured bot, IP, country, hostname and path exclusions also apply. Ordinary analytics may still record query strings if you enabled that setting.
+
+Heatmap events have a **30-day retention TTL**. Reports require a bounded date or time range; **All time** is not supported. Older ranges return only data still retained. Responses return at most **100 pages** and **5,000 weighted click points**, with truncation flags and totals that are calculated before those display limits.
+
+Heatmaps require authenticated site access with `heatmaps:read`; public dashboards and private share links do not grant access. Bearer API keys need that scope explicitly. Selecting a cohort also requires `cohorts:read`, and selecting a saved segment requires `segments:read`. Cohort writes require `cohorts:write` and the same ownership rules as the dashboard.
+
+See [Get Heatmaps](/docs/api/heatmaps/get), [Record Heatmaps](/docs/api/heatmaps/record), [Cohorts](/docs/api/cohorts/list) and [Tracking script](/docs/script) for the API and collection settings.

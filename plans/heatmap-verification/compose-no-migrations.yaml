@@ -1,0 +1,4 @@
+services:
+  backend:
+    entrypoint: ["node"]
+    command: ["dist/index.js"]

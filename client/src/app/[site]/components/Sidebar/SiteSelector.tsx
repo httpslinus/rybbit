@@ -15,6 +15,7 @@ import { cn, formatter } from "../../../../lib/utils";
 import { AddSite } from "../../../components/AddSite";
 import { useEmbedablePage } from "../../utils";
 import { DEMO_HOSTNAME } from "../../../../lib/const";
+import { heatmapSearchForSiteSwitch } from "../../../../lib/heatmapUrlState";
 
 // Show the search field once the list is long enough to scan slowly.
 const SEARCH_THRESHOLD = 10;
@@ -26,8 +27,7 @@ type SiteOption = {
   sessions?: number;
 };
 
-const rowClass =
-  "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors cursor-pointer";
+const rowClass = "flex w-full items-center gap-3 rounded-md px-2 py-2 text-left transition-colors cursor-pointer";
 
 function SiteRow({ site, isSelected }: { site: SiteOption; isSelected: boolean }) {
   const t = useExtracted();
@@ -105,7 +105,7 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
     const pathSegments = pathname.split("/");
     pathSegments[1] = siteId.toString();
     const newPath = pathSegments.join("/");
-    const queryString = window.location.search;
+    const queryString = heatmapSearchForSiteSwitch(window.location.search);
     // Let the layout's useEffect sync the site from the new pathname
     router.push(queryString ? `${newPath}${queryString}` : newPath);
     onSiteSelect(); // Close popover immediately

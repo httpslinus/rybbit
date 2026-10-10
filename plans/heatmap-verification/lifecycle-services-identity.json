@@ -1,0 +1,79 @@
+{
+  "mode": "identity",
+  "startedAt": "2026-10-10T21:09:54.346Z",
+  "checks": [
+    {
+      "name": "Actual identityBackfillQueue flush updates anonymous rows only and preserves Bob plus foreign site",
+      "passed": true,
+      "observed": {
+        "events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "heatmap_events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "session_replay_events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "session_replay_metadata_v2": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Erasure fixture includes late anonymous shared-device activity, another linked device and an unlinked device",
+      "passed": true,
+      "observed": {
+        "primaryRowsPerTable": 8,
+        "foreignRowsPerTable": 3
+      }
+    },
+    {
+      "name": "Real Redis attribution index contains only the five active erasure fixtures",
+      "passed": true,
+      "observed": {
+        "primary": 4,
+        "foreign": 1
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "completedAt": "2026-10-10T21:09:55.673Z"
+}

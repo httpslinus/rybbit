@@ -1,0 +1,13 @@
+{
+  "mode": "cleanup",
+  "startedAt": "2026-10-10T21:13:00.072Z",
+  "checks": [],
+  "cleanup": [
+    {
+      "knownFixtureRedisKeysRemoved": 7242,
+      "qaSitesRemoved": 2
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:13:00.517Z"
+}

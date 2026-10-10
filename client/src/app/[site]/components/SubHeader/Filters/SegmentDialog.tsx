@@ -139,9 +139,11 @@ function SegmentForm({
 
   const startingFilters = segment?.filters ?? initialFilters ?? [];
   const suggestedName = startingFilters
-    .map(filter => (operatorNeedsValue(filter.type) ? formatDisplayValue(filter, getRegionName) : getParameterLabel(filter.parameter)))
+    .map(filter =>
+      operatorNeedsValue(filter.type) ? formatDisplayValue(filter, getRegionName) : getParameterLabel(filter.parameter)
+    )
     .filter(Boolean)
-    .join(" · ");
+    .join(", ");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

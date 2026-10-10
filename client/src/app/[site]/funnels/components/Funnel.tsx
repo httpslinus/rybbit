@@ -174,16 +174,16 @@ export function Funnel({ steps, metrics, previous, comparisonLabel, goal, action
       : t("Step {number}", { number: String(index + 1) });
   };
 
-  // What a step matches, for the line under its name: "Page · /pricing · plan = pro".
-  const describe = (step: FunnelStep) =>
-    [
-      typeLabels[step.type] ?? typeLabels.event,
-      step.hostname,
-      step.value || t("any"),
-      ...resolvePropertyFilters(step).map(filter => `${filter.key} = ${filter.value}`),
-    ]
+  // What a step matches, for the line under its name: "Page /pricing (plan = pro)".
+  const describe = (step: FunnelStep) => {
+    const target = [typeLabels[step.type] ?? typeLabels.event, step.hostname, step.value || t("any")]
       .filter(Boolean)
-      .join(" · ");
+      .join(" ");
+    const properties = resolvePropertyFilters(step)
+      .map(filter => `${filter.key} = ${filter.value}`)
+      .join(", ");
+    return properties ? `${target} (${properties})` : target;
+  };
 
   const panelTitle = ({ stepIndex, mode, replaysOnly }: SessionsPanel) => {
     const step = nameOf(stepIndex);
@@ -354,7 +354,7 @@ export function Funnel({ steps, metrics, previous, comparisonLabel, goal, action
                         dropped: step.dropped.toLocaleString(),
                         count: chunks => <span className={STRONG}>{chunks}</span>,
                       })}
-                      {step.continueRate !== null && ` · ${formatRate(1 - step.continueRate)}`}
+                      {step.continueRate !== null && ` (${formatRate(1 - step.continueRate)})`}
                     </span>
                     {step.dropped > 0 && pivots(index, "dropped")}
                   </div>

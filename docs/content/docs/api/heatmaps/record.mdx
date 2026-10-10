@@ -1,0 +1,94 @@
+---
+title: Record Heatmaps
+description: Upload a bounded batch of captured click and scroll geometry
+full: true
+method: POST
+---
+
+```text
+POST /api/heatmaps/record/:siteId
+```
+
+This public collection endpoint is used by the browser tracker. It requires no bearer key. Collection must be enabled on the web site with a sample rate above zero. Self-hosted heatmaps have no subscription or replay-quota requirement and do not consume purchased events. Existing site-wide collection limits still apply on cloud installations.
+
+The endpoint applies configured hostname/path, IP, country and bot exclusions. A disabled or excluded batch can return `{ "success": true }` without storing events.
+
+## Batch body
+
+| Field         | Type                                    | Required | Meaning                                                                      |
+| ------------- | --------------------------------------- | -------- | ---------------------------------------------------------------------------- |
+| `batchId`     | string, 1–128 characters                | Yes      | Stable unique ID for this immutable batch, reused for retries                |
+| `events`      | array, 1–100 events                     | Yes      | Click or scroll captures described below                                     |
+| `userId`      | string, at most 256 characters          | No       | Identified user ID used by ordinary analytics                                |
+| `anonymousId` | nonempty string, at most 256 characters | No       | An explicit client identity only when ordinary analytics uses the same value |
+
+The built-in tracker omits `anonymousId` and lets the server derive the same anonymous identity as ordinary analytics. Do not send a client session ID. The server assigns session and visitor identity. Unknown batch or event fields are rejected.
+
+The HTTP body limit is **64 KiB** and collection is rate limited to **120 requests per minute**. The built-in tracker emits chunks below **48 KiB**, with at most **100 events** each.
+
+### Common event fields
+
+| Field                             | Type                                   | Meaning                                                                                      |
+| --------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `type`                            | `click` or `scroll`                    | Interaction type                                                                             |
+| `timestamp`                       | nonnegative integer                    | Capture time in Unix milliseconds; server clock-skew correction applies                      |
+| `pageVisitId`                     | string, 1–256 characters               | Capture's page-visit ID                                                                      |
+| `hostname`                        | valid hostname, at most 253 characters | Captured hostname; normalized to lowercase                                                   |
+| `pathname`                        | string, 1–2,048 characters             | Tracked path after skip/mask policy; omit query-string values                                |
+| `viewportWidth`, `viewportHeight` | integers, 1–65,535                     | Capture-time viewport dimensions in CSS pixels                                               |
+| `documentWidth`, `documentHeight` | integers, 1–4,294,967,295              | Capture-time document dimensions; each must be at least the corresponding viewport dimension |
+
+Batch IDs, page-visit IDs and paths cannot contain control characters. Every common field is required.
+
+A **click** also requires finite, nonnegative `clientX`, `clientY`, `pageX` and `pageY` coordinates. Client coordinates must fit the viewport; page coordinates must fit the document and be at least their corresponding client coordinates. The tracker captures only trusted primary clicks.
+
+A **scroll** also requires finite `maxDepth` from 0 to 100, the maximum visible depth for that geometry. The initial viewport counts, including 100 for a document that fits in the viewport. Send no DOM snapshots, selectors, text, input values or query-string values.
+
+## Example
+
+```bash title="Request"
+curl -X POST "https://analytics.example.com/api/heatmaps/record/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "batchId": "example-79b87ee1-ae1f-4f54-8d86-d6d4faf06b3b",
+    "events": [
+      {
+        "type": "click",
+        "timestamp": 1791626400000,
+        "pageVisitId": "visit-6d27d032",
+        "hostname": "example.com",
+        "pathname": "/pricing",
+        "viewportWidth": 1440,
+        "viewportHeight": 900,
+        "documentWidth": 1440,
+        "documentHeight": 2400,
+        "clientX": 260,
+        "clientY": 420,
+        "pageX": 260,
+        "pageY": 420
+      }
+    ]
+  }'
+```
+
+```json title="Response"
+{ "success": true }
+```
+
+## Retries and deduplication
+
+Keep the batch ID, event order, capture timestamps and identity unchanged when retrying. The built-in tracker keeps bounded buffers and makes at most three attempts per batch; persistent failures can discard buffered samples. Set `data-debug="true"` to log upload failures.
+
+Redis claims each site/batch before insertion. A repeat while processing returns **503** with `Retry-After: 5`; a completed repeat returns **200**. A confirmed failure before insertion releases the claim for retry. If an insert may have succeeded, the processing lease is retained until it expires.
+
+If the server crashes after insertion and before acknowledgment, a later retry may write duplicate physical rows. Reports deduplicate stored `(site_id, batch_id, event_index)` identifiers before aggregation, so retries do not inflate logical clicks or scroll reach. This is not an exactly-once guarantee for physical storage.
+
+## Errors
+
+| Status | Meaning                                                            |
+| ------ | ------------------------------------------------------------------ |
+| `400`  | Invalid batch or event fields                                      |
+| `404`  | Site not found                                                     |
+| `413`  | Body exceeds 64 KiB                                                |
+| `429`  | Collection rate limit exceeded                                     |
+| `503`  | Batch is still processing or collection is temporarily unavailable |

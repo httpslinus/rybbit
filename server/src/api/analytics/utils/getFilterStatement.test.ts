@@ -1,5 +1,37 @@
 import { describe, it, expect } from "vitest";
 import { filterParamError, getFilterStatement, getSqlParam } from "./getFilterStatement.js";
+
+describe("opt-in filter combination", () => {
+  const criteria = JSON.stringify([
+    { parameter: "browser", type: "equals", value: ["Chrome"] },
+    { parameter: "country", type: "not_equals", value: ["GB", "FR"] },
+  ]);
+
+  it("keeps ordinary reports' default and explicit ALL predicates byte-identical", () => {
+    expect(getFilterStatement(criteria)).toBe("AND browser = 'Chrome' AND (country != 'GB' AND country != 'FR')");
+    expect(getFilterStatement(criteria, 1, "AND timestamp >= today()", { combination: "all" })).toBe(
+      getFilterStatement(criteria)
+    );
+  });
+
+  it("parenthesizes ANY criteria without changing negative multi-value semantics", () => {
+    expect(getFilterStatement(criteria, 1, "AND timestamp >= today()", { combination: "any" })).toBe(
+      "AND (browser = 'Chrome' OR (country != 'GB' AND country != 'FR'))"
+    );
+    expect(getFilterStatement("[]", 1, "AND timestamp >= today()", { combination: "any" })).toBe("");
+  });
+
+  it("keeps site/time constraints inside a session-event alternative", () => {
+    const filters = JSON.stringify([
+      { parameter: "pathname", type: "equals", value: ["/page"] },
+      { parameter: "event_name", type: "equals", value: ["buy"] },
+    ]);
+    const statement = getFilterStatement(filters, 42, "AND timestamp >= today()", { combination: "any" });
+    expect(statement).toContain("AND (pathname = '/page' OR session_id IN (");
+    expect(statement).toContain("WHERE site_id = 42 AND timestamp >= today() AND event_name = 'buy'");
+    expect(statement.trim().endsWith("))")).toBe(true);
+  });
+});
 import { FilterParameter } from "../types.js";
 
 describe("getSqlParam", () => {

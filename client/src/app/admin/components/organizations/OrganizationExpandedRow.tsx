@@ -160,7 +160,10 @@ export function OrganizationExpandedRow({ organization }: OrganizationExpandedRo
         <div className="min-w-0 space-y-5">
           <section>
             <SectionLabel>
-              {t("Sites")} <span className="tabular-nums">· {sites.length}</span>
+              {t("Sites")}{" "}
+              <span className="ml-1 rounded bg-neutral-100 px-1.5 tabular-nums dark:bg-neutral-800">
+                {sites.length}
+              </span>
             </SectionLabel>
             {sites.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">
@@ -223,7 +226,10 @@ export function OrganizationExpandedRow({ organization }: OrganizationExpandedRo
 
           <section>
             <SectionLabel>
-              {t("Members")} <span className="tabular-nums">· {members.length}</span>
+              {t("Members")}{" "}
+              <span className="ml-1 rounded bg-neutral-100 px-1.5 tabular-nums dark:bg-neutral-800">
+                {members.length}
+              </span>
             </SectionLabel>
             {members.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-neutral-100 bg-white dark:border-neutral-800 dark:bg-neutral-900">

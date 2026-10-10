@@ -1,0 +1,52 @@
+{
+  "completedAt": "2026-10-10T15:05:36.235Z",
+  "passed": true,
+  "scope": "All six isolated rybbit-local containers rebuilt/restarted; no volume removal",
+  "before": {
+    "day": "2026-10-10",
+    "siteId": 1,
+    "cohortId": 7,
+    "settings": {
+      "heatmaps": true,
+      "heatmapSampleRate": 100,
+      "sessionReplay": false
+    },
+    "click": {
+      "count": 3,
+      "sessions": 1,
+      "points": 1,
+      "totalScrollSessions": 0,
+      "members": 1
+    },
+    "scroll": {
+      "count": 1,
+      "sessions": 1,
+      "points": 0,
+      "totalScrollSessions": 1,
+      "members": 1
+    },
+    "preparedAt": "2026-10-10T14:59:58.881Z"
+  },
+  "after": {
+    "settings": {
+      "heatmaps": true,
+      "heatmapSampleRate": 100,
+      "sessionReplay": false
+    },
+    "click": {
+      "count": 3,
+      "sessions": 1,
+      "points": 1,
+      "totalScrollSessions": 0,
+      "members": 1
+    },
+    "scroll": {
+      "count": 1,
+      "sessions": 1,
+      "points": 0,
+      "totalScrollSessions": 1,
+      "members": 1
+    }
+  },
+  "cohortCleanup": true
+}

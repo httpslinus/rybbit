@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { HeatmapBatch } from "@rybbit/shared";
 import type { ScriptConfig } from "./types.js";
 
 const mocks = vi.hoisted(() => ({ parseScriptConfig: vi.fn() }));
@@ -31,6 +32,8 @@ describe("automatic navigation tracking", () => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
     localStorage.clear();
+    sessionStorage.clear();
+    delete window.__RYBBIT_OPTOUT__;
     document.body.innerHTML = '<script src="https://analytics.example.com/script.js"></script>';
     config = {
       namespace: "rybbit",
@@ -62,7 +65,7 @@ describe("automatic navigation tracking", () => {
   });
 
   afterEach(() => {
-    window.dispatchEvent(new Event("beforeunload"));
+    window.dispatchEvent(new Event("pagehide"));
     for (const [type, listener, options] of windowListeners.mock.calls) {
       window.removeEventListener(type as string, listener as EventListener, options as boolean);
     }
@@ -73,6 +76,7 @@ describe("automatic navigation tracking", () => {
     history.replaceState = originalReplaceState;
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     delete (window as Partial<Window>).rybbit;
+    delete window.__RYBBIT_OPTOUT__;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -84,7 +88,22 @@ describe("automatic navigation tracking", () => {
   }
 
   function pageviews() {
-    return vi.mocked(fetch).mock.calls.map(([, init]) => JSON.parse(init!.body as string));
+    return vi
+      .mocked(fetch)
+      .mock.calls.filter(([url]) => url === `${config.analyticsHost}/track`)
+      .map(([, init]) => JSON.parse(init!.body as string));
+  }
+
+  function heatmapBatches(): HeatmapBatch[] {
+    return vi
+      .mocked(fetch)
+      .mock.calls.filter(([url]) => url === `${config.analyticsHost}/heatmaps/record/${config.siteId}`)
+      .map(([, init]) => JSON.parse(init!.body as string));
+  }
+
+  async function flushHeatmaps() {
+    window.dispatchEvent(new Event("beforeunload"));
+    await vi.advanceTimersByTimeAsync(0);
   }
 
   async function changeHash(hash: string) {
@@ -92,7 +111,16 @@ describe("automatic navigation tracking", () => {
     url.hash = hash;
     location.href = url.href;
     window.dispatchEvent(new Event("hashchange"));
+    if (config.trackUrlFragments || /^#!?\//.test(hash)) renderRoute(url.href);
     await vi.advanceTimersByTimeAsync(500);
+  }
+
+  function renderRoute(route: string) {
+    document.body.setAttribute("data-route", route);
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      configurable: true,
+      value: Math.max(window.innerHeight, document.documentElement.scrollHeight) + 500,
+    });
   }
 
   it("ignores ordinary anchor changes and same-URL History API updates", async () => {
@@ -161,5 +189,135 @@ describe("automatic navigation tracking", () => {
     history.pushState({}, "", "/order/success/");
     await vi.advanceTimersByTimeAsync(500);
     expect(pageviews().map(event => event.pathname)).toEqual(["/order/success/"]);
+  });
+
+  describe("heatmap integration", () => {
+    beforeEach(() => {
+      config.enableHeatmaps = true;
+      config.heatmapSampleRate = 100;
+    });
+
+    it("flushes old pages through push, replace, pop and hash navigation without duplicate resets", async () => {
+      config.debounceDuration = 0;
+      await start();
+
+      history.pushState({}, "", "/products/");
+      renderRoute("/products/");
+      await vi.advanceTimersByTimeAsync(150);
+      history.replaceState({}, "", "/products/widget/");
+      renderRoute("/products/widget/");
+      await vi.advanceTimersByTimeAsync(150);
+      location.href = "https://example.com/orders/";
+      window.dispatchEvent(new Event("popstate"));
+      window.dispatchEvent(new Event("hashchange"));
+      renderRoute("/orders/");
+      await vi.advanceTimersByTimeAsync(150);
+      await changeHash("#/payment");
+      await changeHash("#!/complete");
+      await flushHeatmaps();
+
+      const events = heatmapBatches().flatMap(batch => batch.events);
+      expect(events.map(event => event.pathname)).toEqual([
+        "/checkout/",
+        "/products/",
+        "/products/widget/",
+        "/orders/",
+        "/payment",
+        "/complete",
+      ]);
+      expect(new Set(events.map(event => event.pageVisitId)).size).toBe(6);
+      expect(events.every(event => event.type === "scroll")).toBe(true);
+      expect(pageviews().map(event => event.pathname)).toEqual(events.map(event => event.pathname));
+    });
+
+    it("keeps the same heatmap page visit for ordinary anchors and unchanged History API URLs", async () => {
+      await start();
+      await flushHeatmaps();
+      expect(heatmapBatches().flatMap(batch => batch.events)).toHaveLength(1);
+
+      await changeHash("#shipping");
+      history.replaceState({}, "", location.href);
+      history.pushState({}, "", location.href);
+      window.dispatchEvent(new Event("popstate"));
+      window.dispatchEvent(new Event("hashchange"));
+      await changeHash("#payment");
+      await flushHeatmaps();
+
+      expect(heatmapBatches().flatMap(batch => batch.events)).toHaveLength(1);
+      expect(pageviews().map(event => event.pathname)).toEqual(["/checkout/"]);
+    });
+
+    it("collects heatmaps without initializing replay or loading replay.js", async () => {
+      const { SessionReplayRecorder } = await import("./sessionReplay.js");
+      const initializeReplay = vi.spyOn(SessionReplayRecorder.prototype, "initialize");
+      await start();
+      await flushHeatmaps();
+
+      expect(heatmapBatches().flatMap(batch => batch.events)).toHaveLength(1);
+      expect(initializeReplay).not.toHaveBeenCalled();
+      expect(window.rybbit.isSessionReplayActive()).toBe(false);
+      expect(document.querySelector('script[src*="replay.js"]')).toBeNull();
+      expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("replay"))).toBe(false);
+    });
+
+    it("keeps recording after canceled beforeunload and BFCache restoration without duplicate listeners", async () => {
+      await start();
+      const clickHandlers = () =>
+        documentListeners.mock.calls.filter(
+          ([name, , options]) =>
+            name === "click" && typeof options === "object" && (options as AddEventListenerOptions)?.capture === true
+        );
+      const click = (clientX: number) => {
+        const listener = clickHandlers()[0][1] as EventListener;
+        listener({ isTrusted: true, button: 0, clientX, clientY: 10, target: document.body } as unknown as MouseEvent);
+      };
+      click(10);
+      window.dispatchEvent(new Event("beforeunload", { cancelable: true }));
+      await vi.advanceTimersByTimeAsync(0);
+      click(20);
+      window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+      await vi.advanceTimersByTimeAsync(0);
+      window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+      click(30);
+      await flushHeatmaps();
+      expect(clickHandlers()).toHaveLength(1);
+      expect(
+        heatmapBatches()
+          .flatMap(batch => batch.events)
+          .filter(event => event.type === "click")
+          .map(event => event.clientX)
+      ).toEqual([10, 20, 30]);
+    });
+
+    it("starts the full script and collects heatmaps when both storage APIs are unavailable", async () => {
+      const unavailable = () => {
+        throw new DOMException("Storage is disabled", "SecurityError");
+      };
+      vi.spyOn(window, "localStorage", "get").mockImplementation(unavailable);
+      vi.spyOn(window, "sessionStorage", "get").mockImplementation(unavailable);
+
+      await start();
+      await flushHeatmaps();
+
+      expect(window.rybbit.getUserId()).toBeNull();
+      expect(pageviews()).toHaveLength(1);
+      expect(heatmapBatches().flatMap(batch => batch.events)).toHaveLength(1);
+    });
+
+    it.each(["localStorage", "window"])("honors %s opt-out before initializing heatmaps", async optOut => {
+      if (optOut === "localStorage") localStorage.setItem("disable-rybbit", "1");
+      else window.__RYBBIT_OPTOUT__ = true;
+      const { HeatmapRecorder } = await import("./heatmaps.js");
+      const initializeHeatmaps = vi.spyOn(HeatmapRecorder.prototype, "initialize");
+
+      await start();
+      window.rybbit.pageview();
+      window.rybbit.identify("user");
+      await flushHeatmaps();
+
+      expect(initializeHeatmaps).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
+      expect(window.rybbit.getUserId()).toBeNull();
+    });
   });
 });

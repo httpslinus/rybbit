@@ -98,7 +98,7 @@ export function EventRow({ event, site, privateKey, typeLabel, onClick, arrivedA
         </TooltipTrigger>
         <TooltipContent>
           <span>
-            {eventTime.toFormat(hour12 ? "MMM d, h:mm:ss a" : "dd MMM, HH:mm:ss")} · {formatRelative(eventTime)}
+            {eventTime.toFormat(hour12 ? "MMM d, h:mm:ss a" : "dd MMM, HH:mm:ss")} ({formatRelative(eventTime)})
           </span>
         </TooltipContent>
       </Tooltip>

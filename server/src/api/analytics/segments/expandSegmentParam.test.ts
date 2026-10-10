@@ -20,7 +20,7 @@ vi.mock("../../../db/postgres/postgres.js", () => ({ db: {} }));
 // authenticates requests. Keep the production auth/DB initializer out of it.
 vi.mock("../../../lib/auth.js", () => ({ auth: { api: {} } }));
 
-import { expandSegmentParam, mergeSegmentFilters } from "./expandSegmentParam.js";
+import { expandHeatmapSegmentParam, expandSegmentParam, mergeSegmentFilters } from "./expandSegmentParam.js";
 
 const mobile: Filter = { parameter: "device_type", type: "equals", value: ["Mobile"] };
 const germany: Filter = { parameter: "country", type: "equals", value: ["DE"] };
@@ -29,7 +29,8 @@ const chrome: Filter = { parameter: "browser", type: "equals", value: ["Chrome"]
 function run(
   query: Record<string, unknown>,
   params: Record<string, string> = { siteId: "1" },
-  extra: Record<string, unknown> = {}
+  extra: Record<string, unknown> = {},
+  expand = expandSegmentParam
 ) {
   const request: any = { query, params, headers: {}, ...extra };
   const reply: any = { statusCode: 200 };
@@ -41,7 +42,7 @@ function run(
     reply.payload = payload;
     return reply;
   });
-  return expandSegmentParam(request, reply).then(() => ({ request, reply }));
+  return expand(request, reply).then(() => ({ request, reply }));
 }
 
 beforeEach(() => {
@@ -67,6 +68,61 @@ describe("mergeSegmentFilters", () => {
   it("keeps a filter that differs only in value", () => {
     const mobileTablet = { ...mobile, value: ["Mobile", "Tablet"] };
     expect(mergeSegmentFilters([mobile], [mobileTablet])).toEqual([mobile, mobileTablet]);
+  });
+});
+
+describe("heatmap required segment group", () => {
+  it("keeps authorized stored filters outside the ad-hoc any group", async () => {
+    const { request, reply } = await run(
+      { segment_id: "7", match: "any", filters: JSON.stringify([mobile, chrome]) },
+      { siteId: "1" },
+      {},
+      expandHeatmapSegmentParam
+    );
+    expect(reply.status).not.toHaveBeenCalled();
+    expect(request.heatmapSegmentFilters).toEqual([mobile, germany]);
+    expect(JSON.parse(request.query.filters)).toEqual([chrome]);
+    expect(request.query.match).toBe("any");
+  });
+
+  it("uses a required segment without ad-hoc filters and preserves differing values", async () => {
+    const required = await run({ segment_id: "7" }, { siteId: "1" }, {}, expandHeatmapSegmentParam);
+    expect(required.request.heatmapSegmentFilters).toEqual([mobile, germany]);
+    expect(JSON.parse(required.request.query.filters)).toEqual([]);
+    const tablet = { ...mobile, value: ["Tablet"] };
+    const differing = await run(
+      { segment_id: "7", filters: JSON.stringify([tablet]) },
+      { siteId: "1" },
+      {},
+      expandHeatmapSegmentParam
+    );
+    expect(JSON.parse(differing.request.query.filters)).toEqual([tablet]);
+  });
+
+  it("takes required predicates only from the authorized stored definition", async () => {
+    const { request } = await run(
+      { heatmapSegmentFilters: JSON.stringify([germany]), filters: JSON.stringify([chrome]) },
+      { siteId: "1" },
+      { heatmapSegmentFilters: [mobile] },
+      expandHeatmapSegmentParam
+    );
+    expect(request.heatmapSegmentFilters).toEqual([]);
+    expect(request.query.filters).toBe(JSON.stringify([chrome]));
+  });
+
+  it("preserves bearer scope checks and cross-site hiding", async () => {
+    const scoped = await run(
+      { segment_id: "7", match: "any" },
+      { siteId: "1" },
+      { bearerAuth: true, bearerStatements: { heatmaps: ["read"] } },
+      expandHeatmapSegmentParam
+    );
+    expect(scoped.reply.statusCode).toBe(403);
+    expect(scoped.request.heatmapSegmentFilters).toEqual([]);
+    state.loaded = null;
+    const foreign = await run({ segment_id: "7" }, { siteId: "2" }, {}, expandHeatmapSegmentParam);
+    expect(foreign.reply.statusCode).toBe(404);
+    expect(foreign.request.heatmapSegmentFilters).toEqual([]);
   });
 });
 

@@ -583,10 +583,13 @@ export function PagesTable({
       footnote = t("{count, plural, one {# page matches} other {# pages match}}", { count: totalCount });
     } else if (group === "section") {
       footnote = summary
-        ? t("{rows, plural, one {# row} other {# rows}} · {pages, plural, one {# page} other {# pages}} with traffic", {
-            rows: totalCount,
-            pages: summary.pages,
-          })
+        ? t(
+            "{rows, plural, one {# row} other {# rows}} covering {pages, plural, one {# page} other {# pages}} with traffic",
+            {
+              rows: totalCount,
+              pages: summary.pages,
+            }
+          )
         : t("{rows, plural, one {# row} other {# rows}}", { rows: totalCount });
     } else if (mode === "entry") {
       footnote = t("{count, plural, one {# entry page} other {# entry pages}}", { count: totalCount });

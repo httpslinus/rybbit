@@ -1,0 +1,34 @@
+services:
+  clickhouse:
+    container_name: rybbit-local-clickhouse
+    ports: !reset []
+  postgres:
+    container_name: rybbit-local-postgres
+    ports: !reset []
+  redis:
+    container_name: rybbit-local-redis
+    ports: !reset []
+  backend:
+    container_name: rybbit-local-backend
+    image: rybbit-local-backend:workspace
+    ports: !reset []
+  client:
+    container_name: rybbit-local-client
+    image: rybbit-local-client:workspace
+    ports: !reset []
+    command: ["node", "/app/local-start-client.cjs"]
+    volumes:
+      - ./plans/local/start-client.cjs:/app/local-start-client.cjs:ro
+  local-proxy:
+    image: caddy:2.10.0
+    container_name: rybbit-local-proxy
+    ports:
+      - "127.0.0.1:18033:80"
+    volumes:
+      - ./plans/local/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+      client:
+        condition: service_started
+    restart: unless-stopped

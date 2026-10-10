@@ -1,0 +1,17 @@
+{
+  "mode": "after-site-delete",
+  "startedAt": "2026-10-10T21:12:58.043Z",
+  "checks": [
+    {
+      "name": "HTTP site erasure removes the final index and all retained Bob contexts without touching the foreign site",
+      "passed": true,
+      "observed": {
+        "ownIndexRemoved": true,
+        "foreignIndexMembers": 100
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:12:58.487Z"
+}

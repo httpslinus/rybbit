@@ -95,8 +95,11 @@ export function SiteAccessSummary({ access }: { access: PersonAccess | null | un
           ? t("{total, plural, one {All # site} other {All # sites}}", { total: access.total })
           : t("{reached} of {total} sites", { reached: String(access.reached), total: String(access.total) })}
         {access.raised.map(({ role, sites }) => (
-          <span key={role} className="text-neutral-500 dark:text-neutral-400">
-            {" · "}
+          <span
+            key={role}
+            className="ml-2 border-l border-neutral-200 pl-2 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400"
+          >
+            {" "}
             {t("{role} on {count}", { role: roleInfo(role).label, count: String(sites) })}
           </span>
         ))}

@@ -25,6 +25,8 @@ export interface SiteConfigData {
   privateLinkKey?: string | null;
   claimExpiresAt?: string | null;
   sessionReplay: boolean;
+  heatmaps: boolean;
+  heatmapSampleRate: number;
   webVitals: boolean;
   trackErrors: boolean;
   trackOutbound: boolean;
@@ -123,6 +125,8 @@ class SiteConfig {
       privateLinkKey: site.privateLinkKey,
       claimExpiresAt: site.organizationId === null ? claimExpiryIso(site.claimExpiresAt ?? null) : null,
       sessionReplay: site.sessionReplay || false,
+      heatmaps: site.heatmaps ?? false,
+      heatmapSampleRate: site.heatmapSampleRate ?? 15,
       webVitals: site.webVitals || false,
       trackErrors: site.trackErrors || false,
       trackOutbound: site.trackOutbound ?? true,

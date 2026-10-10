@@ -185,8 +185,8 @@ export function SankeyDiagram({
     // The entry column says what the figures count; the others repeat only the number.
     if (node.step === 0 && !node.exits) return t("{count} sessions", { count });
     if (node.exits === null) return count;
-    if (node.exits === 0) return t("{count} · all continue", { count });
-    return t("{count} · {percent} end here", { count, percent: formatShare(node.exits / node.count, 0) });
+    if (node.exits === 0) return t("{count} (all continue)", { count });
+    return t("{count} ({percent} end here)", { count, percent: formatShare(node.exits / node.count, 0) });
   };
 
   return (
@@ -422,7 +422,7 @@ export function SankeyDiagram({
                 <>
                   <div className="break-all font-medium">{hoveredNode.name}</div>
                   <div className="mt-1 tabular-nums text-neutral-600 dark:text-neutral-300">
-                    {t("{count} sessions · {percent} of sessions with 2+ pages", {
+                    {t("{count} sessions ({percent} of sessions with 2+ pages)", {
                       count: hoveredNode.count.toLocaleString(),
                       percent: `${hoveredNode.percentage.toFixed(1)}%`,
                     })}
@@ -448,7 +448,7 @@ export function SankeyDiagram({
                     {hoveredLinkTarget.name}
                   </div>
                   <div className="mt-1 tabular-nums text-neutral-600 dark:text-neutral-300">
-                    {t("{count} sessions · {percent} of those on {page} at step {step}", {
+                    {t("{count} sessions ({percent} of those on {page} at step {step})", {
                       count: hoveredLink.value.toLocaleString(),
                       percent: formatShare(hoveredLink.value / hoveredLinkSource.count),
                       page: hoveredLinkSource.name,

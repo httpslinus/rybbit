@@ -13,3 +13,7 @@
 // ];
 
 // export default eslintConfig;
+
+export default [
+  { ignores: ["node_modules/**", ".next/**", ".cache/**", "out/**", "build/**", "next-env.d.ts"] },
+];

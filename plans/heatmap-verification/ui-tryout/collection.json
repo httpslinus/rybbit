@@ -1,0 +1,2667 @@
+{
+  "siteId": 26,
+  "hostname": "tryout-8a7eef3c.heatmap.test",
+  "paths": [
+    "/",
+    "/pricing"
+  ],
+  "widths": [
+    375,
+    768,
+    1440
+  ],
+  "startedAt": "2026-10-10T15:35:50.136Z",
+  "collectionMethod": "Trusted Chromium clicks through the shipped public tracker; real authenticated report APIs",
+  "sessions": [
+    {
+      "width": 375,
+      "visit": 0,
+      "userId": "ui-tryout-8a7eef3c-375-0",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k3jj4-m21uxmnsth-ptjapxc0du",
+          "events": [
+            {
+              "timestamp": 1791646551650,
+              "pageVisitId": "mv2k3iw1-gz6dzgsvh-vdq6n3ce9a",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 30.973451327433626
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k3ks0-zcecgo6gobg-qcq366h0kdp",
+          "events": [
+            {
+              "timestamp": 1791646552512,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 346,
+              "pageX": 104,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646552592,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 352,
+              "pageX": 110,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646552671,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 116,
+              "clientY": 346,
+              "pageX": 116,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646552750,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 352,
+              "pageX": 104,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646552829,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 346,
+              "pageX": 110,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646552910,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 116,
+              "clientY": 352,
+              "pageX": 116,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646552989,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 346,
+              "pageX": 104,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646553083,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 260,
+              "clientY": 346,
+              "pageX": 260,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646553161,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 266,
+              "clientY": 352,
+              "pageX": 266,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646553242,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 272,
+              "clientY": 346,
+              "pageX": 272,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646553330,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 302,
+              "clientY": 33,
+              "pageX": 302,
+              "pageY": 33
+            },
+            {
+              "timestamp": 1791646553410,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 308,
+              "clientY": 39,
+              "pageX": 308,
+              "pageY": 39
+            },
+            {
+              "timestamp": 1791646553498,
+              "pageVisitId": "mv2k3jj6-jpwgiozzjt-pw05uc4ugfb",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 45
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-375-0"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 375,
+        "height": 700,
+        "documentWidth": 375,
+        "documentHeight": 2260
+      }
+    },
+    {
+      "width": 375,
+      "visit": 1,
+      "userId": "ui-tryout-8a7eef3c-375-1",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k3mx3-lb8a92yz1qb-fno7593ctk6",
+          "events": [
+            {
+              "timestamp": 1791646555989,
+              "pageVisitId": "mv2k3m8k-qdlt2ma8q1-ylb8gfke1i",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 30.973451327433626
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k3o5j-rsso0yulf4q-sso4wmzzuse",
+          "events": [
+            {
+              "timestamp": 1791646556882,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 346,
+              "pageX": 104,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646556960,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 352,
+              "pageX": 110,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646557039,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 116,
+              "clientY": 346,
+              "pageX": 116,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646557118,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 352,
+              "pageX": 104,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646557198,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 346,
+              "pageX": 110,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646557287,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 260,
+              "clientY": 346,
+              "pageX": 260,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646557365,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 266,
+              "clientY": 352,
+              "pageX": 266,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646557444,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 272,
+              "clientY": 346,
+              "pageX": 272,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646557532,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 302,
+              "clientY": 33,
+              "pageX": 302,
+              "pageY": 33
+            },
+            {
+              "timestamp": 1791646557612,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 308,
+              "clientY": 39,
+              "pageX": 308,
+              "pageY": 39
+            },
+            {
+              "timestamp": 1791646557704,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 207,
+              "clientY": 347,
+              "pageX": 207,
+              "pageY": 1226
+            },
+            {
+              "timestamp": 1791646557784,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 213,
+              "clientY": 353,
+              "pageX": 213,
+              "pageY": 1232
+            },
+            {
+              "timestamp": 1791646557873,
+              "pageVisitId": "mv2k3mx3-i8d3ihx4fg-wnh304wg82",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 78.00884955752213
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-375-1"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 375,
+        "height": 700,
+        "documentWidth": 375,
+        "documentHeight": 2260
+      }
+    },
+    {
+      "width": 375,
+      "visit": 2,
+      "userId": "ui-tryout-8a7eef3c-375-2",
+      "expectedHomeClicks": 14,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k3qb3-e8nq93z3j0o-9r7g4vu48g8",
+          "events": [
+            {
+              "timestamp": 1791646560400,
+              "pageVisitId": "mv2k3pn4-zgpvrcdm03j-ygyzdl4r5no",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 30.973451327433626
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k3rna-id6dql4dlf-ttlncpbyuj",
+          "events": [
+            {
+              "timestamp": 1791646561272,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 346,
+              "pageX": 104,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646561351,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 352,
+              "pageX": 110,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646561430,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 116,
+              "clientY": 346,
+              "pageX": 116,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646561509,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 104,
+              "clientY": 352,
+              "pageX": 104,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646561587,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 110,
+              "clientY": 346,
+              "pageX": 110,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646561670,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 260,
+              "clientY": 346,
+              "pageX": 260,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646561749,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 266,
+              "clientY": 352,
+              "pageX": 266,
+              "pageY": 363
+            },
+            {
+              "timestamp": 1791646561828,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 272,
+              "clientY": 346,
+              "pageX": 272,
+              "pageY": 357
+            },
+            {
+              "timestamp": 1791646561909,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 302,
+              "clientY": 33,
+              "pageX": 302,
+              "pageY": 33
+            },
+            {
+              "timestamp": 1791646561987,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 308,
+              "clientY": 39,
+              "pageX": 308,
+              "pageY": 39
+            },
+            {
+              "timestamp": 1791646562069,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 207,
+              "clientY": 347,
+              "pageX": 207,
+              "pageY": 1226
+            },
+            {
+              "timestamp": 1791646562147,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 213,
+              "clientY": 353,
+              "pageX": 213,
+              "pageY": 1232
+            },
+            {
+              "timestamp": 1791646562236,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 111,
+              "clientY": 346,
+              "pageX": 111,
+              "pageY": 1858
+            },
+            {
+              "timestamp": 1791646562314,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "click",
+              "clientX": 117,
+              "clientY": 352,
+              "pageX": 117,
+              "pageY": 1864
+            },
+            {
+              "timestamp": 1791646562398,
+              "pageVisitId": "mv2k3qb4-ikzj1mgyvsi-e66i8ue3oh8",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 375,
+              "viewportHeight": 700,
+              "documentWidth": 375,
+              "documentHeight": 2260,
+              "type": "scroll",
+              "maxDepth": 100
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-375-2"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 375,
+        "height": 700,
+        "documentWidth": 375,
+        "documentHeight": 2260
+      }
+    },
+    {
+      "width": 768,
+      "visit": 0,
+      "userId": "ui-tryout-8a7eef3c-768-0",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k3ts4-xssle4kl25m-97ed13g39lf",
+          "events": [
+            {
+              "timestamp": 1791646564871,
+              "pageVisitId": "mv2k3t3b-jkluq4jo4yk-mtzu4fws0e",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 33.70245546461243
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k3uzz-ta9p7slgx9r-1jo0itmpjtj",
+          "events": [
+            {
+              "timestamp": 1791646565773,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 346,
+              "pageX": 129,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646565852,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 352,
+              "pageX": 135,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646565930,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 141,
+              "clientY": 346,
+              "pageX": 141,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646566008,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 352,
+              "pageX": 129,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646566088,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 346,
+              "pageX": 135,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646566166,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 141,
+              "clientY": 352,
+              "pageX": 141,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646566245,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 346,
+              "pageX": 129,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646566327,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 315,
+              "clientY": 346,
+              "pageX": 315,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646566406,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 321,
+              "clientY": 352,
+              "pageX": 321,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646566486,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 327,
+              "clientY": 346,
+              "pageX": 327,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646566576,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 676,
+              "clientY": 42,
+              "pageX": 676,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646566655,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 682,
+              "clientY": 48,
+              "pageX": 682,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646566740,
+              "pageVisitId": "mv2k3ts5-0mkpwx1yp3vr-3mfree7gyls",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 45.01685122773231
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-768-0"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 768,
+        "height": 700,
+        "documentWidth": 768,
+        "documentHeight": 2077
+      }
+    },
+    {
+      "width": 768,
+      "visit": 1,
+      "userId": "ui-tryout-8a7eef3c-768-1",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k3x4y-7nc5qbk6bvc-1wdhj2br22u",
+          "events": [
+            {
+              "timestamp": 1791646569223,
+              "pageVisitId": "mv2k3wg7-oh9y28rih5r-ud8f9o4id7",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 33.70245546461243
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k3ycz-dxpfjx8mtib-r7qzymq44l",
+          "events": [
+            {
+              "timestamp": 1791646570124,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 346,
+              "pageX": 129,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646570203,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 352,
+              "pageX": 135,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646570281,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 141,
+              "clientY": 346,
+              "pageX": 141,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646570361,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 352,
+              "pageX": 129,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646570440,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 346,
+              "pageX": 135,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646570527,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 315,
+              "clientY": 346,
+              "pageX": 315,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646570605,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 321,
+              "clientY": 352,
+              "pageX": 321,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646570682,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 327,
+              "clientY": 346,
+              "pageX": 327,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646570770,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 676,
+              "clientY": 42,
+              "pageX": 676,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646570849,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 682,
+              "clientY": 48,
+              "pageX": 682,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646570936,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 102,
+              "clientY": 347,
+              "pageX": 102,
+              "pageY": 1301
+            },
+            {
+              "timestamp": 1791646571016,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 108,
+              "clientY": 353,
+              "pageX": 108,
+              "pageY": 1307
+            },
+            {
+              "timestamp": 1791646570932,
+              "pageVisitId": "mv2k3x50-2solgy8mws7-jcjz0y2pwvc",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 79.63408762638421
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-768-1"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 768,
+        "height": 700,
+        "documentWidth": 768,
+        "documentHeight": 2077
+      }
+    },
+    {
+      "width": 768,
+      "visit": 2,
+      "userId": "ui-tryout-8a7eef3c-768-2",
+      "expectedHomeClicks": 14,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k40hs-6gxskjutrs-8hsn38i1p1h",
+          "events": [
+            {
+              "timestamp": 1791646573579,
+              "pageVisitId": "mv2k3zt6-4jqx9wihomf-fg89udku9e6",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 33.70245546461243
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k41ul-bm6p3qshzo-u87gv7juzrb",
+          "events": [
+            {
+              "timestamp": 1791646574472,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 346,
+              "pageX": 129,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646574551,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 352,
+              "pageX": 135,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646574630,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 141,
+              "clientY": 346,
+              "pageX": 141,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646574707,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 129,
+              "clientY": 352,
+              "pageX": 129,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646574786,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 135,
+              "clientY": 346,
+              "pageX": 135,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646574873,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 315,
+              "clientY": 346,
+              "pageX": 315,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646574952,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 321,
+              "clientY": 352,
+              "pageX": 321,
+              "pageY": 435
+            },
+            {
+              "timestamp": 1791646575032,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 327,
+              "clientY": 346,
+              "pageX": 327,
+              "pageY": 429
+            },
+            {
+              "timestamp": 1791646575124,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 676,
+              "clientY": 42,
+              "pageX": 676,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646575203,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 682,
+              "clientY": 48,
+              "pageX": 682,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646575293,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 102,
+              "clientY": 347,
+              "pageX": 102,
+              "pageY": 1301
+            },
+            {
+              "timestamp": 1791646575370,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 108,
+              "clientY": 353,
+              "pageX": 108,
+              "pageY": 1307
+            },
+            {
+              "timestamp": 1791646575457,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 566,
+              "clientY": 347,
+              "pageX": 566,
+              "pageY": 1556
+            },
+            {
+              "timestamp": 1791646575536,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "click",
+              "clientX": 572,
+              "clientY": 353,
+              "pageX": 572,
+              "pageY": 1562
+            },
+            {
+              "timestamp": 1791646575623,
+              "pageVisitId": "mv2k40hs-yqg811pp07p-i2et2sqjzgd",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 768,
+              "viewportHeight": 700,
+              "documentWidth": 768,
+              "documentHeight": 2077,
+              "type": "scroll",
+              "maxDepth": 100
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-768-2"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 768,
+        "height": 700,
+        "documentWidth": 768,
+        "documentHeight": 2077
+      }
+    },
+    {
+      "width": 1440,
+      "visit": 0,
+      "userId": "ui-tryout-8a7eef3c-1440-0",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k43ze-vt8t7c950a-0ako4xvouplc",
+          "events": [
+            {
+              "timestamp": 1791646578088,
+              "pageVisitId": "mv2k43ag-oupzhb775wp-j1lk3lbiis",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 33.30161750713606
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k4576-ui8eyqxfydg-x0g4k2tmupq",
+          "events": [
+            {
+              "timestamp": 1791646578996,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 347,
+              "pageX": 278,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579074,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 353,
+              "pageX": 284,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646579154,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 290,
+              "clientY": 347,
+              "pageX": 290,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579233,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 353,
+              "pageX": 278,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646579311,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 347,
+              "pageX": 284,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579392,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 290,
+              "clientY": 353,
+              "pageX": 290,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646579472,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 347,
+              "pageX": 278,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579561,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 482,
+              "clientY": 347,
+              "pageX": 482,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579640,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 488,
+              "clientY": 353,
+              "pageX": 488,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646579719,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 494,
+              "clientY": 347,
+              "pageX": 494,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646579802,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1210,
+              "clientY": 42,
+              "pageX": 1210,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646579879,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1216,
+              "clientY": 48,
+              "pageX": 1216,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646579965,
+              "pageVisitId": "mv2k43zf-1bf4hafign9i-x2tssth96t",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 45.00475737392959
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-1440-0"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 1440,
+        "height": 700,
+        "documentWidth": 1440,
+        "documentHeight": 2102
+      }
+    },
+    {
+      "width": 1440,
+      "visit": 1,
+      "userId": "ui-tryout-8a7eef3c-1440-1",
+      "expectedHomeClicks": 12,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k47be-029w220o825f-dt24ok72l7",
+          "events": [
+            {
+              "timestamp": 1791646582421,
+              "pageVisitId": "mv2k46mt-d9jm850wcd9-yrbohogbbi",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 33.30161750713606
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k48ji-ug2dmrnv3n-k0938ph163i",
+          "events": [
+            {
+              "timestamp": 1791646583316,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 347,
+              "pageX": 278,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646583393,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 353,
+              "pageX": 284,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646583471,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 290,
+              "clientY": 347,
+              "pageX": 290,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646583550,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 353,
+              "pageX": 278,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646583630,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 347,
+              "pageX": 284,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646583716,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 482,
+              "clientY": 347,
+              "pageX": 482,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646583796,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 488,
+              "clientY": 353,
+              "pageX": 488,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646583876,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 494,
+              "clientY": 347,
+              "pageX": 494,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646583963,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1210,
+              "clientY": 42,
+              "pageX": 1210,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646584041,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1216,
+              "clientY": 48,
+              "pageX": 1216,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646584129,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 246,
+              "clientY": 346,
+              "pageX": 246,
+              "pageY": 1277
+            },
+            {
+              "timestamp": 1791646584208,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 252,
+              "clientY": 352,
+              "pageX": 252,
+              "pageY": 1283
+            },
+            {
+              "timestamp": 1791646584298,
+              "pageVisitId": "mv2k47bf-rc1df1x5qm-g3qd3321hll",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 78.0209324452902
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-1440-1"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 1440,
+        "height": 700,
+        "documentWidth": 1440,
+        "documentHeight": 2102
+      }
+    },
+    {
+      "width": 1440,
+      "visit": 2,
+      "userId": "ui-tryout-8a7eef3c-1440-2",
+      "expectedHomeClicks": 14,
+      "expectedPricingClicks": 3,
+      "batches": [
+        {
+          "batchId": "1b2woxg-mv2k4ao5-9harkd5l8ol-q0smq3a4y3q",
+          "events": [
+            {
+              "timestamp": 1791646586766,
+              "pageVisitId": "mv2k49zi-6sc3w5r6kl8-35pkg9z6z2c",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 33.30161750713606
+            }
+          ]
+        },
+        {
+          "batchId": "1b2woxg-mv2k4c0v-th040pa3rve-ql3ct43iv2a",
+          "events": [
+            {
+              "timestamp": 1791646587663,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 347,
+              "pageX": 278,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646587743,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 353,
+              "pageX": 284,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646587821,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 290,
+              "clientY": 347,
+              "pageX": 290,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646587899,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 278,
+              "clientY": 353,
+              "pageX": 278,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646587978,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 284,
+              "clientY": 347,
+              "pageX": 284,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646588064,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 482,
+              "clientY": 347,
+              "pageX": 482,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646588144,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 488,
+              "clientY": 353,
+              "pageX": 488,
+              "pageY": 473
+            },
+            {
+              "timestamp": 1791646588223,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 494,
+              "clientY": 347,
+              "pageX": 494,
+              "pageY": 467
+            },
+            {
+              "timestamp": 1791646588310,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1210,
+              "clientY": 42,
+              "pageX": 1210,
+              "pageY": 42
+            },
+            {
+              "timestamp": 1791646588388,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1216,
+              "clientY": 48,
+              "pageX": 1216,
+              "pageY": 48
+            },
+            {
+              "timestamp": 1791646588476,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 246,
+              "clientY": 346,
+              "pageX": 246,
+              "pageY": 1277
+            },
+            {
+              "timestamp": 1791646588556,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 252,
+              "clientY": 352,
+              "pageX": 252,
+              "pageY": 1283
+            },
+            {
+              "timestamp": 1791646588644,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1087,
+              "clientY": 346,
+              "pageX": 1087,
+              "pageY": 1568
+            },
+            {
+              "timestamp": 1791646588723,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "click",
+              "clientX": 1093,
+              "clientY": 352,
+              "pageX": 1093,
+              "pageY": 1574
+            },
+            {
+              "timestamp": 1791646588805,
+              "pageVisitId": "mv2k4ao6-uxfqsk575i-kgdwvgvgl1",
+              "hostname": "tryout-8a7eef3c.heatmap.test",
+              "pathname": "/",
+              "viewportWidth": 1440,
+              "viewportHeight": 700,
+              "documentWidth": 1440,
+              "documentHeight": 2102,
+              "type": "scroll",
+              "maxDepth": 100
+            }
+          ],
+          "userId": "ui-tryout-8a7eef3c-1440-2"
+        }
+      ],
+      "responseStatuses": [
+        200,
+        200
+      ],
+      "errors": [],
+      "geometry": {
+        "width": 1440,
+        "height": 700,
+        "documentWidth": 1440,
+        "documentHeight": 2102
+      }
+    }
+  ],
+  "heatmapRequests": 18,
+  "ordinaryRequests": 18,
+  "rrwebRequests": 0,
+  "errors": [],
+  "status": "passed",
+  "origin": "http://tryout-8a7eef3c.heatmap.test:64856",
+  "reports": [
+    {
+      "width": 375,
+      "pathname": "/",
+      "clicks": 38,
+      "sessions": 3,
+      "points": 15,
+      "scrollSessions": 4,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 30,
+          "count": 1,
+          "reach": 4
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/",
+        "width": 375,
+        "height": 2260
+      }
+    },
+    {
+      "width": 375,
+      "pathname": "/pricing",
+      "clicks": 9,
+      "sessions": 3,
+      "points": 3,
+      "scrollSessions": 3,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 30,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/pricing",
+        "width": 375,
+        "height": 2260
+      }
+    },
+    {
+      "width": 768,
+      "pathname": "/",
+      "clicks": 38,
+      "sessions": 3,
+      "points": 15,
+      "scrollSessions": 4,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 30,
+          "count": 1,
+          "reach": 4
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/",
+        "width": 768,
+        "height": 2077
+      }
+    },
+    {
+      "width": 768,
+      "pathname": "/pricing",
+      "clicks": 9,
+      "sessions": 3,
+      "points": 3,
+      "scrollSessions": 3,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 30,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/pricing",
+        "width": 768,
+        "height": 2077
+      }
+    },
+    {
+      "width": 1440,
+      "pathname": "/",
+      "clicks": 38,
+      "sessions": 3,
+      "points": 15,
+      "scrollSessions": 4,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 4
+        },
+        {
+          "depth": 30,
+          "count": 1,
+          "reach": 4
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/",
+        "width": 1440,
+        "height": 2102
+      }
+    },
+    {
+      "width": 1440,
+      "pathname": "/pricing",
+      "clicks": 9,
+      "sessions": 3,
+      "points": 3,
+      "scrollSessions": 3,
+      "identifiedScrollSessions": 3,
+      "scroll": [
+        {
+          "depth": 0,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 10,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 20,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 30,
+          "count": 0,
+          "reach": 3
+        },
+        {
+          "depth": 40,
+          "count": 1,
+          "reach": 3
+        },
+        {
+          "depth": 50,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 60,
+          "count": 0,
+          "reach": 2
+        },
+        {
+          "depth": 70,
+          "count": 1,
+          "reach": 2
+        },
+        {
+          "depth": 80,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 90,
+          "count": 0,
+          "reach": 1
+        },
+        {
+          "depth": 100,
+          "count": 1,
+          "reach": 1
+        }
+      ],
+      "background": {
+        "url": "https://tryout-8a7eef3c.heatmap.test/pricing",
+        "width": 1440,
+        "height": 2102
+      }
+    }
+  ],
+  "previousValidationAttempts": [
+    {
+      "status": "failed",
+      "errors": [
+        "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n4 !== 3\n\n    at file:///Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/collect.mjs:118:14"
+      ],
+      "reason": "The first assertion assumed identify() would erase the initial anonymous scroll visit. Revalidation inspects both unfiltered and identified sessions without collecting again."
+    }
+  ],
+  "finishedAt": "2026-10-10T15:37:51.386Z",
+  "validationFixtureOrigin": "http://tryout-8a7eef3c.heatmap.test:65107"
+}

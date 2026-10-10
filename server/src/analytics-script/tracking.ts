@@ -9,10 +9,11 @@ import {
   FormSubmitProperties,
   InputChangeProperties,
 } from "./types.js";
-import { findMatchingPattern } from "./utils.js";
 import { SessionReplayRecorder } from "./sessionReplay.js";
+import { HeatmapRecorder } from "./heatmaps.js";
+import { reserveKeepalive } from "./keepalive.js";
 import { getBotScore, getBotSignalMask } from "./botSignals.js";
-import { getTrackedPathname } from "./url.js";
+import { getTrackedPage, getTrackedPathname } from "./url.js";
 
 const FEATURE_FLAG_REQUEST_TIMEOUT_MS = 2000;
 
@@ -20,6 +21,7 @@ export class Tracker {
   private config: ScriptConfig;
   private customUserId: string | null = null;
   private sessionReplayRecorder?: SessionReplayRecorder;
+  private heatmapRecorder?: HeatmapRecorder;
   private errorDedupeCache: Map<string, number> = new Map();
   private errorDedupeLastCleanup = 0;
   private exposedFeatureFlags = new Set<string>();
@@ -31,6 +33,10 @@ export class Tracker {
 
     if (config.enableSessionReplay) {
       this.initializeSessionReplay();
+    }
+    if (config.enableHeatmaps) {
+      this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "");
+      this.heatmapRecorder.initialize();
     }
   }
 
@@ -91,7 +97,7 @@ export class Tracker {
         }),
         mode: "cors",
         credentials: "omit",
-        keepalive: true,
+        keepalive: false,
         signal: controller.signal,
       });
 
@@ -149,23 +155,13 @@ export class Tracker {
 
   createBasePayload(): BasePayload | null {
     const url = new URL(window.location.href);
-    let pathname = getTrackedPathname(url, this.config.trackUrlFragments);
-
-    // Check skip patterns
-    if (findMatchingPattern(pathname, this.config.skipPatterns)) {
-      return null;
-    }
-
-    // Apply mask patterns
-    const maskMatch = findMatchingPattern(pathname, this.config.maskPatterns);
-    if (maskMatch) {
-      pathname = maskMatch;
-    }
+    const page = getTrackedPage(url, this.config);
+    if (!page) return null;
 
     const payload: BasePayload = {
       site_id: this.config.siteId,
       hostname: url.hostname,
-      pathname: pathname,
+      pathname: page.pathname,
       querystring: this.config.trackQuerystring ? url.search : "",
       screenWidth: screen.width,
       screenHeight: screen.height,
@@ -193,18 +189,23 @@ export class Tracker {
   }
 
   async sendTrackingData(payload: TrackingPayload): Promise<void> {
+    let release: (() => void) | null = null;
     try {
+      const body = JSON.stringify(payload);
+      release = reserveKeepalive(body);
       await fetch(`${this.config.analyticsHost}/track`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body,
         mode: "cors",
-        keepalive: true,
+        keepalive: release !== null,
       });
     } catch (error) {
       console.error("Failed to send tracking data:", error);
+    } finally {
+      release?.();
     }
   }
 
@@ -466,6 +467,7 @@ export class Tracker {
     if (this.sessionReplayRecorder) {
       this.sessionReplayRecorder.updateUserId(this.customUserId);
     }
+    this.heatmapRecorder?.updateUserId(this.customUserId);
   }
 
   setTraits(traits: Record<string, unknown>): void {
@@ -488,23 +490,28 @@ export class Tracker {
     traits?: Record<string, unknown>,
     isNewIdentify: boolean = true
   ): Promise<void> {
+    let release: (() => void) | null = null;
     try {
+      const body = JSON.stringify({
+        site_id: this.config.siteId,
+        user_id: userId,
+        traits: traits,
+        is_new_identify: isNewIdentify,
+      });
+      release = reserveKeepalive(body);
       await fetch(`${this.config.analyticsHost}/identify`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          site_id: this.config.siteId,
-          user_id: userId,
-          traits: traits,
-          is_new_identify: isNewIdentify,
-        }),
+        body,
         mode: "cors",
-        keepalive: true,
+        keepalive: release !== null,
       });
     } catch (error) {
       console.error("Failed to send identify event:", error);
+    } finally {
+      release?.();
     }
   }
 
@@ -519,6 +526,7 @@ export class Tracker {
     if (this.sessionReplayRecorder) {
       this.sessionReplayRecorder.updateUserId("");
     }
+    this.heatmapRecorder?.updateUserId("");
 
     void this.refreshFeatureFlags();
   }
@@ -553,6 +561,13 @@ export class Tracker {
     if (this.sessionReplayRecorder) {
       this.sessionReplayRecorder.onPageChange();
     }
+    this.heatmapRecorder?.onPageChange();
+  }
+
+  flushForExit(): void {
+    this.heatmapRecorder?.flushForExit();
+    // Flush replay without stopping capture if navigation is canceled.
+    this.sessionReplayRecorder?.onPageChange();
   }
 
   // Cleanup
@@ -560,5 +575,6 @@ export class Tracker {
     if (this.sessionReplayRecorder) {
       this.sessionReplayRecorder.cleanup();
     }
+    this.heatmapRecorder?.cleanup();
   }
 }

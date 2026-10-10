@@ -1,0 +1,497 @@
+{
+  "siteId": 1,
+  "source": "Real trusted clicks collected by collect-browser.mjs; report responses are not substituted",
+  "startedAt": "2026-10-10T21:28:11.981Z",
+  "alignments": [
+    {
+      "label": "desktop light",
+      "width": 375,
+      "center": {
+        "x": 997.5,
+        "y": 589.5
+      },
+      "expected": {
+        "x": 997,
+        "y": 589
+      },
+      "scale": 1,
+      "errorX": 0.5,
+      "errorY": 0.5,
+      "devicePixelRatio": 2,
+      "canvasWidth": 750,
+      "canvasHeight": 1576,
+      "scrollTop": 476,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    },
+    {
+      "label": "desktop light",
+      "width": 768,
+      "center": {
+        "x": 1021,
+        "y": 589.5
+      },
+      "expected": {
+        "x": 1020.5,
+        "y": 589
+      },
+      "scale": 1,
+      "errorX": 0.5,
+      "errorY": 0.5,
+      "devicePixelRatio": 2,
+      "canvasWidth": 1536,
+      "canvasHeight": 1576,
+      "scrollTop": 476,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    },
+    {
+      "label": "desktop light",
+      "width": 1440,
+      "center": {
+        "x": 1085,
+        "y": 589.5210719573918
+      },
+      "expected": {
+        "x": 1084.5,
+        "y": 589.0208333333334
+      },
+      "scale": 0.8034722222222223,
+      "errorX": 0.5,
+      "errorY": 0.5002386240583974,
+      "devicePixelRatio": 2,
+      "canvasWidth": 2314,
+      "canvasHeight": 1576,
+      "scrollTop": 305,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    },
+    {
+      "label": "desktop dark",
+      "width": 768,
+      "center": {
+        "x": 1021,
+        "y": 589.5
+      },
+      "expected": {
+        "x": 1020.5,
+        "y": 589
+      },
+      "scale": 1,
+      "errorX": 0.5,
+      "errorY": 0.5,
+      "devicePixelRatio": 2,
+      "canvasWidth": 1536,
+      "canvasHeight": 1576,
+      "scrollTop": 476,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    },
+    {
+      "label": "phone dark",
+      "width": 375,
+      "center": {
+        "x": 104.70010453137535,
+        "y": 574.7389119705028
+      },
+      "expected": {
+        "x": 104.19999999999999,
+        "y": 574.24
+      },
+      "scale": 0.952,
+      "errorX": 0.5001045313753565,
+      "errorY": 0.49891197050283154,
+      "devicePixelRatio": 2,
+      "canvasWidth": 714,
+      "canvasHeight": 1268,
+      "scrollTop": 511,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    },
+    {
+      "label": "phone fullscreen dark",
+      "width": 375,
+      "center": {
+        "x": 100.5,
+        "y": 504.5
+      },
+      "expected": {
+        "x": 100,
+        "y": 504
+      },
+      "scale": 1,
+      "errorX": 0.5,
+      "errorY": 0.5,
+      "devicePixelRatio": 2,
+      "canvasWidth": 750,
+      "canvasHeight": 1584,
+      "scrollTop": 474,
+      "frameScripts": "allow-scripts",
+      "overlayPointerEvents": "none"
+    }
+  ],
+  "interactions": [
+    {
+      "check": "Delayed page search preserves actual iframe, scroller and scroll without detail request",
+      "passed": true
+    },
+    {
+      "check": "Keyboard mode/page navigation and independent click/scroll selection",
+      "passed": true
+    },
+    {
+      "check": "Search matches pages and reports no matches",
+      "passed": true
+    },
+    {
+      "check": "Stored dark theme with aligned canvas",
+      "passed": true
+    },
+    {
+      "check": "Phone page picker search and keyboard selection",
+      "passed": true
+    },
+    {
+      "check": "Phone fullscreen fills viewport, Escape closes, trigger focus restores",
+      "passed": true
+    },
+    {
+      "check": "Geometry-only retains click overlay without iframe",
+      "passed": true
+    },
+    {
+      "check": "Blocked live frame exposes embedding limitation; geometry-only remains usable",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "plans/heatmap-verification/evidence/desktop-light-375.png",
+    "plans/heatmap-verification/evidence/desktop-light-768.png",
+    "plans/heatmap-verification/evidence/desktop-light-1440.png",
+    "plans/heatmap-verification/evidence/desktop-dark-768.png",
+    "plans/heatmap-verification/evidence/phone-fullscreen-dark.png",
+    "plans/heatmap-verification/evidence/phone-geometry-only.png",
+    "plans/heatmap-verification/evidence/blocked-frame-geometry-only.png"
+  ],
+  "heatmapUploadsFromBackground": 0,
+  "baselineAudit": [
+    {
+      "route": "/1/main",
+      "width": 1680,
+      "theme": "light",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 200,
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".": 12,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/main",
+      "width": 375,
+      "theme": "light",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 200,
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".": 12,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/main",
+      "width": 1680,
+      "theme": "dark",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 200,
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".": 18,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/main",
+      "width": 375,
+      "theme": "dark",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 200,
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".": 12,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/replay",
+      "width": 1680,
+      "theme": "light",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 500,
+      "errorPageText": "(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n3:I[688502,[\\\"/_next/static/chunks/108-6hc60214r.js\\\",\\\"/_next/static/chunks/0k3r9w.7qkm52.js\\\",\\\"/_next/static/chunks/0bkj6panob.qf.js\\\",\\\"/_next/static/chunks",
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)": 1,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/replay",
+      "width": 375,
+      "theme": "light",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 500,
+      "errorPageText": "(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n3:I[688502,[\\\"/_next/static/chunks/108-6hc60214r.js\\\",\\\"/_next/static/chunks/0k3r9w.7qkm52.js\\\",\\\"/_next/static/chunks/0bkj6panob.qf.js\\\",\\\"/_next/static/chunks",
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)": 1,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/replay",
+      "width": 1680,
+      "theme": "dark",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 500,
+      "errorPageText": "(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n3:I[688502,[\\\"/_next/static/chunks/108-6hc60214r.js\\\",\\\"/_next/static/chunks/0k3r9w.7qkm52.js\\\",\\\"/_next/static/chunks/0bkj6panob.qf.js\\\",\\\"/_next/static/chunks",
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)": 1,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    },
+    {
+      "route": "/1/replay",
+      "width": 375,
+      "theme": "dark",
+      "pageErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "httpStatus": 500,
+      "errorPageText": "(self.__next_f=self.__next_f||[]).push([0])self.__next_f.push([1,\"1:\\\"$Sreact.fragment\\\"\\n3:I[688502,[\\\"/_next/static/chunks/108-6hc60214r.js\\\",\\\"/_next/static/chunks/0k3r9w.7qkm52.js\\\",\\\"/_next/static/chunks/0bkj6panob.qf.js\\\",\\\"/_next/static/chunks",
+      "countsBySignature": {
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 1
+      },
+      "consoleCountsBySignature": {
+        "Failed to load resource: the server responded with a status of 500 (Internal Server Error)": 1,
+        "Failed to load resource: the server responded with a status of 404 (Not Found)": 1
+      }
+    }
+  ],
+  "pageErrors": [
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+  ],
+  "reportRuntimeAudit": [
+    {
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=60&past_minutes_end=0&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&bucket=minute&stat=users",
+      "step": "load real heatmap report",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=60&past_minutes_end=0&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=768&bucket=minute&stat=users",
+      "step": "dark theme",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=60&past_minutes_end=0&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&bucket=minute&stat=users",
+      "step": "phone page picker",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=60&past_minutes_end=0&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&bucket=minute&stat=users",
+      "step": "frame blocking with real recorded geometry",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Framing 'https://qa.heatmap.test/' violates the following Content Security Policy directive: \"frame-ancestors 'none'\". The request has been blocked.\n"
+  ],
+  "runtimeErrorCounts": {
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": 4
+  },
+  "consoleErrorCounts": {
+    "Failed to load resource: the server responded with a status of 404 (Not Found)": 5,
+    "Framing 'https://qa.heatmap.test/' violates the following Content Security Policy directive: \"frame-ancestors 'none'\". The request has been blocked.\n": 1
+  },
+  "provenExistingClientIssues": {
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.": {
+      "reportCount": 4,
+      "observedOnExistingPages": [
+        {
+          "route": "/1/main",
+          "width": 1680,
+          "theme": "light",
+          "count": 1
+        },
+        {
+          "route": "/1/main",
+          "width": 375,
+          "theme": "light",
+          "count": 1
+        },
+        {
+          "route": "/1/main",
+          "width": 1680,
+          "theme": "dark",
+          "count": 1
+        },
+        {
+          "route": "/1/main",
+          "width": 375,
+          "theme": "dark",
+          "count": 1
+        },
+        {
+          "route": "/1/replay",
+          "width": 1680,
+          "theme": "light",
+          "count": 1
+        },
+        {
+          "route": "/1/replay",
+          "width": 375,
+          "theme": "light",
+          "count": 1
+        },
+        {
+          "route": "/1/replay",
+          "width": 1680,
+          "theme": "dark",
+          "count": 1
+        },
+        {
+          "route": "/1/replay",
+          "width": 375,
+          "theme": "dark",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "passed": true,
+  "finishedAt": "2026-10-10T21:28:53.998Z"
+}

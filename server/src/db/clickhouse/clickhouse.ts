@@ -3,6 +3,7 @@ import { clickhouse } from "./client.js";
 import { clickhouseInitLogger } from "./initUtils.js";
 import { initializeCloudTables } from "./schema/cloud.js";
 import { initializeCoreTables } from "./schema/core.js";
+import { initializeHeatmapTables } from "./schema/heatmaps.js";
 import { initializeLiteDashboardMVs } from "./schema/liteDashboard.js";
 import { provisionQueryUser } from "./queryUser.js";
 
@@ -24,6 +25,7 @@ export const initializeClickhouse = async () => {
   }
 
   await initializeCoreTables();
+  await initializeHeatmapTables();
 
   if (IS_CLOUD) {
     await initializeCloudTables();

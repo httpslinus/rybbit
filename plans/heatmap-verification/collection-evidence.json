@@ -1,0 +1,46 @@
+{
+  "siteId": 1,
+  "startedAt": "2026-10-10T21:08:40.377Z",
+  "widths": [
+    {
+      "width": 375,
+      "x": 100,
+      "pageY": 870,
+      "count": 2,
+      "sessions": 1,
+      "batches": 2,
+      "scrollSessions": 2,
+      "ordinaryRouteStatus": 200,
+      "ordinaryIdentifiedSessions": 1,
+      "ordinaryPageviews": 2
+    },
+    {
+      "width": 768,
+      "x": 320,
+      "pageY": 870,
+      "count": 2,
+      "sessions": 1,
+      "batches": 2,
+      "scrollSessions": 2,
+      "ordinaryRouteStatus": 200,
+      "ordinaryIdentifiedSessions": 1,
+      "ordinaryPageviews": 1
+    },
+    {
+      "width": 1440,
+      "x": 720,
+      "pageY": 870,
+      "count": 2,
+      "sessions": 1,
+      "batches": 2,
+      "scrollSessions": 2,
+      "ordinaryRouteStatus": 200,
+      "ordinaryIdentifiedSessions": 1,
+      "ordinaryPageviews": 2
+    }
+  ],
+  "requests": 6,
+  "ordinaryAnalyticsRequests": 6,
+  "rrwebRequests": 0,
+  "finishedAt": "2026-10-10T21:08:47.917Z"
+}

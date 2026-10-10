@@ -94,7 +94,7 @@ const ActivitySlider = React.forwardRef<React.ElementRef<typeof SliderPrimitive.
                   markerColor(event)
                 )}
                 style={{ left: `${constrained}%`, top: "50%", transform: "translate(-50%, -50%)" }}
-                title={`${shortLabel(event)} · ${formatOffset(event.offset)}`}
+                title={`${shortLabel(event)} (${formatOffset(event.offset)})`}
               />
             );
           })}

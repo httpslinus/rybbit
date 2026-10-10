@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Tracker } from "./tracking.js";
+import { HeatmapRecorder } from "./heatmaps.js";
 import { ScriptConfig } from "./types.js";
 import { resetBotScoreCacheForTests } from "./botSignals.js";
+import { reserveKeepalive } from "./keepalive.js";
 
 // Mock fetch globally
 global.fetch = vi.fn();
+const NativeURL = URL;
 
 describe("Tracker", () => {
   let tracker: Tracker;
@@ -32,6 +35,7 @@ describe("Tracker", () => {
     // Mock window properties
     mockLocation = {
       href: "https://example.com/page?query=test",
+      origin: "https://example.com",
       hostname: "example.com",
       pathname: "/page",
       search: "?query=test",
@@ -45,13 +49,19 @@ describe("Tracker", () => {
     });
 
     // Mock URL constructor to use our mockLocation
-    global.URL = vi.fn().mockImplementation(() => ({
-      hostname: mockLocation.hostname,
-      pathname: mockLocation.pathname,
-      search: mockLocation.search,
-      hash: mockLocation.hash,
-      searchParams: { entries: () => [["query", "test"]] },
-    })) as any;
+    vi.stubGlobal(
+      "URL",
+      vi.fn().mockImplementation((input: string | URL, base?: string | URL) => {
+        if (String(input) !== mockLocation.href) return new NativeURL(input, base);
+        return {
+          hostname: mockLocation.hostname,
+          pathname: mockLocation.pathname,
+          search: mockLocation.search,
+          hash: mockLocation.hash,
+          searchParams: { entries: () => [["query", "test"]] },
+        };
+      })
+    );
 
     Object.defineProperty(screen, "width", {
       value: 1920,
@@ -115,6 +125,8 @@ describe("Tracker", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe("createBasePayload", () => {
@@ -348,6 +360,20 @@ describe("Tracker", () => {
       consoleSpy.mockRestore();
     });
 
+    it("handles payload serialization failures without escaping the tracking error boundary", async () => {
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const payload = { ...tracker.createBasePayload()!, type: "pageview" as const };
+      Object.assign(payload, { self: payload });
+
+      await expect(tracker.sendTrackingData(payload)).resolves.toBeUndefined();
+
+      expect(fetch).not.toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith("Failed to send tracking data:", expect.any(TypeError));
+      const release = reserveKeepalive("x".repeat(64 * 1024));
+      expect(release).not.toBeNull();
+      release?.();
+    });
+
     describe("error tracking", () => {
       it("should track first-party errors", () => {
         // Enable error tracking for this test
@@ -474,6 +500,38 @@ describe("Tracker", () => {
       expect(tracker.getUserId()).toBe("user-456");
     });
 
+    it("shares pending identify requests with the heatmap keepalive budget and releases it on completion", async () => {
+      let completeIdentify!: (response: Response) => void;
+      vi.mocked(fetch).mockImplementationOnce(
+        () => new Promise<Response>(resolve => (completeIdentify = resolve))
+      );
+      const releaseHeatmap = reserveKeepalive("x".repeat(48 * 1024));
+      let releaseRemainder: (() => void) | null = null;
+      try {
+        tracker.identify("user-456", { plan: "x".repeat(1500) });
+        const identify = vi.mocked(fetch).mock.calls[0][1]!;
+        expect(identify.keepalive).toBe(true);
+        const identifyBytes = new TextEncoder().encode(identify.body as string).byteLength;
+        releaseRemainder = reserveKeepalive("x".repeat(16 * 1024 - identifyBytes));
+        expect(releaseRemainder).not.toBeNull();
+        expect(reserveKeepalive("x")).toBeNull();
+
+        tracker.setTraits({ plan: "pro" });
+        expect(vi.mocked(fetch).mock.calls[1][1]?.keepalive).toBe(false);
+
+        completeIdentify({} as Response);
+        await Promise.resolve();
+        await Promise.resolve();
+        const releasedIdentify = reserveKeepalive("x".repeat(identifyBytes));
+        expect(releasedIdentify).not.toBeNull();
+        releasedIdentify?.();
+      } finally {
+        completeIdentify({} as Response);
+        releaseHeatmap?.();
+        releaseRemainder?.();
+      }
+    });
+
     it("should validate user ID", () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -530,6 +588,66 @@ describe("Tracker", () => {
         "https://analytics.example.com/site/123/feature-flags/evaluate",
         expect.objectContaining({ method: "POST", signal: expect.any(AbortSignal) })
       );
+    });
+  });
+
+  describe("heatmap recorder lifecycle", () => {
+    let initialize: ReturnType<typeof vi.spyOn>;
+    let updateUserId: ReturnType<typeof vi.spyOn>;
+    let onPageChange: ReturnType<typeof vi.spyOn>;
+    let cleanup: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      initialize = vi.spyOn(HeatmapRecorder.prototype, "initialize").mockImplementation(() => {});
+      updateUserId = vi.spyOn(HeatmapRecorder.prototype, "updateUserId");
+      onPageChange = vi.spyOn(HeatmapRecorder.prototype, "onPageChange");
+      cleanup = vi.spyOn(HeatmapRecorder.prototype, "cleanup");
+    });
+
+    it("initializes heatmaps independently while replay is disabled", () => {
+      expect(initialize).not.toHaveBeenCalled();
+
+      tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
+
+      expect(initialize).toHaveBeenCalledOnce();
+      expect(tracker.isSessionReplayActive()).toBe(false);
+    });
+
+    it("forwards trimmed identity changes and clearing to the recorder", () => {
+      tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
+
+      tracker.identify("  user-456  ");
+      tracker.clearUserId();
+
+      expect(updateUserId.mock.calls).toEqual([["user-456"], [""]]);
+      expect(tracker.getUserId()).toBeNull();
+    });
+
+    it("does not forward an invalid identity to the recorder", () => {
+      tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
+      vi.spyOn(console, "error").mockImplementation(() => {});
+
+      tracker.identify("   ");
+
+      expect(updateUserId).not.toHaveBeenCalled();
+    });
+
+    it("forwards page changes and cleanup to the recorder", () => {
+      tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
+
+      tracker.onPageChange();
+      tracker.cleanup();
+
+      expect(onPageChange).toHaveBeenCalledOnce();
+      expect(cleanup).toHaveBeenCalledOnce();
+    });
+
+    it("flushes impending navigation without disposing the heatmap recorder", () => {
+      const flush = vi.spyOn(HeatmapRecorder.prototype, "flushForExit");
+      tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
+      tracker.flushForExit();
+      expect(flush).toHaveBeenCalledOnce();
+      expect(cleanup).not.toHaveBeenCalled();
     });
   });
 });

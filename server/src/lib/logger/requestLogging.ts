@@ -17,7 +17,7 @@ function requestPath(request: FastifyRequest): string {
 }
 
 function isHighVolumeSuccessRoute(route: string): boolean {
-  return HIGH_VOLUME_SUCCESS_ROUTES.has(route) || route.endsWith("/session-replay/record/:siteId");
+  return HIGH_VOLUME_SUCCESS_ROUTES.has(route) || route.endsWith("/session-replay/record/:siteId") || route.endsWith("/heatmaps/record/:siteId");
 }
 
 function responseTimeMs(reply: FastifyReply): number {

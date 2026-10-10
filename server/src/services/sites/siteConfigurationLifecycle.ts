@@ -7,6 +7,7 @@ import { importStatus, sites } from "../../db/postgres/schema.js";
 import { IS_CLOUD } from "../../lib/const.js";
 import { validateIPPattern } from "../../lib/ipUtils.js";
 import { detectPlatform } from "../lifecycleEmails/platformDetect.js";
+import { heatmapBatchClaims } from "../heatmaps/heatmapBatchClaims.js";
 import { usageService } from "../usageService.js";
 import { siteConfig, type SiteConfigData } from "../../lib/siteConfig.js";
 
@@ -29,6 +30,8 @@ export type CreateSiteInput = {
   excludedIPs?: string[];
   excludedCountries?: string[];
   sessionReplay?: boolean;
+  heatmaps?: boolean;
+  heatmapSampleRate?: number;
   webVitals?: boolean;
   trackErrors?: boolean;
   trackOutbound?: boolean;
@@ -61,6 +64,8 @@ export type UpdateSiteConfigurationInput = {
   excludedQueryParams?: string[];
   tags?: string[];
   sessionReplay?: boolean;
+  heatmaps?: boolean;
+  heatmapSampleRate?: number;
   webVitals?: boolean;
   trackErrors?: boolean;
   trackOutbound?: boolean;
@@ -79,6 +84,7 @@ export type SiteLifecycleErrorCode =
   | "invalid_web_domain"
   | "invalid_mobile_identifier"
   | "mobile_feature_not_supported"
+  | "invalid_heatmap_configuration"
   | "organization_not_found"
   | "replay_not_entitled"
   | "standard_features_not_entitled"
@@ -128,6 +134,8 @@ const DIRECT_UPDATE_FIELDS = [
   "excludedQueryParams",
   "tags",
   "sessionReplay",
+  "heatmaps",
+  "heatmapSampleRate",
   "webVitals",
   "trackErrors",
   "trackOutbound",
@@ -180,12 +188,37 @@ function validateSiteIdentity(type: SiteType, domain: string): void {
   }
 }
 
-function validateMobileFeatures(type: SiteType, input: Pick<CreateSiteInput, "sessionReplay" | "webVitals">): void {
+function validateMobileFeatures(
+  type: SiteType,
+  input: Pick<CreateSiteInput, "sessionReplay" | "heatmaps" | "webVitals">
+): void {
+  if (type === "mobile" && input.heatmaps) {
+    throw new SiteLifecycleError("mobile_feature_not_supported", 400, "Heatmaps are only available for web sites");
+  }
   if (type === "mobile" && (input.sessionReplay || input.webVitals)) {
     throw new SiteLifecycleError(
       "mobile_feature_not_supported",
       400,
       "Session replay and Web Vitals are only available for web sites"
+    );
+  }
+}
+
+function validateHeatmapSettings(input: Pick<CreateSiteInput, "heatmaps" | "heatmapSampleRate">): void {
+  if (input.heatmaps !== undefined && typeof input.heatmaps !== "boolean") {
+    throw new SiteLifecycleError("invalid_heatmap_configuration", 400, "Heatmaps must be a boolean");
+  }
+  if (
+    input.heatmapSampleRate !== undefined &&
+    (typeof input.heatmapSampleRate !== "number" ||
+      !Number.isFinite(input.heatmapSampleRate) ||
+      input.heatmapSampleRate < 0 ||
+      input.heatmapSampleRate > 100)
+  ) {
+    throw new SiteLifecycleError(
+      "invalid_heatmap_configuration",
+      400,
+      "Heatmap sample rate must be a finite number between 0 and 100"
     );
   }
 }
@@ -223,6 +256,7 @@ class SiteConfigurationLifecycle {
     const domain = normalizeDomain(input.domain);
 
     validateSiteIdentity(siteType, domain);
+    validateHeatmapSettings(input);
     validateMobileFeatures(siteType, input);
 
     const createdSite = await withOrganizationSiteLock(input.organizationId, async tx => {
@@ -280,6 +314,8 @@ class SiteConfigurationLifecycle {
             ...(input.excludedIPs !== undefined && { excludedIPs: input.excludedIPs }),
             ...(input.excludedCountries !== undefined && { excludedCountries: input.excludedCountries }),
             ...(input.sessionReplay !== undefined && { sessionReplay: input.sessionReplay }),
+            heatmaps: input.heatmaps ?? false,
+            heatmapSampleRate: input.heatmapSampleRate ?? 15,
             ...(input.webVitals !== undefined && { webVitals: input.webVitals }),
             ...(input.trackErrors !== undefined && { trackErrors: input.trackErrors }),
             ...(input.trackOutbound !== undefined && { trackOutbound: input.trackOutbound }),
@@ -448,6 +484,7 @@ class SiteConfigurationLifecycle {
     if (input.domain !== undefined || input.type !== undefined) {
       validateSiteIdentity(nextSiteType, domain);
     }
+    validateHeatmapSettings(input);
     validateMobileFeatures(nextSiteType, input);
 
     if (IS_CLOUD && input.sessionReplay === true) {
@@ -484,6 +521,7 @@ class SiteConfigurationLifecycle {
     }
     if (nextSiteType === "mobile") {
       updateData.sessionReplay = false;
+      updateData.heatmaps = false;
       updateData.webVitals = false;
     }
 
@@ -535,13 +573,14 @@ class SiteConfigurationLifecycle {
 
       await tx.delete(importStatus).where(eq(importStatus.siteId, siteId));
       await tx.delete(sites).where(eq(sites.siteId, siteId));
-      await this.deleteReplayData(siteId);
+      await this.deleteInteractionData(siteId);
       siteConfig.invalidate(site);
       return true;
     });
   }
 
-  private async deleteReplayData(siteId: number): Promise<void> {
+  private async deleteInteractionData(siteId: number): Promise<void> {
+    await heatmapBatchClaims.clearAttributions(siteId);
     await Promise.all([
       clickhouse.command({
         query: "DELETE FROM session_replay_events WHERE site_id = {id:UInt32}",
@@ -549,6 +588,10 @@ class SiteConfigurationLifecycle {
       }),
       clickhouse.command({
         query: "DELETE FROM session_replay_metadata_v2 WHERE site_id = {id:UInt32}",
+        query_params: { id: siteId },
+      }),
+      clickhouse.command({
+        query: "DELETE FROM heatmap_events WHERE site_id = {id:UInt32}",
         query_params: { id: siteId },
       }),
     ]);
@@ -563,7 +606,7 @@ class SiteConfigurationLifecycle {
     await db.transaction(async tx => {
       await tx.delete(importStatus).where(eq(importStatus.siteId, siteId));
       await tx.delete(sites).where(eq(sites.siteId, siteId));
-      await this.deleteReplayData(siteId);
+      await this.deleteInteractionData(siteId);
     });
     siteConfig.invalidate(site);
   }

@@ -314,8 +314,7 @@ export function SessionCard({ session, onClick, userId, expandedByDefault, highl
               </span>
               <span className="hidden group-hover/card:inline">{relativeTime}</span>
             </span>
-            <span className="text-neutral-500 dark:text-neutral-400">•</span>
-            <span>{duration}</span>
+            <span className="border-l border-neutral-200 pl-2 dark:border-neutral-700">{duration}</span>
           </div>
 
           {/* Expand/Collapse icon */}
@@ -426,7 +425,7 @@ export const SessionCardSkeleton = memo(({ userId, count }: { userId?: string; c
           {/* Time information */}
           <div className="flex items-center gap-1.5">
             <Skeleton className={cn("h-3", getRandomTimeWidth())} />
-            <span className="text-neutral-500 dark:text-neutral-400 opacity-20">•</span>
+            <span className="h-3 border-l border-neutral-200 dark:border-neutral-700" aria-hidden="true" />
             <Skeleton className={cn("h-3", getRandomDurationWidth())} />
           </div>
 

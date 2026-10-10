@@ -58,7 +58,7 @@ export function FirstPageviewCard({
   const origin = !country
     ? undefined
     : browser
-      ? t("from {country} · {browser}", { country, browser })
+      ? t("from {country} using {browser}", { country, browser })
       : t("from {country}", { country });
 
   const steps = [

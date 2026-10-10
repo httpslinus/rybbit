@@ -7,6 +7,9 @@ import { doesNotMatchUser, matchesUser } from "./effectiveUserId.js";
 
 // Options for customizing filter behavior
 export interface FilterStatementOptions {
+  // Ad-hoc criteria may be alternatives on opt-in reports. The default keeps
+  // existing reports' AND semantics and output unchanged.
+  combination?: "all" | "any";
   // Parameters that should use session-level subqueries (finds sessions containing matching events)
   // Default: ["event_name", "channel"] - entry_page and exit_page are always session-level due to special aggregation
   // Channel is handled as a session acquisition field using the session's first attributed channel
@@ -451,7 +454,7 @@ export function getFilterStatement(
 
         return `(${valuesWithOperator.join(joiner)})`;
       })
-      .join(" AND ");
+      .join(options?.combination === "any" ? " OR " : " AND ");
 
-  return result;
+  return options?.combination === "any" ? `AND (${result.slice(4)})` : result;
 }

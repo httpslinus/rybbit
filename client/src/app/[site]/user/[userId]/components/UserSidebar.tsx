@@ -277,7 +277,7 @@ export function UserSidebar({
                       })}
                     >
                       {formatDateTime(firstSeen, { year: "numeric", month: "short", day: "numeric", timeZone: zone })}
-                      <span className="text-neutral-500 dark:text-neutral-400"> · {formatRelative(firstSeen)}</span>
+                      <span className="text-neutral-500 dark:text-neutral-400"> ({formatRelative(firstSeen)})</span>
                     </span>
                   }
                 />

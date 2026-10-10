@@ -125,13 +125,13 @@ function MetricPopover({
           </div>
           <div className="mt-0.5 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
             {isMeasured(previous)
-              ? t("{loads} loads · {percentile} {value} · was {previous}", {
+              ? t("{percentile} {value} from {loads} loads (was {previous})", {
                   loads,
                   percentile,
                   value: now,
                   previous: formatMetric(metric, previous),
                 })
-              : t("{loads} loads · {percentile} {value}", { loads, percentile, value: now })}
+              : t("{percentile} {value} from {loads} loads", { loads, percentile, value: now })}
           </div>
         </div>
         <span

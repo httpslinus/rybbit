@@ -52,6 +52,8 @@ const updateSiteConfigSchema = z.object({
     .optional(),
   tags: z.array(z.string().trim().min(1).max(50)).max(20).optional(),
   sessionReplay: z.boolean().optional(),
+  heatmaps: z.boolean().optional(),
+  heatmapSampleRate: z.number().finite().min(0).max(100).optional(),
   webVitals: z.boolean().optional(),
   trackErrors: z.boolean().optional(),
   trackOutbound: z.boolean().optional(),

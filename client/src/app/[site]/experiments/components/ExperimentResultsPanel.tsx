@@ -68,7 +68,7 @@ function VariantResultRow({
             {tone === "control" && <VariantTag tone="control">{t("Control")}</VariantTag>}
           </div>
           <div className="mt-1 text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
-            {t("{sessions} sessions · {conversions} conv.", {
+            {t("{conversions} conversions from {sessions} sessions", {
               sessions: formatCompactNumber(result.sessions),
               conversions: formatCompactNumber(result.conversions),
             })}
@@ -222,7 +222,7 @@ export function ExperimentResultsPanel({ experiment }: { experiment: Experiment 
           {verdict.label}
         </span>
         <span className="text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
-          {t("{sessions} sessions · {conversions} conversions", {
+          {t("{conversions} conversions from {sessions} sessions", {
             sessions: formatCompactNumber(totalSessions),
             conversions: formatCompactNumber(totalConversions),
           })}

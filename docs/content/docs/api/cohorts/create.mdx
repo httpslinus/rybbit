@@ -1,0 +1,41 @@
+---
+title: Create Cohort
+description: Save a cohort predicate and bounded historical window
+full: true
+method: POST
+---
+
+```text
+POST /api/sites/:siteId/cohorts
+```
+
+Requires `cohorts:write` and the member role or higher on the site. Bearer keys need that scope explicitly. The creator owns the definition; [cohort ownership rules](/docs/api/cohorts/list) apply to future edits and deletes.
+
+## Request body
+
+| Field       | Type   | Required | Meaning                                                               |
+| ----------- | ------ | -------- | --------------------------------------------------------------------- |
+| `name`      | string | Yes      | Trimmed name, 1–80 characters                                         |
+| `startDate` | string | Yes      | Valid calendar date, `YYYY-MM-DD`                                     |
+| `endDate`   | string | Yes      | Valid calendar date on or after `startDate`; both dates are inclusive |
+| `timeZone`  | string | Yes      | Valid IANA timezone, at most 100 characters                           |
+| `filters`   | array  | Yes      | 1–20 ordinary analytics filters; all must match                       |
+
+Each filter uses `parameter`, `type` and a `value` array. Supported parameters and operators follow the [heatmap filter contract](/docs/api/heatmaps/get#filter-behavior). Unknown body fields are rejected. A cohort must have at least one filter.
+
+```bash title="Request"
+curl -X POST "https://analytics.example.com/api/sites/1/cohorts" \
+  -H "Authorization: Bearer your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "September purchasers",
+    "startDate": "2026-09-01",
+    "endDate": "2026-09-30",
+    "timeZone": "Europe/Tirane",
+    "filters": [{"parameter":"event_name","type":"equals","value":["purchase"]}]
+  }'
+```
+
+Returns **201** with the cohort object described in [Get Cohorts](/docs/api/cohorts/list). Invalid dates, timezone, filters or fields return **400**; insufficient write access returns **403**.
+
+Saving a definition does not preserve historical events or freeze membership. Reports evaluate it against retained analytics when read.

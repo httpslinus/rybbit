@@ -61,7 +61,7 @@ function PermissionsSummary({ permissions }: { permissions: Record<string, strin
           : null;
   const summary =
     sharedLabel && entries.length <= 3
-      ? t("{access} · {resources}", {
+      ? t("{access}: {resources}", {
           access: sharedLabel,
           resources: entries.map(([resource]) => getScopeLabel(resource)).join(", "),
         })

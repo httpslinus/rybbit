@@ -1,7 +1,7 @@
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 
-// Identify calls arrive continuously, and each one used to submit three
+// Identify calls arrive continuously, and each one used to submit separate
 // `ALTER TABLE … UPDATE` mutations immediately. Mutation submission takes the
 // MergeTree parts lock, so a steady identify rate turns into a steady stream of
 // lock acquisitions: measured at a 12-second median gap on `events`, which is
@@ -35,6 +35,7 @@ type BackfillTable = { name: string; timeColumn: string };
 const TABLES: BackfillTable[] = [
   { name: "events", timeColumn: "timestamp" },
   { name: "session_replay_events", timeColumn: "timestamp" },
+  { name: "heatmap_events", timeColumn: "timestamp" },
   { name: "session_replay_metadata_v2", timeColumn: "start_time" },
 ];
 
@@ -149,7 +150,7 @@ class IdentityBackfillQueue {
               {userIds: Array(String)},
               identified_user_id
             )
-            WHERE site_id IN {siteIds: Array(UInt16)}
+            WHERE site_id IN {siteIds: Array(UInt32)}
               AND concat(toString(site_id), ':', user_id) IN {keys: Array(String)}
               AND identified_user_id = ''${
                 days !== null ? `\n              AND ${timeColumn} >= now() - INTERVAL {days: UInt16} DAY` : ""

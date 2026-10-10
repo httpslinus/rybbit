@@ -173,7 +173,7 @@ export function UserRow({
   // failing that the id, unless the name already is that.
   const secondary = isIdentified
     ? [email, user.identified_user_id].find(candidate => candidate && candidate !== displayName)
-    : t("Anonymous · {id}", { id: user.user_id.slice(0, ANONYMOUS_ID_LENGTH) });
+    : t("Anonymous {id}", { id: user.user_id.slice(0, ANONYMOUS_ID_LENGTH) });
 
   const open = (event: MouseEvent<HTMLTableRowElement>) => {
     // Clicks inside a dialog opened from the row (edit traits) bubble here through React, not the DOM.

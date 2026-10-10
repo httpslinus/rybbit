@@ -352,15 +352,12 @@ await rybbit.init({
             <CodeSnippet code={isMobileSite ? rnAiPrompt : aiPrompt} className="text-xs" />
           </TabsContent>
         </Tabs>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
           {isMobileSite ? (
             <ExternalLink href="https://rybbit.com/docs/sdks/react-native">{t("React Native SDK docs")}</ExternalLink>
           ) : (
             <>
               <ExternalLink href="https://rybbit.com/docs/script">{t("Installation docs")}</ExternalLink>
-              <span className="text-neutral-300 dark:text-neutral-600" aria-hidden="true">
-                ·
-              </span>
               <ExternalLink href="https://rybbit.com/docs/script-troubleshooting">
                 {t("Troubleshooting guide")}
               </ExternalLink>

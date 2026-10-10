@@ -66,7 +66,7 @@ export function JourneyStats({ summary, previous, isLoading, goalName }: Journey
           title: context.topEntry?.value,
           isLoading: context.isLoading,
           sub: context.topEntry
-            ? t("{count} entries · {percent} of sessions", {
+            ? t("{count} entries ({percent} of sessions)", {
                 count: context.topEntry.count.toLocaleString(),
                 percent: `${context.topEntry.percentage.toFixed(1)}%`,
               })

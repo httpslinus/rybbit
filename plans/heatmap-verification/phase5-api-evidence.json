@@ -1,0 +1,198 @@
+{
+  "siteId": 1,
+  "baseUrl": "http://localhost:18033",
+  "source": "Real trusted browser collection from collect-browser.mjs and collection-evidence.json",
+  "startedAt": "2026-10-10T21:02:10.967Z",
+  "sourceRequests": 6,
+  "sourceWidths": [
+    375,
+    768,
+    1440
+  ],
+  "steps": [
+    {
+      "name": "browser source and ordinary identified analytics",
+      "count": 1,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 1
+        }
+      ],
+      "ordinarySessions": [
+        {
+          "pageviews": 1,
+          "events": 0
+        }
+      ]
+    },
+    {
+      "name": "identified visitor contains matches real browser samples",
+      "count": 1
+    },
+    {
+      "name": "identified visitor starts_with matches real browser samples",
+      "count": 1
+    },
+    {
+      "name": "identified visitor regex matches real browser samples",
+      "count": 1
+    },
+    {
+      "name": "canonicalized IANA report timezone preserves real counts",
+      "count": 1
+    },
+    {
+      "name": "cohort create/read/list/update and identified membership",
+      "members": 1,
+      "count": 1,
+      "sessions": 1
+    },
+    {
+      "name": "empty retained historical cohort remains empty",
+      "members": 0,
+      "count": 0,
+      "pages": 0
+    },
+    {
+      "name": "all/any and required saved segment group",
+      "allPageClicks": 1,
+      "anyPageClicks": 4,
+      "segmentPageClicks": 1,
+      "disjointSegmentClicks": 0,
+      "copiedSegmentClicks": 0
+    },
+    {
+      "name": "analytics event type and bounce exclusion use ordinary sessions",
+      "pageviewClicks": 1,
+      "customEventClicks": 0,
+      "nonBounceClicks": 0,
+      "ordinaryPageviews": [
+        1
+      ]
+    },
+    {
+      "name": "same organization never widens cohort or segment site ownership",
+      "deniedStatus": 404
+    },
+    {
+      "name": "cohort delete and list removal",
+      "deleted": true
+    }
+  ],
+  "validation": [
+    {
+      "name": "fixed-offset report timezone is rejected before SQL",
+      "status": 400
+    },
+    {
+      "name": "fixed-offset cohort timezone is rejected",
+      "status": 400
+    },
+    {
+      "name": "fixed-offset cohort update is rejected",
+      "status": 400
+    },
+    {
+      "name": "year-zero cohort date is rejected before Postgres",
+      "status": 400
+    },
+    {
+      "name": "one-sided update cannot reverse the stored window",
+      "status": 400
+    },
+    {
+      "name": "stored invalid calendar date",
+      "status": 400
+    },
+    {
+      "name": "stored invalid timezone",
+      "status": 400
+    },
+    {
+      "name": "stored spoofed site field",
+      "status": 400
+    },
+    {
+      "name": "same-org cross-site cohort report",
+      "status": 404
+    },
+    {
+      "name": "cross-site cohort read",
+      "status": 404
+    },
+    {
+      "name": "cross-site cohort update",
+      "status": 404
+    },
+    {
+      "name": "cross-site saved segment report",
+      "status": 404
+    },
+    {
+      "name": "invalid match",
+      "status": 400
+    },
+    {
+      "name": "invalid analytics event type",
+      "status": 400
+    },
+    {
+      "name": "invalid bounce boolean",
+      "status": 400
+    },
+    {
+      "name": "invalid cohort ID",
+      "status": 400
+    },
+    {
+      "name": "invalid width bucket",
+      "status": 400
+    },
+    {
+      "name": "unknown filter field",
+      "status": 400
+    },
+    {
+      "name": "invalid regex",
+      "status": 400
+    },
+    {
+      "name": "unbounded report",
+      "status": 400
+    },
+    {
+      "name": "invalid calendar report",
+      "status": 400
+    },
+    {
+      "name": "deleted cohort is absent",
+      "status": 404
+    }
+  ],
+  "cleanup": [
+    {
+      "kind": "siteId",
+      "path": "/sites/27",
+      "success": true
+    },
+    {
+      "kind": "segmentId",
+      "path": "/sites/1/segments/4",
+      "success": true
+    },
+    {
+      "kind": "cohortId",
+      "path": "/sites/1/cohorts/18",
+      "success": true
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:02:14.498Z"
+}

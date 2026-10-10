@@ -1,0 +1,819 @@
+{
+  "siteId": 1,
+  "source": "Real prior trusted browser samples; normal report/cohort APIs, no substituted responses or synthetic analytics",
+  "startedAt": "2026-10-10T14:47:09.935Z",
+  "steps": [
+    {
+      "check": "Real source preflight",
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "ordinarySessions": [
+        {
+          "pageviews": 1,
+          "events": 0
+        }
+      ]
+    },
+    {
+      "check": "Cold advanced URL persists across reload and uses exact wire params",
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0
+    },
+    {
+      "check": "Keyboard all/any and event selectors; bounce switch uses distinct current requests",
+      "anyClicks": 3,
+      "allClicks": 0,
+      "customClicks": 0,
+      "nonBounceClicks": 0
+    },
+    {
+      "check": "UI cohort save copies reviewed filters; actual history yields one member",
+      "cohortId": 6,
+      "members": 1,
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ]
+    },
+    {
+      "check": "Editing cohort invalidates current report using historical timezone",
+      "cohortId": 6,
+      "name": "Phase5 UI b38f2d92f5 edited",
+      "timeZone": "Europe/Tirane",
+      "count": 3
+    },
+    {
+      "check": "Phone selected cohort and labelled editor fit, keyboard Escape preserves selection",
+      "bounds": {
+        "x": 9.01889419555664,
+        "y": 172.04542541503906,
+        "height": 555.9091796875,
+        "width": 356.96221923828125
+      }
+    },
+    {
+      "check": "Expired retained history remains selected across cold reload with zero visitors/samples",
+      "cohortId": 6,
+      "members": 0,
+      "count": 0
+    },
+    {
+      "check": "UI deletion removes definition and clears only the cohort selection",
+      "cohortId": 6
+    },
+    {
+      "check": "Deleted/missing cohort retains URL and404 query error without fallback report",
+      "cohortId": 6,
+      "status": 404
+    }
+  ],
+  "reportResponses": [
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]},{\"parameter\":\"event_name\",\"type\":\"equals\",\"value\":[\"Phase5 UI b38f2d92f5 never recorded\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "any",
+        "analytics_event_type": "pageview",
+        "exclude_bounce": "true"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0
+    },
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]},{\"parameter\":\"event_name\",\"type\":\"equals\",\"value\":[\"Phase5 UI b38f2d92f5 never recorded\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "any",
+        "analytics_event_type": "pageview",
+        "exclude_bounce": "true"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0
+    },
+    {
+      "step": "keyboard filters and ordinary-event controls",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]},{\"parameter\":\"event_name\",\"type\":\"equals\",\"value\":[\"Phase5 UI b38f2d92f5 never recorded\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "any",
+        "analytics_event_type": "pageview"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6
+    },
+    {
+      "step": "keyboard filters and ordinary-event controls",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]},{\"parameter\":\"event_name\",\"type\":\"equals\",\"value\":[\"Phase5 UI b38f2d92f5 never recorded\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "analytics_event_type": "pageview"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0
+    },
+    {
+      "step": "keyboard filters and ordinary-event controls",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]},{\"parameter\":\"event_name\",\"type\":\"equals\",\"value\":[\"Phase5 UI b38f2d92f5 never recorded\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "any",
+        "analytics_event_type": "custom_event"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0
+    },
+    {
+      "step": "create historical cohort through normal UI",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6
+    },
+    {
+      "step": "create historical cohort through normal UI",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6
+    },
+    {
+      "step": "create historical cohort through normal UI",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6,
+      "cohort": {
+        "cohortId": 6,
+        "name": "Phase5 UI b38f2d92f5",
+        "members": 1,
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "timeZone": "UTC"
+      }
+    },
+    {
+      "step": "edit cohort dates and timezone with query invalidation",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6,
+      "cohort": {
+        "cohortId": 6,
+        "name": "Phase5 UI b38f2d92f5 edited",
+        "members": 1,
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "timeZone": "Europe/Tirane"
+      }
+    },
+    {
+      "step": "phone cohort controls and editor usability",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6,
+      "cohort": {
+        "cohortId": 6,
+        "name": "Phase5 UI b38f2d92f5 edited",
+        "members": 1,
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "timeZone": "Europe/Tirane"
+      }
+    },
+    {
+      "step": "expired cohort retains selection and zero report",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0,
+      "cohort": {
+        "cohortId": 6,
+        "name": "Phase5 UI b38f2d92f5 expired",
+        "members": 0,
+        "startDate": "2000-01-01",
+        "endDate": "2000-01-31",
+        "timeZone": "Europe/Tirane"
+      }
+    },
+    {
+      "step": "expired cohort retains selection and zero report",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "count": 0,
+      "sessions": 0,
+      "points": [],
+      "pageClicks": 0,
+      "cohort": {
+        "cohortId": 6,
+        "name": "Phase5 UI b38f2d92f5 expired",
+        "members": 0,
+        "startDate": "2000-01-01",
+        "endDate": "2000-01-31",
+        "timeZone": "Europe/Tirane"
+      }
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "status": 404,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "error": {
+        "error": "Cohort not found",
+        "code": "NOT_FOUND",
+        "message": "Cohort not found",
+        "resolution": "Check identifiers and paths against https://rybbit.com/openapi.json."
+      }
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "status": 404,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "error": {
+        "error": "Cohort not found",
+        "code": "NOT_FOUND",
+        "message": "Cohort not found",
+        "resolution": "Check identifiers and paths against https://rybbit.com/openapi.json."
+      }
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "status": 404,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "error": {
+        "error": "Cohort not found",
+        "code": "NOT_FOUND",
+        "message": "Cohort not found",
+        "resolution": "Check identifiers and paths against https://rybbit.com/openapi.json."
+      }
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "status": 404,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "error": {
+        "error": "Cohort not found",
+        "code": "NOT_FOUND",
+        "message": "Cohort not found",
+        "resolution": "Check identifiers and paths against https://rybbit.com/openapi.json."
+      }
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "status": 200,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all"
+      },
+      "count": 3,
+      "sessions": 1,
+      "points": [
+        {
+          "x": 100,
+          "y": 870,
+          "viewportWidth": 375,
+          "viewportHeight": 600,
+          "documentWidth": 375,
+          "documentHeight": 2000,
+          "count": 3
+        }
+      ],
+      "pageClicks": 6
+    },
+    {
+      "step": "missing cohort is a persistent query error, never all visitors",
+      "status": 404,
+      "query": {
+        "time_zone": "UTC",
+        "past_minutes_start": "120",
+        "past_minutes_end": "0",
+        "filters": "[{\"parameter\":\"user_id\",\"type\":\"equals\",\"value\":[\"responsive-375\"]}]",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "6"
+      },
+      "error": {
+        "error": "Cohort not found",
+        "code": "NOT_FOUND",
+        "message": "Cohort not found",
+        "resolution": "Check identifiers and paths against https://rybbit.com/openapi.json."
+      }
+    }
+  ],
+  "cohortRequests": [
+    {
+      "method": "POST",
+      "path": "/api/sites/1/cohorts",
+      "body": {
+        "name": "Phase5 UI b38f2d92f5",
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "timeZone": "UTC",
+        "filters": [
+          {
+            "parameter": "user_id",
+            "type": "equals",
+            "value": [
+              "responsive-375"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/sites/1/cohorts/6",
+      "body": {
+        "name": "Phase5 UI b38f2d92f5 edited",
+        "startDate": "2026-10-10",
+        "endDate": "2026-10-10",
+        "timeZone": "Europe/Tirane",
+        "filters": [
+          {
+            "type": "equals",
+            "value": [
+              "responsive-375"
+            ],
+            "parameter": "user_id"
+          }
+        ]
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/api/sites/1/cohorts/6",
+      "body": {
+        "name": "Phase5 UI b38f2d92f5 expired",
+        "startDate": "2000-01-01",
+        "endDate": "2000-01-31",
+        "timeZone": "Europe/Tirane",
+        "filters": [
+          {
+            "type": "equals",
+            "value": [
+              "responsive-375"
+            ],
+            "parameter": "user_id"
+          }
+        ]
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/sites/1/cohorts/6",
+      "body": null
+    }
+  ],
+  "runtimeErrors": [
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]},{%22parameter%22:%22event_name%22,%22type%22:%22equals%22,%22value%22:[%22Phase5+UI+b38f2d92f5+never+recorded%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=any&heatmap_event_type=pageview&heatmap_exclude_bounce=true&bucket=minute&stat=users"
+    },
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]},{%22parameter%22:%22event_name%22,%22type%22:%22equals%22,%22value%22:[%22Phase5+UI+b38f2d92f5+never+recorded%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=any&heatmap_event_type=pageview&heatmap_exclude_bounce=true&bucket=minute&stat=users"
+    },
+    {
+      "step": "create historical cohort through normal UI",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=all&bucket=minute&stat=users"
+    },
+    {
+      "step": "phone cohort controls and editor usability",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=all&heatmap_cohort=6&bucket=minute&stat=users"
+    },
+    {
+      "step": "expired cohort retains selection and zero report",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=all&heatmap_cohort=6&bucket=minute&stat=users"
+    },
+    {
+      "step": "missing cohort is a persistent query error, never all visitors",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/heatmaps?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&filters=[{%22parameter%22:%22user_id%22,%22type%22:%22equals%22,%22value%22:[%22responsive-375%22]}]&heatmap_mode=click&heatmap_click_host=qa.heatmap.test&heatmap_click_path=/a&heatmap_click_width=375&heatmap_match=all&heatmap_cohort=6&bucket=minute&stat=users"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\"."
+    },
+    {
+      "step": "independent existing-client runtime baseline",
+      "baseline": true,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "cold advanced URL hydration and wire params",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "create historical cohort through normal UI",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "phone cohort controls and editor usability",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "expired cohort retains selection and zero report",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "delete only harness cohort through UI",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "missing cohort is a persistent query error, never all visitors",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "step": "missing cohort is a persistent query error, never all visitors",
+      "baseline": false,
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "baselineErrors": [
+    {
+      "step": "independent existing-client runtime baseline",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/1/main?timeMode=past-minutes&past_minutes_start=120&past_minutes_end=0&bucket=minute&stat=users"
+    }
+  ],
+  "screenshots": [
+    "plans/heatmap-verification/evidence/phase5-cohort-create-desktop.png",
+    "plans/heatmap-verification/evidence/phase5-phone-selected-cohort.png",
+    "plans/heatmap-verification/evidence/phase5-phone-cohort-editor.png",
+    "plans/heatmap-verification/evidence/phase5-phone-expired-cohort.png",
+    "plans/heatmap-verification/evidence/phase5-phone-missing-cohort.png"
+  ],
+  "cleanup": [
+    {
+      "cohortId": 6,
+      "via": "UI",
+      "success": true
+    }
+  ],
+  "backgroundUploads": 0,
+  "passed": true,
+  "provenExistingStripeError": {
+    "reproducedOnMain": true,
+    "reportCount": 6
+  },
+  "finishedAt": "2026-10-10T14:47:34.673Z"
+}

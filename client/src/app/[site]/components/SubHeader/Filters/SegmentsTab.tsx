@@ -54,7 +54,7 @@ function useSegmentSummary() {
         if (operatorNeedsValue(filter.type)) parts.push(formatDisplayValue(filter, getRegionName));
         return parts.join(" ");
       })
-      .join(" · ");
+      .join("; ");
 }
 
 /**

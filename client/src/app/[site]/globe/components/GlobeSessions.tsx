@@ -91,8 +91,7 @@ function SessionCard({ session, onClick }: { session: GetSessionsResponse[number
                 timeZone: getTimezone(),
               })}
             </span>
-            <span className="text-neutral-400">•</span>
-            <span className="hidden md:block">{duration}</span>
+            <span className="hidden border-l border-neutral-300 pl-2 dark:border-neutral-700 md:block">{duration}</span>
           </div>
         </div>
       </div>

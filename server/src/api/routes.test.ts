@@ -12,6 +12,7 @@ vi.hoisted(() => {
 // routes and reads what each one declares.
 vi.mock("../db/postgres/postgres.js", () => ({ db: {}, sql: {} }));
 vi.mock("../db/redis/redis.js", () => ({
+  redis: { status: "end", eval: vi.fn() },
   dashboardCacheRedis: { status: "end", eval: vi.fn() },
   apiRateLimitRedis: { status: "end", eval: vi.fn() },
 }));
@@ -28,12 +29,12 @@ import type { RouteAccess } from "../lib/auth-middleware.js";
 import { apiRoutes } from "./routes.js";
 
 async function collectRoutes() {
-  const routes: { method: string; url: string; access: RouteAccess | undefined }[] = [];
+  const routes: { method: string; url: string; access: RouteAccess | undefined; bodyLimit?: number; rateLimit?: unknown }[] = [];
   const app = Fastify();
   app.addHook("onRoute", (route: RouteOptions) => {
     for (const method of [route.method].flat()) {
       if (method === "HEAD") continue;
-      routes.push({ method, url: route.url, access: route.config?.access });
+      routes.push({ method, url: route.url, access: route.config?.access, bodyLimit: route.bodyLimit, rateLimit: route.config?.rateLimit });
     }
   });
   await app.register(apiRoutes, { prefix: "/api" });
@@ -53,6 +54,13 @@ const describeAccess = (access: RouteAccess | undefined) => {
 };
 
 describe("API route table", () => {
+  it("bounds public heatmap uploads", async () => {
+    const routes = await collectRoutes();
+    expect(routes.find(route => route.method === "POST" && route.url === "/api/heatmaps/record/:siteId")).toMatchObject({
+      bodyLimit: 64 * 1024,
+      rateLimit: { max: 120, timeWindow: "1 minute" },
+    });
+  });
   it("declares who may call every route", async () => {
     const routes = await collectRoutes();
 

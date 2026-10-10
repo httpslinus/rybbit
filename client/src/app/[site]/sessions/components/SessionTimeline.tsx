@@ -353,7 +353,7 @@ export function SessionTimeline({ sessionId, expectedEvents }: SessionTimelinePr
             total: String(Math.max(total, events.length)),
           })}
           {/* Says what the bars on the pageview rows measure. */}
-          {pageSeconds.size > 0 && ` · ${t("time on page")}`}
+          {pageSeconds.size > 0 && <span className="ml-3">{t("time on page")}</span>}
         </span>
       </div>
 

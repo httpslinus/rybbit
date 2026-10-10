@@ -33,6 +33,7 @@ Most tracking options are configured through your site settings in the Rybbit da
 - **Outbound Links**: Track clicks to external websites
 - **Error Tracking**: Capture JavaScript errors and unhandled promise rejections
 - **Session Replay**: Record user interactions for debugging and UX analysis
+- **Heatmaps**: Collect sampled clicks and scroll reach, with a separate sample rate
 - **Web Vitals**: Collect Core Web Vitals performance metrics
 
 ### Script Attributes
@@ -77,6 +78,16 @@ Ordinary fragments such as `#shipping` are ignored by default. If your site uses
 Automatic navigation records a pageview only when the tracked path or tracked query string changes. Ignored anchors and repeated navigation events do not add pageviews. Explicit calls to `rybbit.pageview()` still record a pageview for the current URL.
 
 This setting applies to future events; previously discarded fragments cannot be recovered.
+
+### Heatmap Collection
+
+Enable **Heatmaps** in your site's **Tracking** settings and save a **Heatmap sample rate** from 0 to 100 percent. Collection is off by default; the initial sample rate is 15 percent. No script tag changes are needed. Heatmaps run independently of session replay and do not load the replay recorder when replay is off.
+
+The script makes one sampling decision per analytics host and site, kept through activity. A page load after 30 minutes of inactivity makes a new decision. It uses session storage when available and falls back to memory when storage is unavailable. A rate of 0 collects nothing; 100 selects every eligible session. The tracker opt-out also disables heatmaps.
+
+Heatmap payloads contain trusted primary click coordinates, maximum visible scroll depth, capture time, page identity and viewport/document dimensions. They contain no DOM snapshots, element text, input values or query-string values. Heatmaps honor `data-skip-patterns` and `data-mask-patterns`. Hash-route query values are omitted even when ordinary analytics includes URL parameters.
+
+Uploads use bounded batches and retries. Add `data-debug="true"` to the script tag to log failed heatmap uploads. See [Heatmaps](/docs/feature-guides/heatmaps) for report definitions, retention and filters.
 
 ### Session Replay Attributes
 

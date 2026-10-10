@@ -308,14 +308,14 @@ export default function JourneysPage() {
                     <>
                       <span className="whitespace-nowrap text-xs font-medium text-neutral-900 dark:text-neutral-100">
                         {index === 0
-                          ? t("Step {number} · entry", { number: "1" })
+                          ? t("Step {number} (entry)", { number: "1" })
                           : t("Step {number}", { number: String(index + 1) })}
                       </span>
                       <span className="whitespace-nowrap text-xs tabular-nums text-neutral-500 dark:text-neutral-400">
                         {width < WIDE_STEP_HEADER || sessions === 0
                           ? sessions.toLocaleString()
                           : previousSessions
-                            ? t("{count} · {percent} of step {step}", {
+                            ? t("{count} ({percent} of step {step})", {
                                 count: sessions.toLocaleString(),
                                 percent: formatShare(sessions / previousSessions),
                                 step: String(index),

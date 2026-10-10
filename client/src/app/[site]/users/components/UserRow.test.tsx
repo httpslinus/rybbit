@@ -141,7 +141,7 @@ describe("UserRow", () => {
     renderRow(base);
 
     expect(screen.getByRole("link").getAttribute("href")).toBe("/7/user/a1d7b800719f");
-    expect(screen.getByText("Anonymous · a1d7b8")).toBeTruthy();
+    expect(screen.getByText("Anonymous a1d7b8")).toBeTruthy();
   });
 
   it("does not repeat the name on the second line when the email is the name", () => {

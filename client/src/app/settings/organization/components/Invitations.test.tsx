@@ -85,7 +85,7 @@ describe("InvitationRow", () => {
     expect(screen.getByText("Pending")).toBeTruthy();
     expect(screen.getByText("Invited by Grace Hopper")).toBeTruthy();
     expect(screen.getByText("Member")).toBeTruthy();
-    expect(screen.getByText(/^2 of 5 sites/).textContent).toBe("2 of 5 sites · Editor on 2");
+    expect(screen.getByText(/^2 of 5 sites/).textContent).toBe("2 of 5 sites Editor on 2");
     expect(screen.getByText("Growth").getAttribute("title")).toBe("Access granted through this team's sites");
     expect(screen.getByText(/^Expires Oct 5/)).toBeTruthy();
   });

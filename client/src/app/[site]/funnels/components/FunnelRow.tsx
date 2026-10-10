@@ -198,17 +198,16 @@ export function FunnelRow({
           </div>
 
           {expanded ? (
-            <div className={cn("mt-1 text-xs", MUTED)}>
-              {t("Steps in order within one session")}
+            <div className={cn("mt-1 flex flex-wrap gap-x-3 text-xs", MUTED)}>
+              <span>{t("Steps in order within one session")}</span>
               {metrics && worst !== null && (
-                <>
-                  {" · "}
+                <span>
                   {t("biggest drop-off {from} to {to} ({rate})", {
                     from: nameOf(worst),
                     to: nameOf(worst + 1),
                     rate: formatRate(1 - metrics.steps[worst].continueRate!),
                   })}
-                </>
+                </span>
               )}
             </div>
           ) : (

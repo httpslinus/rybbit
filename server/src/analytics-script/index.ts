@@ -29,9 +29,15 @@ declare global {
   // Parse namespace early for opt-out check
   const namespace = scriptTag.getAttribute("data-namespace") || "rybbit";
   const optOutKey = `disable-${namespace}`;
+  let storedOptOut = false;
+  try {
+    storedOptOut = localStorage.getItem(optOutKey) !== null;
+  } catch {
+    // Storage may be denied even though cookie-free analytics is allowed.
+  }
 
   // Check if user has opted out
-  if (window.__RYBBIT_OPTOUT__ || localStorage.getItem(optOutKey) !== null) {
+  if (window.__RYBBIT_OPTOUT__ || storedOptOut) {
     // Create no-op implementation
     window[namespace] = {
       pageview: () => {},
@@ -239,10 +245,16 @@ declare global {
   // Initialize
   setupEventListeners();
 
-  // Setup cleanup on page unload
+  // beforeunload can be canceled. Keep capture/listeners alive until an actual
+  // exit, and retain them when the document enters the back-forward cache.
   window.addEventListener("beforeunload", () => {
+    tracker.flushForExit();
+  });
+  window.addEventListener("pagehide", event => {
+    if (event.persisted) return;
     clickManager?.cleanup();
     copyManager?.cleanup();
+    formManager?.cleanup();
     tracker.cleanup();
   });
 

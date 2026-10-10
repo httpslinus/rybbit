@@ -1,0 +1,27 @@
+{
+  "mode": "after-site-delete",
+  "startedAt": "2026-10-10T21:09:59.286Z",
+  "checks": [
+    {
+      "name": "Site erasure clears its active Redis index and tombstones retries while preserving the foreign index",
+      "passed": true,
+      "observed": {
+        "primaryIndexRemoved": true,
+        "foreignContexts": 1
+      }
+    },
+    {
+      "name": "Authenticated site erasure removes interactions and cascades saved cohort/profile/alias rows while preserving foreign site",
+      "passed": true,
+      "observed": {
+        "primaryInteractionRows": 0,
+        "primaryCohorts": 0,
+        "foreignCohorts": 1,
+        "foreignRowsPerInteractionTable": 3
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "completedAt": "2026-10-10T21:10:00.661Z"
+}

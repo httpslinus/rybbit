@@ -1,0 +1,23 @@
+---
+title: Delete Cohort
+description: Delete a saved historical cohort definition
+full: true
+method: DELETE
+---
+
+```text
+DELETE /api/sites/:siteId/cohorts/:cohortId
+```
+
+Requires `cohorts:write` and [permission to edit the definition](/docs/api/cohorts/list#response-fields-and-ownership). Members can delete their own cohorts; editors and higher roles can delete any cohort on the site. Bearer keys need the explicit write scope.
+
+```bash title="Request"
+curl -X DELETE "https://analytics.example.com/api/sites/1/cohorts/7" \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```json title="Response"
+{ "success": true }
+```
+
+Returns **200** on success, **403** for insufficient edit permission, or **404** for an unavailable cohort or one belonging to another site. Deleting a definition leaves the underlying analytics and heatmap events intact.

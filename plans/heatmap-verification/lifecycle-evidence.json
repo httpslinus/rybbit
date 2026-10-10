@@ -1,0 +1,283 @@
+{
+  "startedAt": "2026-10-10T21:09:48.211Z",
+  "baseUrl": "http://localhost:18033",
+  "isolation": "Two newly created local QA sites; their own Redis keys and one disposable TTL database only",
+  "checks": [
+    {
+      "name": "Public HTTP disabled/0/15/100 settings and re-enable preserve historical samples",
+      "passed": true,
+      "observedCounts": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        3,
+        4
+      ],
+      "note": "Positive sampling rates configure tracker-side selection; the server accepts a valid sampled upload without a second downsample."
+    },
+    {
+      "name": "Twelve concurrent public HTTP retries count one interaction",
+      "passed": true,
+      "statuses": [
+        200,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503,
+        503
+      ]
+    },
+    {
+      "name": "Real Redis completed marker prevents physical duplicate concurrent HTTP inserts",
+      "passed": true,
+      "observed": {
+        "physicalRows": 1,
+        "completionTTLGreaterThan29Days": true
+      }
+    },
+    {
+      "name": "Production ingest throw after durable insert, shortened own Redis lease expiry and retry dedup",
+      "passed": true,
+      "observed": {
+        "physicalRows": 6,
+        "physicalSessions": 1,
+        "reportCount": 3,
+        "reportSessions": 1,
+        "points": 3,
+        "busyBeforeExpiry": true,
+        "duplicateAfterCompletion": true
+      }
+    },
+    {
+      "name": "Production ingest false after durable insert, shortened own Redis lease expiry and retry dedup",
+      "passed": true,
+      "observed": {
+        "physicalRows": 6,
+        "physicalSessions": 1,
+        "reportCount": 3,
+        "reportSessions": 1,
+        "points": 3,
+        "busyBeforeExpiry": true,
+        "duplicateAfterCompletion": true
+      }
+    },
+    {
+      "name": "Actual identityBackfillQueue flush updates anonymous rows only and preserves Bob plus foreign site",
+      "passed": true,
+      "observed": {
+        "events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "heatmap_events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "session_replay_events": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        },
+        "session_replay_metadata_v2": {
+          "primary": [
+            "Alice",
+            "Alice",
+            "Bob"
+          ],
+          "foreign": [
+            "anonymous",
+            "Alice",
+            "Bob"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Erasure fixture includes late anonymous shared-device activity, another linked device and an unlinked device",
+      "passed": true,
+      "observed": {
+        "primaryRowsPerTable": 8,
+        "foreignRowsPerTable": 3
+      }
+    },
+    {
+      "name": "Real Redis attribution index contains only the five active erasure fixtures",
+      "passed": true,
+      "observed": {
+        "primary": 4,
+        "foreign": 1
+      }
+    },
+    {
+      "name": "Authenticated user erasure removes Alice across four actual tables and PG aliases/profile while preserving Bob/foreign site",
+      "passed": true,
+      "observed": {
+        "events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "heatmap_events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "session_replay_events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "session_replay_metadata_v2": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        }
+      }
+    },
+    {
+      "name": "User erasure tombstones matching active retry contexts and preserves Bob, unlinked and foreign contexts",
+      "passed": true,
+      "observed": {
+        "erased": 2,
+        "retained": 3
+      }
+    },
+    {
+      "name": "Normal HTTP cohort reports recompute membership after erasure without a permanent member cache",
+      "passed": true,
+      "primaryBefore": {
+        "members": 1,
+        "count": 3
+      },
+      "primaryAfter": {
+        "members": 0,
+        "count": 0
+      },
+      "foreignBeforeAndAfter": {
+        "members": 1,
+        "count": 1
+      }
+    },
+    {
+      "name": "Site erasure clears its active Redis index and tombstones retries while preserving the foreign index",
+      "passed": true,
+      "observed": {
+        "primaryIndexRemoved": true,
+        "foreignContexts": 1
+      }
+    },
+    {
+      "name": "Authenticated site erasure removes interactions and cascades saved cohort/profile/alias rows while preserving foreign site",
+      "passed": true,
+      "observed": {
+        "primaryInteractionRows": 0,
+        "primaryCohorts": 0,
+        "foreignCohorts": 1,
+        "foreignRowsPerInteractionTable": 3
+      }
+    },
+    {
+      "name": "Repeated production ClickHouse initializer and real 30-day TTL remove only an expired fixture",
+      "passed": true,
+      "observed": {
+        "before": [
+          {
+            "pathname": "/fresh"
+          },
+          {
+            "pathname": "/old"
+          }
+        ],
+        "after": [
+          {
+            "pathname": "/fresh"
+          }
+        ],
+        "codec": "ZSTD(1)"
+      }
+    },
+    {
+      "name": "Lifecycle test cleanup removes only its created sites' rows/keys and benchmark databases are absent",
+      "passed": true,
+      "observed": {
+        "removedKeys": 13,
+        "remainingRows": 0,
+        "benchmarkDatabases": []
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "droppedDatabase": "rybbit_heatmap_lifecycle_4ef0a515afab",
+      "verifiedAbsent": true
+    },
+    {
+      "siteId": 33,
+      "deletedThroughAuthenticatedAPI": true
+    },
+    {
+      "createdSitesRemoved": [
+        32,
+        33
+      ],
+      "removedKeys": 13,
+      "remainingRows": 0,
+      "cleanedTables": [
+        "events",
+        "heatmap_events",
+        "session_replay_events",
+        "session_replay_metadata_v2"
+      ],
+      "benchmarkDatabases": []
+    }
+  ],
+  "passed": true,
+  "sites": [
+    32,
+    33
+  ],
+  "completedAt": "2026-10-10T21:10:02.613Z"
+}

@@ -109,9 +109,11 @@ export default function DashboardsListPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{dashboard.name}</div>
-                  <div className="text-xs text-neutral-500">
-                    {cardCount} {cardCount === 1 ? "card" : "cards"}
-                    {updated && ` · updated ${updated}`}
+                  <div className="flex flex-wrap gap-x-3 text-xs text-neutral-500">
+                    <span>
+                      {cardCount} {cardCount === 1 ? "card" : "cards"}
+                    </span>
+                    {updated && <span>updated {updated}</span>}
                   </div>
                 </div>
                 {canWrite && (

@@ -342,3 +342,63 @@ describe("addSite — domain validation", () => {
     expect(state.insertedValues).toHaveLength(0);
   });
 });
+
+describe("addSite — independent heatmap settings", () => {
+  it("keeps heatmaps disabled by default with a 15 percent sample rate", async () => {
+    const reply = replyStub();
+
+    await addSite(makeRequest({}), reply);
+
+    expect(reply.statusCode).toBe(201);
+    expect(state.insertedValues[0]).toMatchObject({ heatmaps: false, heatmapSampleRate: 15 });
+  });
+
+  it.each([0, 15, 100])("persists independent heatmap sampling at %s percent", async rate => {
+    const reply = replyStub();
+
+    await addSite(makeRequest({ sessionReplay: false, heatmaps: true, heatmapSampleRate: rate }), reply);
+
+    expect(reply.statusCode).toBe(201);
+    expect(state.insertedValues[0]).toMatchObject({ sessionReplay: false, heatmaps: true, heatmapSampleRate: rate });
+  });
+
+  it("allows self-hosted heatmaps without a subscription check", async () => {
+    state.isCloud = false;
+    const reply = replyStub();
+
+    await addSite(makeRequest({ heatmaps: true }), reply);
+
+    expect(reply.statusCode).toBe(201);
+    expect(mocks.getSubscriptionInner).not.toHaveBeenCalled();
+    expect(state.insertedValues[0]).toMatchObject({ heatmaps: true, heatmapSampleRate: 15 });
+  });
+
+  it.each([-1, 101, NaN, Infinity, -Infinity, "15", null])("rejects an invalid sample rate %s", async rate => {
+    const reply = replyStub();
+
+    await addSite(makeRequest({ heatmapSampleRate: rate }), reply);
+
+    expect(reply.statusCode).toBe(400);
+    expect(reply.body.error).toBe("Heatmap sample rate must be a finite number between 0 and 100");
+    expect(state.insertedValues).toHaveLength(0);
+  });
+
+  it("rejects a non-boolean collection setting", async () => {
+    const reply = replyStub();
+
+    await addSite(makeRequest({ heatmaps: "true" }), reply);
+
+    expect(reply.statusCode).toBe(400);
+    expect(state.insertedValues).toHaveLength(0);
+  });
+
+  it("rejects enabling heatmaps for a mobile site", async () => {
+    const reply = replyStub();
+
+    await addSite(makeRequest({ type: "mobile", domain: "com.example.app", heatmaps: true }), reply);
+
+    expect(reply.statusCode).toBe(400);
+    expect(reply.body.error).toBe("Heatmaps are only available for web sites");
+    expect(state.insertedValues).toHaveLength(0);
+  });
+});

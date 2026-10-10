@@ -1,0 +1,82 @@
+{
+  "startedAt": "2026-10-10T21:12:54.972Z",
+  "isolation": "Two new local QA sites and their own known Redis keys only",
+  "checks": [
+    {
+      "name": "Production erasure traverses real Redis cursor pages, prunes expired entries and preserves other identities/sites",
+      "passed": true,
+      "observed": {
+        "activeBefore": 1800,
+        "expiredPruned": 20,
+        "matchedErased": 1500,
+        "bobRetained": 300,
+        "foreignRetained": 100,
+        "completedNotIndexed": 200,
+        "pages": [
+          {
+            "inputCursor": "0",
+            "outputCursor": "706",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "706",
+            "outputCursor": "1393",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "1393",
+            "outputCursor": "171",
+            "indexedMembers": 500
+          },
+          {
+            "inputCursor": "171",
+            "outputCursor": "0",
+            "indexedMembers": 300
+          }
+        ],
+        "returnedMembers": 1800
+      }
+    },
+    {
+      "name": "Prepared a separate multi-page context population for the HTTP erasure endpoint",
+      "passed": true,
+      "observed": {
+        "activeContexts": 1800
+      }
+    },
+    {
+      "name": "HTTP user erasure removes every identified/linked anonymous context while preserving Bob and the foreign site",
+      "passed": true,
+      "observed": {
+        "erased": 1500,
+        "bobRetained": 300,
+        "foreignRetained": 100,
+        "ownIndexMembers": 300
+      }
+    },
+    {
+      "name": "HTTP site erasure removes the final index and all retained Bob contexts without touching the foreign site",
+      "passed": true,
+      "observed": {
+        "ownIndexRemoved": true,
+        "foreignIndexMembers": 100
+      }
+    },
+    {
+      "name": "Both QA sites and their active attribution indexes are removed",
+      "passed": true,
+      "observed": {
+        "removedSites": 2,
+        "removedIndexes": 2
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "knownFixtureRedisKeysRemoved": 7242,
+      "qaSitesRemoved": 2
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:13:00.836Z"
+}

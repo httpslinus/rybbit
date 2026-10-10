@@ -1,0 +1,337 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-10-10T21:30:17.293234+00:00",
+  "scope": "Existing uncommitted heatmap implementation; fixes implemented by subagents and independently re-reviewed",
+  "branch": "master",
+  "unitTests": {
+    "client": 1529,
+    "server": 2954,
+    "totalPassed": 4483,
+    "optionalServerTestsSkipped": 65,
+    "clientLog": "/private/tmp/heatmap-final-client-test-isolated.log",
+    "serverLog": "/private/tmp/heatmap-final-test.log"
+  },
+  "staticChecks": {
+    "workspaceTypecheck": "passed",
+    "focusedClientTypecheckAfterFinalUIChanges": "passed",
+    "repositoryLint": "passed",
+    "actualHeatmapScopedEslintIncludingLayout": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "productionBuilds": {
+    "serverAndTracker": "passed",
+    "client": "passed",
+    "clientImage": "sha256:f3fe9f463d4a53c0a3114966cd35823aa6ee827acf0234a1f5f9a0a67b082844",
+    "logs": [
+      "/private/tmp/heatmap-final-server-build.log",
+      "/private/tmp/heatmap-final-client-build.log"
+    ]
+  },
+  "fixedAreas": [
+    "SPA geometry settlement and early trusted interaction capture",
+    "Independent final lifecycle uploads and shared keepalive reservations including identify",
+    "Immutable transient retry batches retained beyond the server lease",
+    "Canceled beforeunload and BFCache lifecycle restoration",
+    "Coalesced sampling storage writes and throttled scroll geometry work",
+    "Stable retry attribution, token fencing, indexed user/site erasure",
+    "Deterministic legacy deduplication and one report/cohort time anchor",
+    "Selected-page candidate-batch aggregation without resurrecting conflicting retry copies",
+    "Per-visit physical scroll reach for growing documents and separate revisits",
+    "Route/site permission synchronization and site-owned URL selection cleanup",
+    "Unrelated cohort deletion preserves active selection, including keyboard actions",
+    "Independent page-search requests preserve iframe and document scroll",
+    "Order-independent scalar click density and measured viewport rendering",
+    "Heatmap-only outer scrolling preserves usable viewers below tall onboarding"
+  ],
+  "realServiceChecks": {
+    "clickhouseFocusedSuitePassed": 20,
+    "clickhouseLog": "/private/tmp/heatmap-final-clickhouse.log",
+    "lifecycleChecksPassed": 15,
+    "redisChecksPassed": 5,
+    "redisCursorPages": 4,
+    "activeAttributionsChecked": 1800
+  },
+  "browserChecks": {
+    "trackerChecksPassed": 5,
+    "uiChecksPassed": 6,
+    "alignmentChecksPassed": 6,
+    "renderInteractionChecksPassed": 8,
+    "maximumAlignmentAxisErrorCssPx": 0.5002386240583974,
+    "newUiRuntimeErrorSignatures": 0,
+    "freshHeatmapOnlyLayouts": [
+      {
+        "viewport": {
+          "width": 375,
+          "height": 900
+        },
+        "layout": {
+          "regionHeight": 246,
+          "regionScrollHeight": 1904,
+          "outerScrollAvailable": true,
+          "outerHeight": 900,
+          "outerScrollHeight": 1121,
+          "outerBefore": 0,
+          "outerAfter": 221,
+          "outerAfterInnerScroll": 221,
+          "innerScrollTop": 200,
+          "visibleRegionHeight": 246,
+          "detailHeaderHeight": 109,
+          "detailClipsViewport": false,
+          "canvasHeight": 492,
+          "dpr": 2
+        }
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 500
+        },
+        "layout": {
+          "regionHeight": 238,
+          "regionScrollHeight": 1611,
+          "outerScrollAvailable": true,
+          "outerHeight": 500,
+          "outerScrollHeight": 1183,
+          "outerBefore": 0,
+          "outerAfter": 683,
+          "outerAfterInnerScroll": 683,
+          "innerScrollTop": 200,
+          "visibleRegionHeight": 238,
+          "detailHeaderHeight": 117,
+          "detailClipsViewport": false,
+          "canvasHeight": 476,
+          "dpr": 2
+        }
+      },
+      {
+        "viewport": {
+          "width": 1680,
+          "height": 650
+        },
+        "layout": {
+          "regionHeight": 300,
+          "regionScrollHeight": 2000,
+          "outerScrollAvailable": true,
+          "outerHeight": 650,
+          "outerScrollHeight": 909,
+          "outerBefore": 0,
+          "outerAfter": 259,
+          "outerAfterInnerScroll": 259,
+          "innerScrollTop": 200,
+          "visibleRegionHeight": 300,
+          "detailHeaderHeight": 87,
+          "detailClipsViewport": false,
+          "canvasHeight": 600,
+          "dpr": 2
+        }
+      }
+    ]
+  },
+  "denseRendering": {
+    "pointsPerLayout": 5000,
+    "budgetMs": 100,
+    "initialDrawMs": {
+      "count": 1,
+      "p50": 37.69999998807907,
+      "p95": 37.69999998807907,
+      "max": 37.69999998807907
+    },
+    "interactionPaintProxyMs": {
+      "count": 101,
+      "p50": 8.199999988079071,
+      "p95": 45.89999997615814,
+      "max": 69.20000004768372
+    },
+    "frameGapMs": {
+      "count": 987,
+      "p50": 8.300000000000182,
+      "p95": 9.200000000000728,
+      "max": 66.5
+    },
+    "longTaskMs": {
+      "count": 4,
+      "p50": 51,
+      "p95": 53,
+      "max": 61
+    },
+    "drawMs": {
+      "count": 63,
+      "p50": 2.900000035762787,
+      "p95": 33.19999998807907,
+      "max": 36.30000001192093
+    },
+    "temporarySiteCleanup": {
+      "siteId": 40,
+      "success": true
+    }
+  },
+  "selectedPageBenchmark": {
+    "benchmark": "one-million-single-site",
+    "sites": 1,
+    "pages": 1000,
+    "batches": 10000,
+    "interactionsPerBatch": 100,
+    "selectedInteractions": 1000,
+    "maxThreads": 2,
+    "results": {
+      "candidateBatches": [
+        {
+          "elapsedMs": 62.55774999999994,
+          "rowsRead": 2000000,
+          "bytesRead": 16000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 78.40762499999983,
+          "rowsRead": 2000000,
+          "bytesRead": 16000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 196.6111669999991,
+          "rowsRead": 2000000,
+          "bytesRead": 16000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 67.48725000000195,
+          "rowsRead": 2000000,
+          "bytesRead": 16000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 58.78045900000143,
+          "rowsRead": 2000000,
+          "bytesRead": 16000000,
+          "count": 1000
+        }
+      ],
+      "siteWide": [
+        {
+          "elapsedMs": 4924.930794,
+          "rowsRead": 1000000,
+          "bytesRead": 8000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 6049.662045000001,
+          "rowsRead": 1000000,
+          "bytesRead": 8000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 5568.550044000003,
+          "rowsRead": 1000000,
+          "bytesRead": 8000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 4225.695502000002,
+          "rowsRead": 1000000,
+          "bytesRead": 8000000,
+          "count": 1000
+        },
+        {
+          "elapsedMs": 5134.399210999996,
+          "rowsRead": 1000000,
+          "bytesRead": 8000000,
+          "count": 1000
+        }
+      ]
+    },
+    "limitations": "Generated SELECT fixture measures aggregation CPU and input rows; it does not measure MergeTree primary-index pruning, disk IO, metadata joins, or production concurrency.",
+    "mediansMs": {
+      "candidateBatches": 67.48725000000195,
+      "siteWide": 5134.399210999996
+    }
+  },
+  "evidenceFiles": [
+    "fix-tracker-browser-evidence.json",
+    "render-evidence.json",
+    "fix-ui-browser-evidence.json",
+    "lifecycle-evidence.json",
+    "fix-redis-index-evidence.json",
+    "phase5-api-evidence.json",
+    "browser-regressions-evidence.json",
+    "performance-evidence.json",
+    "fix-single-site-benchmark-evidence.json",
+    "collection-evidence.json"
+  ],
+  "resolvedVerificationFailures": [
+    "New erasure dependency required a mock in unclaimed-site unit tests; corrected and full suite passed",
+    "A date-picker timeout while a production build ran concurrently cleared on the isolated full client rerun",
+    "Dense first fullscreen rendering exceeded100ms until unmeasured initial rasterization was skipped; the unchanged100ms budget then passed",
+    "The first fresh-site layout assertion expected250px while the restored usable viewer measured246px; grounded thresholds and added320x500 coverage passed without further product changes"
+  ],
+  "limitations": [
+    "Final unload delivery remains best effort within the browser shared64KiB keepalive budget; excess data is retained for restoration",
+    "SPAs with unchanged geometry and no trusted interaction are handled conservatively because there is no universal render-complete signal",
+    "Legacy rows without original attribution cannot recover historical first-session identity",
+    "The generated one-million-row ClickHouse benchmark measures aggregation CPU, not MergeTree disk/index pruning or production concurrency",
+    "Browser reports distinguish pre-existing local Stripe configuration and hydration error signatures from new heatmap errors"
+  ],
+  "workspacePreservation": {
+    "baseline": "/private/tmp/rybbit-heatmap-fix-baseline-tct3sh8h/hashes.json",
+    "unrelatedExistingFilesUnchanged": true,
+    "deletedFiles": [],
+    "newBranches": false,
+    "commits": false,
+    "productionDeployments": false,
+    "migrationsRun": false,
+    "temporaryQaFixturesCleaned": true
+  },
+  "verifiedSourceHashes": {
+    "client/src/api/analytics/endpoints/heatmaps.test.ts": "dbcf35f6f1923b44a49cf83af3af7aed252acceacdff8ce7265fbf8612df00b2",
+    "client/src/api/analytics/endpoints/heatmaps.ts": "03dce61b9cc4dd17cea104d45eac5e092fcfdc70db71de3e0a8513e9b2b6b4d9",
+    "client/src/api/analytics/hooks/heatmaps/useCohorts.test.tsx": "4ff90cb98c15cce0ef1263ade7c0bd5cdfc1fb3a87b7c0befe12372b1cc9da9c",
+    "client/src/api/analytics/hooks/heatmaps/useCohorts.ts": "497e9920137810e1ee055bd40e02eb233470fa678157ba6a599f4383c3152a39",
+    "client/src/api/analytics/hooks/heatmaps/useGetHeatmaps.test.tsx": "2b0032c46fa453d243fde5ccbd0303fe481b621646aed842def5f08896c97e6c",
+    "client/src/api/analytics/hooks/heatmaps/useGetHeatmaps.ts": "a06f8b2403f418a90a18559be15aece8d8e4ebc1af77ef4f527ef62f3d67cbe0",
+    "client/src/app/[site]/components/Sidebar/SiteSelector.test.tsx": "75eb89f6d912d901d2688b42528493b5a4f83d9c240e4bbb6e4f8aa3e5c8676e",
+    "client/src/app/[site]/components/Sidebar/SiteSelector.tsx": "ae5de1f61cb957e642016a143ae21be37de3f8d5ed29243aa5da3eb4b7980e92",
+    "client/src/app/[site]/heatmaps/page.tsx": "0d8ea13b3f92c204082d13e07223a7757653c3107be1bdd71fc6c7319fd6f0a2",
+    "client/src/app/[site]/layout.tsx": "b4d2432052aab1e73a9aa0d5a98e9f2a41f3c854d8de1b4d1e068290dff7c77b",
+    "client/src/components/heatmaps/CohortSelector.test.tsx": "7638615e8300812346d11333aeb4bbe0806c7decc9bcc2a332efe7315e0efdda",
+    "client/src/components/heatmaps/CohortSelector.tsx": "8945fa56eff32595922c105b3f7bb9908d34048ba88aa4138abe47a69d690bd0",
+    "client/src/components/heatmaps/HeatmapReport.test.tsx": "339f8966639066136b8c33d54ddbec7857ebf49ab5cb3ca0cac83a74361c4c18",
+    "client/src/components/heatmaps/HeatmapReport.tsx": "f2c1fa11fc1f284b0be07be56bc693f647c49b491d666035e198dcfd5a9b5c4d",
+    "client/src/components/heatmaps/HeatmapViewer.test.tsx": "3e9e47c516c9cdefc1c06c13fcdad22e3659c46995cc712317317b312f215c8a",
+    "client/src/components/heatmaps/HeatmapViewer.tsx": "de290dd3cc2a589abff0d2478d87d2b0d344c3f31c594ecb20b83c66598a781c",
+    "client/src/components/heatmaps/clickCanvas.test.ts": "c04cac96fa086f1981f5f1357f47bbd95a81d0eb7518703fd599d7e404026b42",
+    "client/src/components/heatmaps/clickCanvas.ts": "e5e289250f1e2601a1265326dde56bbd1c5a05f1fbc7a714c8e512225cb17f4d",
+    "client/src/lib/heatmapUrlState.test.ts": "6d66d2b2c23d044e4b900139cd8f503c3d06005f5b88d76eed0cbebd90082721",
+    "client/src/lib/heatmapUrlState.ts": "57d02d49ec46b7705111da4c1cf00566f1384863c00eed4d5260534df5d9da2b",
+    "server/public/script-full.js": "73fdb0a8b7c05b96b14e099e7c48d79baced5f42053bc2134057faa0675bad26",
+    "server/public/script.js": "fc2d2c3852f6f2f4e2263566fc2547c78501580652a111db6b1ae19f0b36f02b",
+    "server/src/analytics-script/heatmaps.test.ts": "d7afe10d079131b0cc759050b6ba51f0255b755f2889e3fef8db83236fab234f",
+    "server/src/analytics-script/heatmaps.ts": "b59d4429ad8e12810792c255e18beb61c52ed07ee3ee336626473955f8f6e6ea",
+    "server/src/analytics-script/index.test.ts": "8122f3a5e1a060fdc76fcce3da70709e401e500a7ee5190f141f0d0643dbe896",
+    "server/src/analytics-script/index.ts": "bb284277bfd8b8de6ddfbe8590c17c1fb20f3d0dafe35cbd65744a0d2659e0c7",
+    "server/src/analytics-script/keepalive.test.ts": "ff2800e00bd75492f52b2716b1d57a78e180362c0cbbad9b6f1a43c173ebc704",
+    "server/src/analytics-script/keepalive.ts": "d798b134500e42d58fe0f135131d70b4a047c426657615b9d3c1eb59b9880623",
+    "server/src/analytics-script/tracking.test.ts": "0d3c7c209cbfd18ffcf9b4fb4fc2c890a1776b9ca6d7fd35da45d87cbc17cc36",
+    "server/src/analytics-script/tracking.ts": "e574cdff674fd3bb51b84ebdcbe4fa6f42a872888777453cc3ce0d266d6703da",
+    "server/src/api/analytics/users/deleteUser.test.ts": "9b492782661e24f24aa9d4c42d082375d624a6c3fc955994ac74e25a06304a6b",
+    "server/src/api/analytics/users/deleteUser.ts": "65e5ca9e5526372ce27f410751bcbf952c0d439bd8c38554800e1aa3b30909ee",
+    "server/src/api/analytics/utils/analyticsQuery.test.ts": "4b4871769ec481e8eccbb1808f2c8121f6cf8ad7c0405195820185edbc358b4f",
+    "server/src/api/analytics/utils/analyticsQuery.ts": "94157761ec8a565b23b10f046380fbcc9037390cb2cc48169a5a40095d678433",
+    "server/src/api/analytics/utils/utils.ts": "7df20781c63a46659a30328701b010f8eeef6d12104a851d68a94c542e577095",
+    "server/src/api/heatmaps/getHeatmaps.test.ts": "a23df4d87e292a1ebaa6176b7401c6b7aef3679c226c97e0c2406ee8b8c07810",
+    "server/src/api/heatmaps/getHeatmaps.ts": "694422920b6156a9392805ceaab53690370a6e11f45dee75d6c1d2b5fce2bd6b",
+    "server/src/api/heatmaps/recordHeatmaps.test.ts": "c2939361c56bb25127e9dd7998c02740a7d3701a2cd312b9e3ad8aa9d3f5e0c1",
+    "server/src/api/heatmaps/recordHeatmaps.ts": "bcb6647bd0a190235e4a22c378b6db1bab0c648bc1c4cd248adbecc2718771e2",
+    "server/src/services/heatmaps/heatmapBatchClaims.test.ts": "ecf479133723fbe7b08f0be98b65eab0a4c52a428392b4847a9aa1f954ec9cd9",
+    "server/src/services/heatmaps/heatmapBatchClaims.ts": "c3ee885572692b9b709f39bc2ef5fbec08807bd89ca04d06d996afa76910e4dd",
+    "server/src/services/heatmaps/heatmapCohortFilter.ts": "d2cadd0b36df7e62cfa5ca681cd00a393c5c37404007299f0e2a83ce828e2130",
+    "server/src/services/heatmaps/heatmapFilterScope.ts": "ba5325564f3132ae40bfec0ef822638ff968c186377eb7aede56a2eca2340f67",
+    "server/src/services/heatmaps/heatmapIngestService.test.ts": "9ecec1473ca4eaaaa0d0539fd18e9260c44ef0b48bcb1eb1de03010f08f332a4",
+    "server/src/services/heatmaps/heatmapIngestService.ts": "00c3fe13b3c838b0284061822c2b5e928c7d40f3f5c540c305b073c1dd02454c",
+    "server/src/services/heatmaps/heatmapQueryService.benchmark.clickhouse.test.ts": "68bedf92eeaa94e01f92f084cb2c3081dfbb726205afa2a0c01b77dc5889bedd",
+    "server/src/services/heatmaps/heatmapQueryService.clickhouse.test.ts": "68bdbcc22f0c763d3519ff76bffa22d87dbf727cb601cfb12992fd7135c0a730",
+    "server/src/services/heatmaps/heatmapQueryService.test.ts": "5ec1521fa7690ad7005913cffa497ef1446f4fbb06ff4c076b00ec545be1ec9b",
+    "server/src/services/heatmaps/heatmapQueryService.ts": "4bc5708c0ef172b129e76d84a6e4614d7744e700766e210589d87a22525aae34",
+    "server/src/services/sites/siteConfigurationLifecycle.test.ts": "707f9cb3f37c019598a8c4658414ef429c6fd98523574166165353a8b8169ed7",
+    "server/src/services/sites/siteConfigurationLifecycle.ts": "d4ffa469b76d97a75b672606d8bbc61ee35b8256d7181ce23e4b6db612a3bde6",
+    "server/src/services/sites/unclaimedSites.test.ts": "103530e5524b2c989fedd409ffd288f929fd39dcd1a08bf92d87a63fcdae2d78"
+  }
+}

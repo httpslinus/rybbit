@@ -6,6 +6,7 @@ import {
   Code,
   Database,
   File,
+  Flame,
   Funnel,
   Gauge,
   Globe2,
@@ -114,6 +115,14 @@ function SidebarContent() {
           href={getTabPath("sessions")}
           icon={<Rewind className="w-4 h-4" />}
         />
+        {!isMobileSite && !privateKey && site?.permissions?.includes("heatmaps:read") && (
+          <SidebarComponents.Item
+            label={t("Heatmaps")}
+            active={isActiveTab("heatmaps")}
+            href={getTabPath("heatmaps")}
+            icon={<Flame className="w-4 h-4" />}
+          />
+        )}
         <div className="hidden md:block">
           {!isMobileSite &&
             !subscription?.planName?.startsWith("appsumo") &&

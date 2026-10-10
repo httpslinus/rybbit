@@ -20,6 +20,7 @@ export const UTC_TIME_COLUMNS = {
   bot_events: [{ name: "timestamp", type: "DateTime('UTC')" }],
   bot_observations: [{ name: "timestamp", type: "DateTime('UTC')" }],
   session_replay_events: [{ name: "timestamp", type: "DateTime64(3, 'UTC')" }],
+  heatmap_events: [{ name: "timestamp", type: "DateTime64(3, 'UTC')" }],
   session_replay_metadata: [
     { name: "start_time", type: "DateTime('UTC')" },
     { name: "end_time", type: "Nullable(DateTime('UTC'))" },

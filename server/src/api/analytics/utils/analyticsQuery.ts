@@ -32,7 +32,7 @@ export class AnalyticsQueryError extends Error {
  */
 const MAX_EXECUTION_TIME_SECONDS = 60;
 
-export async function runAnalyticsQuery<T>(spec: QuerySpec): Promise<T[]> {
+export async function runAnalyticsQuery<T>(spec: QuerySpec, stringColumns: readonly string[] = []): Promise<T[]> {
   try {
     const result = await clickhouse.query({
       query: spec.query,
@@ -40,7 +40,7 @@ export async function runAnalyticsQuery<T>(spec: QuerySpec): Promise<T[]> {
       query_params: spec.params,
       clickhouse_settings: { max_execution_time: MAX_EXECUTION_TIME_SECONDS },
     });
-    return await processResults<T>(result);
+    return await processResults<T>(result, stringColumns);
   } catch (error) {
     throw new AnalyticsQueryError(error, [spec.query]);
   }

@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   invalidate: vi.fn(),
   clickhouseCommand: vi.fn(async () => undefined),
   detectPlatform: vi.fn(async () => null),
+  clearAttributions: vi.fn(async () => undefined),
 }));
 vi.mock("../../db/postgres/postgres.js", async () => {
   const { PGlite } = await import("@electric-sql/pglite");
@@ -19,6 +20,9 @@ vi.mock("../../db/clickhouse/clickhouse.js", () => ({ clickhouse: { command: moc
 vi.mock("../../lib/siteConfig.js", () => ({ siteConfig: { invalidate: mocks.invalidate } }));
 vi.mock("../../api/stripe/getSubscription.js", () => ({ getSubscriptionInner: mocks.getSubscriptionInner }));
 vi.mock("../lifecycleEmails/platformDetect.js", () => ({ detectPlatform: mocks.detectPlatform }));
+vi.mock("../heatmaps/heatmapBatchClaims.js", () => ({
+  heatmapBatchClaims: { clearAttributions: mocks.clearAttributions },
+}));
 vi.mock("../../lib/const.js", async importOriginal => ({
   ...(await importOriginal<typeof import("../../lib/const.js")>()),
   get IS_CLOUD() {
@@ -60,6 +64,8 @@ CREATE TABLE sites (
   "excluded_asns" jsonb DEFAULT '[]'::jsonb,
   "excluded_query_params" jsonb DEFAULT '[]'::jsonb,
   "sessionReplay" boolean DEFAULT false,
+  "heatmaps" boolean NOT NULL DEFAULT false,
+  "heatmap_sample_rate" real NOT NULL DEFAULT 15,
   "webVitals" boolean DEFAULT false,
   "trackErrors" boolean DEFAULT false,
   "trackOutbound" boolean DEFAULT true,
@@ -207,7 +213,14 @@ describe("cleanup", () => {
     expect(await readSite(fresh.siteId)).toBeDefined();
     expect(await readSite(legacy.siteId)).toBeDefined();
     expect(await readSite(claimed.siteId)).toBeDefined();
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(2);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clearAttributions).toHaveBeenCalledWith(expired.siteId);
+    expect(mocks.clearAttributions.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.clickhouseCommand.mock.invocationCallOrder[0]
+    );
+    expect(mocks.clickhouseCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ query: expect.stringContaining("DELETE FROM heatmap_events") })
+    );
   });
   it("rechecks a stale candidate before deletion and side effects", async () => {
     const site = await unclaimed();
@@ -224,13 +237,25 @@ describe("cleanup", () => {
     expect(await readSite(site.siteId)).toBeDefined();
     expect(await cleanup.deleteExpiredSites()).toBe(1);
   });
+  it("keeps the site and skips data deletion until retry attribution can be cleared", async () => {
+    const site = await unclaimed();
+    await db.update(sites).set({ claimExpiresAt: "2000-01-01T00:00:00Z" }).where(eq(sites.siteId, site.siteId));
+    mocks.clearAttributions.mockRejectedValueOnce(new Error("Redis unavailable"));
+    expect(await cleanup.deleteExpiredSites()).toBe(0);
+    expect(await readSite(site.siteId)).toBeDefined();
+    expect(mocks.clickhouseCommand).not.toHaveBeenCalled();
+    expect(await cleanup.deleteExpiredSites()).toBe(1);
+  });
   it("deletes a Site that has import history", async () => {
     const site = await unclaimed();
     await lifecycle.claim(claimInput(site));
     await (client as any).query("INSERT INTO import_status VALUES ('imp_1', $1, 'org_1')", [site.siteId]);
     await lifecycle.delete(site.siteId);
     expect(await readSite(site.siteId)).toBeUndefined();
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(2);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ query: expect.stringContaining("DELETE FROM heatmap_events") })
+    );
   });
   it("does nothing when there are no expired sites", async () => {
     expect(await cleanup.deleteExpiredSites()).toBe(0);

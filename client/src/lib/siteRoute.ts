@@ -14,6 +14,7 @@ export const SYNCED_ANALYTICS_ROUTES = new Set([
   "errors",
   "pages",
   "replay",
+  "heatmaps",
   "feature-flags",
   "experiments",
 ]);

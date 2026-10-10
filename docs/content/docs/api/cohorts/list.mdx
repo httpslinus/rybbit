@@ -1,0 +1,58 @@
+---
+title: Get Cohorts
+description: List the historical cohort definitions available on a site
+full: true
+method: GET
+---
+
+```text
+GET /api/sites/:siteId/cohorts
+```
+
+Returns an array of site-specific cohort definitions, sorted by name. Requires authenticated site access with `cohorts:read`; bearer keys need that scope explicitly. Viewers and higher roles can read. Public dashboards and private share links cannot access cohorts.
+
+A cohort defines visitors matching **all** its filters within the saved historical calendar dates and IANA timezone. It stores the predicate and window, not a frozen member list. Heatmap reports evaluate membership from retained ordinary analytics using effective visitor identity, so an identified visitor can match across devices. Empty or expired historical analytics gives zero members and an empty filtered report.
+
+The heatmap report's range is independent of the cohort's historical range. Applying `cohort_id` to [Get Heatmaps](/docs/api/heatmaps/get) requires both `heatmaps:read` and `cohorts:read`, plus `segments:read` if a saved segment is selected.
+
+## Example
+
+```bash title="Request"
+curl "https://analytics.example.com/api/sites/1/cohorts" \
+  -H "Authorization: Bearer your_api_key_here"
+```
+
+```json title="Response"
+[
+  {
+    "cohortId": 7,
+    "siteId": 1,
+    "name": "September purchasers",
+    "userId": "user_xyz",
+    "startDate": "2026-09-01",
+    "endDate": "2026-09-30",
+    "timeZone": "Europe/Tirane",
+    "filters": [{ "parameter": "event_name", "type": "equals", "value": ["purchase"] }],
+    "createdAt": "2026-10-01T10:15:00.000Z",
+    "updatedAt": "2026-10-01T10:15:00.000Z",
+    "canEdit": true
+  }
+]
+```
+
+## Response fields and ownership
+
+| Field                    | Meaning                                                                   |
+| ------------------------ | ------------------------------------------------------------------------- |
+| `cohortId`, `siteId`     | Cohort and owning site identifiers                                        |
+| `name`                   | Trimmed name, 1–80 characters                                             |
+| `userId`                 | Creator's user ID, or `null` for an organization key or a deleted creator |
+| `startDate`, `endDate`   | Inclusive historical dates, `YYYY-MM-DD`                                  |
+| `timeZone`               | Historical window's IANA timezone                                         |
+| `filters`                | 1–20 ordinary analytics filter objects; all must match                    |
+| `createdAt`, `updatedAt` | ISO 8601 timestamps                                                       |
+| `canEdit`                | Whether this caller may edit or delete the definition                     |
+
+Members can create cohorts and edit/delete their own. Editors, admins and owners can manage all definitions on the site. Organization API keys can manage cohorts on sites in their organization when their explicit scopes permit it. Personal keys use their owner's site role and ownership restrictions. Writes require `cohorts:write`.
+
+No membership count is returned by this endpoint. The selected cohort summary in a heatmap report supplies the current retained historical membership count.

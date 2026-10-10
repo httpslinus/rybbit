@@ -2,16 +2,29 @@
 import { Button } from "@/components/ui/button";
 import { canGoBack, canGoForward, goBack, goForward, useStore } from "@/lib/store";
 import { FilterParameter } from "@rybbit/shared";
+import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Filters } from "./Filters/Filters";
+import { Filters, type FilterMatching } from "./Filters/Filters";
 
 import { DateSelector } from "../../../../components/DateSelector/DateSelector";
 import { MobileSidebar } from "../Sidebar/MobileSidebar";
-import { NewFilterButton } from "./Filters/NewFilterButton";
+import { NewFilterButton, type AdditionalFilterTab } from "./Filters/NewFilterButton";
 import { LiveUserCount } from "./LiveUserCount";
 import { ShareExportButton } from "./ShareExportButton";
 
-export function SubHeader({ availableFilters }: { availableFilters?: FilterParameter[] }) {
+export function SubHeader({
+  availableFilters,
+  matching,
+  filterOptions,
+  additionalTab,
+  activeFilters,
+}: {
+  availableFilters?: FilterParameter[];
+  matching?: FilterMatching;
+  filterOptions?: ReactNode;
+  additionalTab?: AdditionalFilterTab;
+  activeFilters?: ReactNode;
+}) {
   const { time, setTime } = useStore();
 
   return (
@@ -20,10 +33,14 @@ export function SubHeader({ availableFilters }: { availableFilters?: FilterParam
         <div className="flex items-center gap-2">
           <MobileSidebar />
           <div className="hidden md:block">
-            <NewFilterButton availableFilters={availableFilters} />
+            <NewFilterButton
+              availableFilters={availableFilters}
+              filterOptions={filterOptions}
+              additionalTab={additionalTab}
+            />
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-1 sm:gap-2">
           <LiveUserCount />
           <ShareExportButton />
           <DateSelector time={time} setTime={setTime} />
@@ -51,10 +68,16 @@ export function SubHeader({ availableFilters }: { availableFilters?: FilterParam
       </div>
       <div>
         <div className="md:hidden mt-3">
-          <NewFilterButton availableFilters={availableFilters} />
+          <NewFilterButton
+            availableFilters={availableFilters}
+            filterOptions={filterOptions}
+            additionalTab={additionalTab}
+          />
         </div>
         <div className="mt-2">
-          <Filters availableFilters={availableFilters} />
+          <Filters availableFilters={availableFilters} matching={matching}>
+            {activeFilters}
+          </Filters>
         </div>
       </div>
     </div>

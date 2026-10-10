@@ -1,4 +1,7 @@
 import { createHash } from "node:crypto";
+import { getHeatmaps, recordHeatmaps } from "./heatmaps/index.js";
+import { expandHeatmapSegmentParam } from "./analytics/segments/expandSegmentParam.js";
+import { createCohort, deleteCohort, getCohort, getCohorts, updateCohort } from "./analytics/cohorts/index.js";
 import type { Permission } from "@rybbit/shared";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
@@ -253,14 +256,19 @@ const validateFilterParam = async (request: FastifyRequest, reply: FastifyReply)
 // with no per-endpoint change. It is a no-op when the param is absent.
 const site = (
   permission: Permission,
-  options: { allowPublic?: boolean; validateTime?: boolean; validateFilters?: boolean } = {}
+  options: {
+    allowPublic?: boolean;
+    validateTime?: boolean;
+    validateFilters?: boolean;
+    requiredSegmentGroup?: boolean;
+  } = {}
 ) => ({
   preHandler: [
     resolveSiteId,
     requireSitePermission(permission, { allowPublic: options.allowPublic }),
     ...(options.validateTime === false ? [] : [validateTimeParams]),
     ...(options.validateFilters === false ? [] : [validateFilterParam]),
-    expandSegmentParam,
+    options.requiredSegmentGroup ? expandHeatmapSegmentParam : expandSegmentParam,
   ] as any,
   config: { access: { level: "site", permission, allowPublic: !!options.allowPublic } as RouteAccess },
 });
@@ -409,6 +417,11 @@ async function analyticsRoutes(fastify: FastifyInstance) {
   fastify.post("/sites/:siteId/segments", site("segments:write"), createSegment);
   fastify.put("/sites/:siteId/segments/:segmentId", site("segments:write"), updateSegment);
   fastify.delete("/sites/:siteId/segments/:segmentId", site("segments:write"), deleteSegment);
+  fastify.get("/sites/:siteId/cohorts", site("cohorts:read"), getCohorts);
+  fastify.get("/sites/:siteId/cohorts/:cohortId", site("cohorts:read"), getCohort);
+  fastify.post("/sites/:siteId/cohorts", site("cohorts:write"), createCohort);
+  fastify.put("/sites/:siteId/cohorts/:cohortId", site("cohorts:write"), updateCohort);
+  fastify.delete("/sites/:siteId/cohorts/:cohortId", site("cohorts:write"), deleteCohort);
   fastify.post(
     "/sites/:siteId/dashboards/run-card",
     withRateLimit(site("dashboards:read"), customQueryRateLimit),
@@ -455,6 +468,15 @@ async function analyticsRoutes(fastify: FastifyInstance) {
 }
 
 async function sessionReplayRoutes(fastify: FastifyInstance) {
+  fastify.post(
+    "/heatmaps/record/:siteId",
+    {
+      bodyLimit: 64 * 1024,
+      config: { access: "public" as RouteAccess, rateLimit: { max: 120, timeWindow: "1 minute" } },
+    },
+    recordHeatmaps
+  );
+  fastify.get("/sites/:siteId/heatmaps", site("heatmaps:read", { requiredSegmentGroup: true }), getHeatmaps);
   // Session Replay
   fastify.post("/session-replay/record/:siteId", publicRoute, recordSessionReplay); // Public - tracking endpoint
   fastify.get("/sites/:siteId/session-replay/list", publicReplayRead, getSessionReplays);

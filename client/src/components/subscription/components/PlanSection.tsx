@@ -71,5 +71,14 @@ export function PlanAllowances({ subscription }: { subscription: SubscriptionDat
     parts.push(t("{count} org API requests a day", { count: number.format(apiUsage.dailyLimit) }));
   }
 
-  return <>{parts.join(" · ")}</>;
+  return (
+    <span className="inline-flex flex-wrap gap-x-3 gap-y-1">
+      {parts.map((part, index) => (
+        <span key={part}>
+          {part}
+          {index < parts.length - 1 && " "}
+        </span>
+      ))}
+    </span>
+  );
 }

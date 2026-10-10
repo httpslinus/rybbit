@@ -1,0 +1,492 @@
+{
+  "recordedAt": "2026-10-10T14:55:31.855Z",
+  "codec": "production default (LZ4)",
+  "database": "rybbit_heatmap_benchmark_1791644109677_lz4",
+  "cleanup": "created database dropped in finally",
+  "fixture": {
+    "rows": 1000000,
+    "sites": 100,
+    "sampledSessions": 45100,
+    "sampledVisitors": 45100,
+    "normalSessions": 45000,
+    "normalInteractionsPerSession": 20,
+    "longSessions": 100,
+    "longInteractionsPerSession": 1000,
+    "startDate": "2026-09-26",
+    "endDate": "2026-10-10",
+    "analyticsRows": 90200,
+    "shape": {
+      "sites": 100,
+      "sampledSessions": 45100,
+      "clicks": 900000,
+      "scrollUpdates": 100000
+    },
+    "selectedPage": {
+      "siteId": 37,
+      "hostname": "site37.benchmark.test",
+      "pathname": "/landing",
+      "bucket": 375,
+      "count": 5670,
+      "sessions": 315,
+      "returnedPoints": 5000,
+      "truncated": true
+    },
+    "generatedJSONPayloadBytes": 603377900,
+    "generatedJSONBytesPerRow": 603.3779,
+    "interactionsPerSampledSession": 22.172949002217294,
+    "generatedJSONBytesPerSampledSession": 13378.667405764967
+  },
+  "hardware": {
+    "nodeVersion": "v24.21.0",
+    "platform": "linux",
+    "architecture": "arm64",
+    "cpuModel": "unknown",
+    "visibleCpus": 12,
+    "availableParallelism": 12,
+    "totalMemoryBytes": 18833154048,
+    "cgroupMemoryMax": "max",
+    "cgroupCpuMax": "max 100000",
+    "dockerVM": {
+      "architecture": "aarch64",
+      "cpus": 12,
+      "memoryBytes": 18833154048,
+      "kernel": "6.11.11-linuxkit",
+      "os": "Docker Desktop",
+      "dockerVersion": "28.5.1"
+    },
+    "clickhouseContainer": {
+      "image": "clickhouse/clickhouse-server:26.3.17.4",
+      "nanoCpus": 0,
+      "memoryBytes": 0,
+      "memorySwapBytes": 0,
+      "cpuQuota": 0,
+      "cpuPeriod": 0,
+      "cpuSet": ""
+    },
+    "runtime": {
+      "clickhouseVersion": "26.3.17.4",
+      "maxThreads": 16,
+      "maxMemoryUsageBytes": 32000000000
+    },
+    "nativeHost": "machdep.cpu.brand_string: Apple M3 Pro\nhw.memsize: 38654705664\nhw.ncpu: 12"
+  },
+  "insert": {
+    "samples": 50,
+    "minMs": 88.04824999999983,
+    "p50Ms": 101.7591250000005,
+    "p95Ms": 172.51741700000002,
+    "maxMs": 225.6815000000006,
+    "samplesMs": [
+      172.51741700000002,
+      96.4977080000001,
+      207.013958,
+      114.76416600000016,
+      105.6776669999997,
+      117.01395899999989,
+      108.06750000000011,
+      95.92150000000038,
+      96.70354199999974,
+      105.19050000000016,
+      98.89029200000004,
+      104.26104200000009,
+      103.77795800000013,
+      99.7325409999994,
+      105.64270899999974,
+      100.81754199999978,
+      106.18975000000046,
+      95.20787500000006,
+      102.27912500000002,
+      103.90337499999987,
+      104.33629199999996,
+      106.63941599999998,
+      105.66287499999999,
+      100.47912499999984,
+      105.69524999999976,
+      100.29295900000034,
+      122.0981670000001,
+      101.7591250000005,
+      101.62616600000001,
+      97.46195799999987,
+      112.75354100000004,
+      107.21941699999934,
+      90.18624999999884,
+      103.39762599999995,
+      109.12299999999959,
+      98.69037500000013,
+      108.35329199999978,
+      101.54904200000055,
+      97.3052919999991,
+      97.08150000000023,
+      97.84016700000029,
+      98.39229200000045,
+      96.95529199999874,
+      98.87195900000006,
+      108.41675000000032,
+      225.6815000000006,
+      88.04824999999983,
+      88.828125,
+      88.50416699999914,
+      90.87766700000066
+    ],
+    "batchRows": 20000,
+    "asyncInsert": true,
+    "waitForAsyncInsert": true,
+    "seedElapsedMs": 11673.273297,
+    "note": "Each sample includes JSON serialization, transport, codec compression and acknowledged async flush; metadata event insert is excluded."
+  },
+  "storage": {
+    "beforeMerge": {
+      "rows": 1000000,
+      "activeParts": 10,
+      "bytesOnDisk": 16763595,
+      "dataCompressedBytes": 16724771,
+      "dataUncompressedBytes": 284032621,
+      "primaryKeyBytesInMemory": 2268
+    },
+    "afterMerge": {
+      "rows": 1000000,
+      "activeParts": 2,
+      "bytesOnDisk": 25821453,
+      "dataCompressedBytes": 25800462,
+      "dataUncompressedBytes": 284014648,
+      "primaryKeyBytesInMemory": 508
+    },
+    "columnCodecs": [
+      {
+        "name": "site_id",
+        "type": "UInt32",
+        "compression_codec": ""
+      },
+      {
+        "name": "session_id",
+        "type": "String",
+        "compression_codec": ""
+      },
+      {
+        "name": "user_id",
+        "type": "String",
+        "compression_codec": ""
+      },
+      {
+        "name": "identified_user_id",
+        "type": "String",
+        "compression_codec": ""
+      },
+      {
+        "name": "timestamp",
+        "type": "DateTime64(3, 'UTC')",
+        "compression_codec": ""
+      },
+      {
+        "name": "page_visit_id",
+        "type": "String",
+        "compression_codec": ""
+      },
+      {
+        "name": "batch_id",
+        "type": "String",
+        "compression_codec": ""
+      },
+      {
+        "name": "event_index",
+        "type": "UInt16",
+        "compression_codec": ""
+      },
+      {
+        "name": "type",
+        "type": "LowCardinality(String)",
+        "compression_codec": ""
+      },
+      {
+        "name": "hostname",
+        "type": "LowCardinality(String)",
+        "compression_codec": ""
+      },
+      {
+        "name": "pathname",
+        "type": "LowCardinality(String)",
+        "compression_codec": ""
+      },
+      {
+        "name": "viewport_bucket",
+        "type": "UInt16",
+        "compression_codec": ""
+      },
+      {
+        "name": "viewport_width",
+        "type": "UInt32",
+        "compression_codec": ""
+      },
+      {
+        "name": "viewport_height",
+        "type": "UInt32",
+        "compression_codec": ""
+      },
+      {
+        "name": "document_width",
+        "type": "UInt32",
+        "compression_codec": ""
+      },
+      {
+        "name": "document_height",
+        "type": "UInt32",
+        "compression_codec": ""
+      },
+      {
+        "name": "client_x",
+        "type": "Nullable(Float64)",
+        "compression_codec": ""
+      },
+      {
+        "name": "client_y",
+        "type": "Nullable(Float64)",
+        "compression_codec": ""
+      },
+      {
+        "name": "page_x",
+        "type": "Nullable(Float64)",
+        "compression_codec": ""
+      },
+      {
+        "name": "page_y",
+        "type": "Nullable(Float64)",
+        "compression_codec": ""
+      },
+      {
+        "name": "max_depth",
+        "type": "Nullable(Float64)",
+        "compression_codec": ""
+      }
+    ],
+    "compressedBytesPerRow": 25.800462,
+    "diskBytesPerRow": 25.821453,
+    "compressedBytesPerSampledSession": 572.0723281596453,
+    "diskBytesPerSampledSession": 572.5377605321507
+  },
+  "representativeSession": {
+    "normal": {
+      "interactions": 20,
+      "generatedJSONPayloadBytes": 11994
+    },
+    "long": {
+      "interactions": 1000,
+      "clicks": 900,
+      "scrollUpdates": 100,
+      "documentHeight": 120000,
+      "viewportWidth": 1442,
+      "generatedJSONPayloadBytes": 608116,
+      "measuredIsolatedPartStorage": {
+        "rows": 1000,
+        "activeParts": 1,
+        "bytesOnDisk": 26355,
+        "dataCompressedBytes": 24858,
+        "dataUncompressedBytes": 284149,
+        "primaryKeyBytesInMemory": 178
+      },
+      "note": "Single-session table includes small part/dictionary overhead; use full-table averages for retained workload sizing."
+    }
+  },
+  "reads": {
+    "selectedPoints": {
+      "samples": 30,
+      "minMs": 36.47770800000217,
+      "p50Ms": 41.230250000000524,
+      "p95Ms": 46.1948339999999,
+      "maxMs": 47.74237500000163,
+      "samplesMs": [
+        41.104042000000845,
+        39.209625000001324,
+        40.627958000000945,
+        46.1948339999999,
+        44.31562499999927,
+        41.71783400000095,
+        41.94558400000096,
+        41.647917000000234,
+        41.76820800000132,
+        40.49595899999986,
+        41.832792000001064,
+        42.10412500000166,
+        41.3248339999991,
+        42.70304199999737,
+        37.995209000000614,
+        42.005042000000685,
+        40.355625000000146,
+        40.30937499999709,
+        42.984042000000045,
+        38.94495800000004,
+        41.62483300000167,
+        36.70679099999688,
+        36.977584000000206,
+        39.981541000001016,
+        41.230250000000524,
+        43.48770799999693,
+        47.74237500000163,
+        38.53874999999971,
+        36.47770800000217,
+        38.92866700000013
+      ]
+    },
+    "overview": {
+      "samples": 30,
+      "minMs": 22.68499999999949,
+      "p50Ms": 25.202792000000045,
+      "p95Ms": 28.817958999999973,
+      "maxMs": 42.15495799999917,
+      "samplesMs": [
+        25.76037499999984,
+        25.202792000000045,
+        26.794667000000118,
+        26.630708999999115,
+        22.68499999999949,
+        23.30120899999929,
+        23.137625000001208,
+        24.014624999999796,
+        27.634500000000116,
+        28.35016700000051,
+        28.03533299999981,
+        25.05695900000137,
+        23.479957999999897,
+        28.541916999998648,
+        26.834790999997495,
+        27.13337500000125,
+        25.117707999997947,
+        28.817958999999973,
+        23.32670899999721,
+        26.255207999998674,
+        42.15495799999917,
+        23.44316599999729,
+        22.974833000000217,
+        23.120208000000275,
+        27.57795900000201,
+        24.97649999999703,
+        28.22004200000083,
+        25.255041000000347,
+        23.358499999998457,
+        23.739125000000058
+      ]
+    },
+    "filteredSelected": {
+      "samples": 30,
+      "minMs": 32.38287499999933,
+      "p50Ms": 35.18329199999789,
+      "p95Ms": 39.249541999999565,
+      "maxMs": 42.39441699999952,
+      "samplesMs": [
+        38.003209000000425,
+        33.82770799999889,
+        36.847374999999374,
+        38.35358300000007,
+        38.49483399999917,
+        39.249541999999565,
+        36.80541699999958,
+        36.966457999998966,
+        35.02104200000031,
+        34.89937500000087,
+        33.23462499999732,
+        37.57866700000159,
+        38.63945800000147,
+        34.009916999999405,
+        34.382000000001426,
+        33.86091699999815,
+        34.07154199999786,
+        33.51612499999828,
+        38.94133299999885,
+        37.338707999999315,
+        42.39441699999952,
+        34.79554199999984,
+        34.03162500000326,
+        32.98991699999897,
+        33.983790999998746,
+        37.42974999999933,
+        35.259540999999444,
+        35.33220799999981,
+        35.18329199999789,
+        32.38287499999933
+      ]
+    },
+    "scroll": {
+      "samples": 30,
+      "minMs": 25.478958000001512,
+      "p50Ms": 28.120249999999942,
+      "p95Ms": 39.491416000000754,
+      "maxMs": 46.521584000001894,
+      "samplesMs": [
+        29.354959000000235,
+        26.131792000000132,
+        26.81654200000048,
+        28.86175000000003,
+        28.554792000000816,
+        25.478958000001512,
+        30.20483299999978,
+        29.550874999998996,
+        30.21570900000006,
+        30.07866600000125,
+        30.61525000000256,
+        29.300583000000188,
+        30.506375999997545,
+        25.524499999999534,
+        26.611000000000786,
+        30.84662500000195,
+        29.94550000000163,
+        28.120249999999942,
+        26.903125000000728,
+        27.132166999999754,
+        26.169376000001648,
+        26.274499999999534,
+        46.521584000001894,
+        25.682333000000654,
+        28.667874999999185,
+        39.491416000000754,
+        27.651750000000902,
+        26.70600000000195,
+        26.573040999999648,
+        27.633750000000873
+      ]
+    },
+    "selectedReport": {
+      "samples": 30,
+      "minMs": 116.2513340000005,
+      "p50Ms": 125.69379099999787,
+      "p95Ms": 144.71058300000004,
+      "maxMs": 202.3129169999993,
+      "samplesMs": [
+        132.98791700000038,
+        120.97100000000137,
+        129.72612500000105,
+        132.9016249999986,
+        124.3005000000012,
+        124.5792079999992,
+        124.8602090000004,
+        124.90879099999984,
+        126.5934159999997,
+        124.49612600000182,
+        128.68491700000232,
+        127.1182090000002,
+        122.46116599999732,
+        116.2513340000005,
+        128.00787499999933,
+        127.64079099999799,
+        128.23387500000172,
+        127.55074999999852,
+        131.75941699999748,
+        144.71058300000004,
+        124.20295799999803,
+        121.7835410000007,
+        141.3876249999994,
+        119.05912499999977,
+        125.69379099999787,
+        202.3129169999993,
+        122.69062500000291,
+        123.26408399999855,
+        119.22145900000032,
+        129.76629200000025
+      ]
+    }
+  },
+  "readMethod": {
+    "warmups": 5,
+    "measuredRuns": 30,
+    "concurrency": 1,
+    "fullService": "production HeatmapQueryService.getHeatmaps using isolated database env override; response serialization and HTTP are excluded"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "mode": "faults",
+  "startedAt": "2026-10-10T21:09:50.817Z",
+  "checks": [
+    {
+      "name": "Real Redis completed marker prevents physical duplicate concurrent HTTP inserts",
+      "passed": true,
+      "observed": {
+        "physicalRows": 1,
+        "completionTTLGreaterThan29Days": true
+      }
+    },
+    {
+      "name": "Production ingest throw after durable insert, shortened own Redis lease expiry and retry dedup",
+      "passed": true,
+      "observed": {
+        "physicalRows": 6,
+        "physicalSessions": 1,
+        "reportCount": 3,
+        "reportSessions": 1,
+        "points": 3,
+        "busyBeforeExpiry": true,
+        "duplicateAfterCompletion": true
+      }
+    },
+    {
+      "name": "Production ingest false after durable insert, shortened own Redis lease expiry and retry dedup",
+      "passed": true,
+      "observed": {
+        "physicalRows": 6,
+        "physicalSessions": 1,
+        "reportCount": 3,
+        "reportSessions": 1,
+        "points": 3,
+        "busyBeforeExpiry": true,
+        "duplicateAfterCompletion": true
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "completedAt": "2026-10-10T21:09:52.733Z"
+}

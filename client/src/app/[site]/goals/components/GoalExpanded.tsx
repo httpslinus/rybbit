@@ -76,7 +76,7 @@ function ConvertedSession({ session, basePath }: { session: GetSessionsResponse[
         <div className={`flex min-w-0 items-center gap-1 text-xs ${MUTED}`}>
           <ChannelIcon channel={session.channel} className="h-3 w-3 shrink-0" />
           <span className="max-w-[40%] shrink-0 truncate">{extractDomain(session.referrer) ?? session.channel}</span>
-          <span aria-hidden="true">·</span>
+          <span className="mx-1 h-3 border-l border-neutral-200 dark:border-neutral-700" aria-hidden="true" />
           <span className="truncate">{session.entry_page || "-"}</span>
           <ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
           <span className="truncate">{session.exit_page || "-"}</span>
@@ -93,9 +93,9 @@ function ConvertedSession({ session, basePath }: { session: GetSessionsResponse[
             timeZone: timezone,
           })}
         </div>
-        <div className={MUTED}>
-          {formatShortDuration(Math.max(0, Math.floor(end.diff(start).as("seconds"))))} ·{" "}
-          {t("{count, plural, one {# page} other {# pages}}", { count: pageviews })}
+        <div className={`flex justify-end gap-2 ${MUTED}`}>
+          <span>{formatShortDuration(Math.max(0, Math.floor(end.diff(start).as("seconds"))))}</span>
+          <span>{t("{count, plural, one {# page} other {# pages}}", { count: pageviews })}</span>
         </div>
       </div>
       {session.has_replay === 1 && (

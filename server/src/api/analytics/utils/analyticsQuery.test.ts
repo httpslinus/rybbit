@@ -98,6 +98,13 @@ describe("runAnalyticsQuery", () => {
     expect(mockQuery.mock.calls[0][0].clickhouse_settings?.max_execution_time).toBe(60);
   });
 
+  it("preserves opaque numeric page labels while decoding counts", async () => {
+    mockQuery.mockResolvedValueOnce(resultSet([{ hostname: "123", pathname: "456", count: "7" }]));
+    expect(await runAnalyticsQuery({ query: "SELECT labels" }, ["hostname", "pathname"])).toEqual([
+      { hostname: "123", pathname: "456", count: 7 },
+    ]);
+  });
+
   it("wraps failures in AnalyticsQueryError carrying the SQL", async () => {
     const boom = new Error("boom");
     mockQuery.mockRejectedValueOnce(boom);

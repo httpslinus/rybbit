@@ -1,0 +1,55 @@
+{
+  "mode": "after-user-delete",
+  "startedAt": "2026-10-10T21:09:57.616Z",
+  "checks": [
+    {
+      "name": "Authenticated user erasure removes Alice across four actual tables and PG aliases/profile while preserving Bob/foreign site",
+      "passed": true,
+      "observed": {
+        "events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "heatmap_events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "session_replay_events": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        },
+        "session_replay_metadata_v2": {
+          "primaryRemaining": [
+            "Bob on shared device",
+            "Bob on other linked device",
+            "unlinked anonymous device"
+          ],
+          "foreignRemaining": 3
+        }
+      }
+    },
+    {
+      "name": "User erasure tombstones matching active retry contexts and preserves Bob, unlinked and foreign contexts",
+      "passed": true,
+      "observed": {
+        "erased": 2,
+        "retained": 3
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "completedAt": "2026-10-10T21:09:58.452Z"
+}

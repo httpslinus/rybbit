@@ -1,0 +1,31 @@
+{
+  "completedAt": "2026-10-10T14:57:22.500Z",
+  "isolation": "Disposable databases inside rybbit-local-postgres only",
+  "checks": [
+    {
+      "name": "Existing pre-feature site upgrade preserves settings and defaults collection off at 15%",
+      "passed": true,
+      "observed": {
+        "name": "Old site",
+        "domain": "old-upgrade.example.test",
+        "sessionReplay": true,
+        "trackButtonClicks": true,
+        "heatmaps": false,
+        "heatmap_sample_rate": 15
+      }
+    },
+    {
+      "name": "Fresh installation creates cohort definitions and defaults new sites off at 15%",
+      "passed": true,
+      "observed": {
+        "heatmaps": false,
+        "heatmap_sample_rate": 15
+      }
+    },
+    {
+      "name": "Repeated migrations are idempotent and sample-rate constraints accept 0/15/100 but reject -1/101/NaN",
+      "passed": true,
+      "migrationCount": 27
+    }
+  ]
+}

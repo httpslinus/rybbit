@@ -92,7 +92,7 @@ export function PeopleTable({
 
   const summary =
     invitations.length > 0
-      ? t("{people, plural, one {# person} other {# people}} · {invited} invited", {
+      ? t("{people, plural, one {# person} other {# people}} ({invited} invited)", {
           people: members.length,
           invited: String(invitations.length),
         })

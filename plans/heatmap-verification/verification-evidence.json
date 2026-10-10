@@ -1,0 +1,241 @@
+{
+  "completedAt": "2026-10-10T15:30:13.305034+00:00",
+  "status": "complete",
+  "plan": "plans/001-umami-heatmap-parity.md",
+  "phasesCompleted": [1, 2, 3, 4, 5, 6],
+  "sourceState": {
+    "branch": "master",
+    "head": "6f8454121ceb34a18621f7e87784c3dba96ae4a4",
+    "newBranchCreated": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "isolation": "rybbit-local Docker project; only loopback proxy port 18033 is published; local migration authorization supplied by the user"
+  },
+  "commands": [
+    {
+      "command": "TZ=UTC pnpm test",
+      "exitCode": 0,
+      "clientPassed": 1497,
+      "serverPassed": 2916,
+      "totalPassed": 4413,
+      "optionalHostSqlSkipped": 61,
+      "note": "Every optional SQL test executed separately below. Unchanged existing PGlite OAuth/site-transfer fixtures require UTC because they mix timezone-less SQL and JavaScript dates."
+    },
+    {
+      "command": "bash plans/heatmap-verification/run-clickhouse.sh <eight files listed in README.md>",
+      "exitCode": 0,
+      "filesPassed": 8,
+      "testsPassed": 75,
+      "databaseIntegrationTestsPassed": 61,
+      "relatedUnitTestsPassed": 14,
+      "skipped": 0,
+      "note": "The 14 unit tests also run in the workspace suite; they are not unique additional tests."
+    },
+    {
+      "command": "pnpm typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm lint",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm build:server",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm build:client",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter client exec eslint --config eslint.heatmaps.config.mjs <feature paths listed in README.md>",
+      "exitCode": 0
+    },
+    {
+      "command": "pnpm --filter rybbit-backend db:check",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "docker compose --env-file plans/local/.env.local -p rybbit-local -f docker-compose.yml -f plans/local/compose.yaml up -d --build",
+      "exitCode": 0,
+      "note": "All six local containers rebuilt/restarted. Backend rebuilt again after final timezone/date validation repairs; final HTTP and replay gates use that backend."
+    },
+    {
+      "command": "curl -fsS http://localhost:18033/api/health",
+      "exitCode": 0,
+      "body": "OK",
+      "verifiedAt": "2026-10-10T15:28:06Z"
+    }
+  ],
+  "localStack": {
+    "health": {
+      "backend": "healthy",
+      "clickhouse": "healthy",
+      "postgres": "healthy",
+      "redis": "healthy",
+      "client": "running; no container healthcheck",
+      "local-proxy": "running; no container healthcheck"
+    },
+    "backendImage": "sha256:7ac62e25c954d94cfa8eee67a9611ecd6e764d448b817ab7e44965cb5fc5dace",
+    "clientImage": "sha256:dbf48e2f002cc0a1b810c34cf57f846d17f9476219b2da59bbdf6f575e09dc43"
+  },
+  "gates": {
+    "realReplayOffCapture": {
+      "evidence": "collection-evidence.json",
+      "passed": true,
+      "rrwebRequests": 0,
+      "widths": [375, 768, 1440]
+    },
+    "responsiveRendering": {
+      "evidence": "render-evidence.json",
+      "passed": true,
+      "alignmentCases": 6,
+      "maxAlignmentErrorCssPx": 0.0007757278847293492,
+      "alignmentBudgetCssPx": 3,
+      "interactionChecks": 7,
+      "backgroundUploads": 0
+    },
+    "advancedHttp": {
+      "evidence": "phase5-api-evidence.json",
+      "passed": true,
+      "positiveChains": 11,
+      "validationChecks": 22
+    },
+    "advancedBrowser": {
+      "evidence": "phase5-browser-evidence.json",
+      "passed": true,
+      "checks": 9,
+      "normalApiResponses": 18
+    },
+    "freshAndExistingMigrations": {
+      "evidence": "migration-evidence.json",
+      "passed": true,
+      "checks": 3
+    },
+    "restartPersistence": {
+      "evidence": "restart-evidence.json",
+      "passed": true,
+      "containers": 6
+    },
+    "liveLifecycle": {
+      "evidence": "lifecycle-evidence.json",
+      "passed": true,
+      "checks": 12
+    },
+    "replayAndButtons": {
+      "evidence": "browser-regressions-evidence.json",
+      "passed": true,
+      "checks": [
+        {
+          "check": "Trusted automatic button capture and declarative custom event remain separate",
+          "buttons": 2,
+          "customEvents": 1,
+          "spaPageviews": 1
+        },
+        {
+          "check": "Real rrweb script/upload/list/read and compact heatmaps coexist",
+          "rrwebRequests": 1,
+          "replayUploads": 2,
+          "eventCount": 11,
+          "hasFullSnapshot": true,
+          "hasIncrementalSnapshot": true,
+          "maskedInput": true,
+          "heatmapClicks": 3,
+          "metadata": {
+            "event_count": 11,
+            "screen_width": 800,
+            "screen_height": 600,
+            "hostname": "replay-32cffb29fb.heatmap.test"
+          }
+        }
+      ],
+      "runtimeErrors": [],
+      "consoleErrors": []
+    },
+    "millionRowBenchmark": {
+      "evidence": "benchmark-evidence.json",
+      "passed": true,
+      "rows": 1000000,
+      "sites": 100,
+      "codec": "ZSTD(1)",
+      "warmSelectedFullServiceP95Ms": 157.97575000000143,
+      "warmOverviewP95Ms": 29.450958000001265,
+      "selectedBudgetMs": 1000,
+      "overviewBudgetMs": 2000,
+      "compressedBytesPerRow": 15.702193,
+      "readMethod": {
+        "warmups": 5,
+        "measuredRuns": 30,
+        "concurrency": 1,
+        "fullService": "production HeatmapQueryService.getHeatmaps using isolated database env override; response serialization and HTTP are excluded"
+      }
+    },
+    "denseBrowserRenderer": {
+      "evidence": "performance-evidence.json",
+      "passed": true,
+      "pointsPerWidth": 5000,
+      "widths": [375, 1440],
+      "interactionBudgetMs": 100,
+      "trustedInteractionLatencyMs": {
+        "count": 101,
+        "p50": 8.300000011920929,
+        "p95": 31.299999952316284,
+        "max": 82.19999998807907
+      },
+      "frameGapsMs": {
+        "count": 1014,
+        "p50": 8.300000000001091,
+        "p95": 10,
+        "max": 76.5
+      },
+      "interactionLongTasks": 0,
+      "initialCanvasMaxDrawMs": 18,
+      "note": "Two measured runs passed. Cold startup long tasks and earlier unattributed frame-gap outlier remain recorded; no claim of zero global long tasks."
+    },
+    "documentation": {
+      "passed": true,
+      "mdxCompiled": 10,
+      "linksAndAnchorsChecked": 15,
+      "jsonExamplesChecked": 7,
+      "navigationChecks": 4,
+      "existingGuidesChecked": 93,
+      "method": "Scoped actual MDX compilation, link/JSON/navigation assertions and existing Shiki language checking; not a full docs Next build."
+    },
+    "localization": {
+      "passed": true,
+      "newEnglishFeatureMessages": 88,
+      "translatedOtherLocales": 11,
+      "icuPlaceholdersMatched": true,
+      "baselineLocaleEntriesPreserved": true
+    }
+  },
+  "finalReviewRepairs": [
+    "UInt32 erasure/backfill parameters preserve high site IDs and cannot wrap onto foreign sites.",
+    "Heatmap report and cohort timezone validation canonicalizes IANA aliases and rejects fixed offsets unsupported by ClickHouse.",
+    "String identity operators use effective visitor identity across devices while preserving shared-device guards.",
+    "Cohort calendar validation rejects year zero before Postgres."
+  ],
+  "limitations": [
+    "Backgrounds are live sandboxed iframes, not stored historical screenshots; geometry-only rendering remains available.",
+    "Historical cohort membership reflects retained analytics and can shrink after expiry or erasure.",
+    "Redis and ClickHouse do not form a distributed transaction. Reports deduplicate persisted site/batch/event-index identities before aggregation after ambiguous acknowledgements.",
+    "Warm service benchmarks exclude HTTP and response serialization; internal storage-row JSON measurements are not browser wire payload sizes.",
+    "Existing empty Stripe-key errors and replay-dashboard HTTP 500 are documented separately; actual recorder/upload/read regression and heatmap cold loads passed.",
+    "Prior interrupted attempts, harness corrections and an unattributed frame-gap outlier are retained in individual evidence files."
+  ],
+  "logSha256": {
+    "all-sql.log": "98edae1566591353274beab277bf9b43ee7756861da843eab1b5aae20b814491",
+    "build-client.log": "6210e015769171781659d8e0069b02486aff742d6a067c69a330eeddc06d6a34",
+    "build-server.log": "5a4fc5faa305f7eea1fe09771450c1bb4c61f5496610efd535accba599fabce8",
+    "docker-backend-final.log": "9d5457b890d924a63a53a74d1ee0de76142ac3f04276a46a8002443755d520b5",
+    "docker-build.log": "69fbcc109d8f9980ea0425b15e605c8a4d657981398fe01b1f31af670307b8b0",
+    "full-tests.log": "e33a3b605ce264585cf7721d5a8fe5cfef5c2dbd3f08b5158efed853228ee15b",
+    "lint.log": "c4112ce2aa905105cf72a95290713f3867ca9ab48cb0cef0cdc6970d26b7acf1",
+    "typecheck.log": "2d970a79b007e7a4b4e31195dc602ae02e5e574a6d863664fbf3c4d22b77adc4"
+  }
+}

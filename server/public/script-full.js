@@ -76,6 +76,14 @@
     }
     return url.pathname + (trackUrlFragments ? url.hash : "");
   }
+  function getTrackedPage(url, config) {
+    const pathname = getTrackedPathname(url, config.trackUrlFragments);
+    if (findMatchingPattern(pathname, config.skipPatterns)) return null;
+    return {
+      hostname: url.hostname,
+      pathname: findMatchingPattern(pathname, config.maskPatterns) || pathname
+    };
+  }
 
   // config.ts
   var FEATURE_FLAG_REQUEST_TIMEOUT_MS = 2e3;
@@ -219,6 +227,9 @@
       enableWebVitals: false,
       trackErrors: false,
       enableSessionReplay: false,
+      enableHeatmaps: false,
+      heatmapSampleRate: 15,
+      debug: scriptTag.getAttribute("data-debug") === "true",
       trackButtonClicks: false,
       trackCopy: false,
       trackFormInteractions: false,
@@ -259,6 +270,8 @@
           enableWebVitals: apiConfig.webVitals ?? defaultConfig.enableWebVitals,
           trackErrors: apiConfig.trackErrors ?? defaultConfig.trackErrors,
           enableSessionReplay: apiConfig.sessionReplay ?? defaultConfig.enableSessionReplay,
+          enableHeatmaps: apiConfig.heatmaps === true,
+          heatmapSampleRate: typeof apiConfig.heatmapSampleRate === "number" && Number.isFinite(apiConfig.heatmapSampleRate) && apiConfig.heatmapSampleRate >= 0 && apiConfig.heatmapSampleRate <= 100 ? apiConfig.heatmapSampleRate : defaultConfig.heatmapSampleRate,
           trackButtonClicks: apiConfig.trackButtonClicks ?? defaultConfig.trackButtonClicks,
           trackCopy: apiConfig.trackCopy ?? defaultConfig.trackCopy,
           trackFormInteractions: apiConfig.trackFormInteractions ?? defaultConfig.trackFormInteractions,
@@ -492,6 +505,644 @@
     }
   };
 
+  // keepalive.ts
+  var MAX_KEEPALIVE_BYTES = 64 * 1024;
+  var outstandingBytes = 0;
+  function reserveKeepalive(body) {
+    const bytes = new TextEncoder().encode(body).byteLength;
+    if (bytes > MAX_KEEPALIVE_BYTES || outstandingBytes + bytes > MAX_KEEPALIVE_BYTES) return null;
+    outstandingBytes += bytes;
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      outstandingBytes -= bytes;
+    };
+  }
+
+  // heatmaps.ts
+  var SAMPLE_TTL_MS = 30 * 6e4;
+  var FLUSH_INTERVAL_MS = 5e3;
+  var SCROLL_INTERVAL_MS = 100;
+  var ROUTE_SETTLE_MS = 100;
+  var SAMPLE_SAVE_INTERVAL_MS = 1e4;
+  var REQUEST_TIMEOUT_MS = 1e4;
+  var HEATMAP_MAX_BATCH_BYTES = 48 * 1024 - 1;
+  var MAX_BATCH_EVENTS = 100;
+  var MAX_BUFFERED_EVENTS = 1e3;
+  var RETRY_RETENTION_MS = 15 * 6e4;
+  var MAX_RETRY_DELAY_MS = 6e4;
+  var MAX_DIMENSION = 4294967295;
+  var MAX_VIEWPORT_DIMENSION = 65535;
+  var memorySamples = /* @__PURE__ */ new Map();
+  var exitBytes = 0;
+  function randomId() {
+    try {
+      if (crypto.randomUUID) return crypto.randomUUID();
+    } catch {
+    }
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+  }
+  function scopeId(scope) {
+    let hash = 2166136261;
+    for (let i2 = 0; i2 < scope.length; i2++) hash = Math.imul(hash ^ scope.charCodeAt(i2), 16777619);
+    return (hash >>> 0).toString(36);
+  }
+  function sampleKey(config) {
+    const host = new URL(config.analyticsHost, window.location.href).href.replace(/\/+$/, "");
+    return `rybbit-heatmaps:${encodeURIComponent(host)}:${encodeURIComponent(config.siteId)}`;
+  }
+  function saveSample(key, decision) {
+    memorySamples.set(key, decision);
+    try {
+      sessionStorage.setItem(key, JSON.stringify(decision));
+    } catch {
+    }
+  }
+  function sample(config, key) {
+    const rate = config.heatmapSampleRate ?? 15;
+    if (!Number.isFinite(rate) || rate <= 0 || rate > 100) return false;
+    const now = Date.now();
+    let decision = memorySamples.get(key);
+    try {
+      const stored = sessionStorage.getItem(key);
+      if (stored) decision = JSON.parse(stored);
+    } catch {
+    }
+    if (!decision || typeof decision.sampled !== "boolean" || !Number.isFinite(decision.expiresAt) || decision.expiresAt <= now || decision.expiresAt > now + SAMPLE_TTL_MS || decision.rate !== rate) {
+      decision = { sampled: rate >= 100 || Math.random() * 100 < rate, expiresAt: now + SAMPLE_TTL_MS, rate };
+    }
+    decision = { ...decision, expiresAt: now + SAMPLE_TTL_MS };
+    for (const [storedKey, storedDecision] of memorySamples) {
+      if (storedDecision.expiresAt <= now) memorySamples.delete(storedKey);
+    }
+    if (memorySamples.size >= 128 && !memorySamples.has(key)) memorySamples.delete(memorySamples.keys().next().value);
+    saveSample(key, decision);
+    return decision.sampled;
+  }
+  function dimension(value) {
+    return Number.isFinite(value) && value > 0 && value <= MAX_DIMENSION ? Math.ceil(value) : null;
+  }
+  function compatible(a2, b2) {
+    return a2.pageVisitId === b2.pageVisitId && a2.viewportWidth === b2.viewportWidth && a2.viewportHeight === b2.viewportHeight && a2.documentWidth === b2.documentWidth && a2.documentHeight === b2.documentHeight;
+  }
+  var HeatmapRecorder = class {
+    constructor(config, userId = "") {
+      this.config = config;
+      this.active = false;
+      this.monitoring = false;
+      this.page = null;
+      this.pageKey = "";
+      this.events = [];
+      this.reach = null;
+      this.reachDirty = false;
+      this.pendingReach = null;
+      this.chunks = [];
+      this.lastSampleSave = 0;
+      this.lastHref = "";
+      this.cachedPage = null;
+      this.cachedPageKey = "";
+      this.cachedGeometry = null;
+      this.scrollGeometry = null;
+      this.routeGeneration = 0;
+      this.transition = null;
+      this.suspended = false;
+      this.onClick = (event) => {
+        if (!this.monitoring || this.suspended || !event.isTrusted || event.button !== 0) return;
+        this.touchSample();
+        if (!this.active) return;
+        this.ensurePage();
+        const geometry = this.geometry(event.target);
+        if (!geometry || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY) || !Number.isFinite(window.scrollX) || !Number.isFinite(window.scrollY) || event.clientX < 0 || event.clientX > geometry.viewportWidth || event.clientY < 0 || event.clientY > geometry.viewportHeight)
+          return;
+        const pageX = event.clientX + Math.max(0, window.scrollX);
+        const pageY = event.clientY + Math.max(0, window.scrollY);
+        if (pageX > geometry.documentWidth || pageY > geometry.documentHeight) return;
+        this.markRouteInteraction();
+        this.enqueue({ ...geometry, type: "click", clientX: event.clientX, clientY: event.clientY, pageX, pageY });
+      };
+      this.onScroll = () => {
+        if (!this.monitoring || this.suspended) return;
+        this.touchSample();
+        if (!this.active) return;
+        this.ensurePage();
+        if (this.transition) {
+          this.captureTransitionPosition();
+          this.scheduleRouteSettle();
+          return;
+        }
+        const reach = this.measureReach(this.geometryForScroll());
+        if (!reach) return;
+        if (this.pendingReach && compatible(this.pendingReach, reach)) {
+          if (reach.maxDepth > this.pendingReach.maxDepth) this.pendingReach = reach;
+        } else {
+          this.consumePendingReach();
+          this.pendingReach = reach;
+        }
+        if (this.scrollTimer === void 0) {
+          this.scrollTimer = window.setTimeout(() => {
+            this.consumePendingReach();
+            this.captureReach();
+          }, SCROLL_INTERVAL_MS);
+        }
+      };
+      this.onScrollIntent = (event) => {
+        if (!this.monitoring || !this.active || this.suspended || !event.isTrusted) return;
+        if (event.type === "keydown" && !["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "Space"].includes(event.code))
+          return;
+        this.ensurePage();
+        this.markRouteInteraction();
+      };
+      this.onResize = () => {
+        if (this.suspended) return;
+        this.consumePendingReach();
+        this.cachedGeometry = null;
+        this.scrollGeometry = null;
+        if (this.transition) {
+          this.scheduleRouteSettle();
+          return;
+        }
+        this.captureReach();
+      };
+      this.onMutation = () => {
+        this.cachedGeometry = null;
+        this.scrollGeometry = null;
+        if (this.transition) {
+          this.scheduleRouteSettle();
+        } else if (!this.resizeObserver && this.scrollTimer === void 0) {
+          this.scrollTimer = window.setTimeout(this.onResize, SCROLL_INTERVAL_MS);
+        }
+      };
+      this.onVisibilityChange = () => {
+        if (document.visibilityState === "hidden") {
+          this.flushForExit();
+        } else if (!this.suspended) {
+          void this.flush();
+        }
+      };
+      this.onPageHide = () => {
+        this.flushForExit();
+        this.suspended = true;
+      };
+      this.onFreeze = () => {
+        this.flushForExit();
+        this.suspended = true;
+      };
+      this.onResume = () => {
+        if (!this.monitoring || !this.active) return;
+        this.suspended = false;
+        this.cachedGeometry = null;
+        this.scrollGeometry = null;
+        if (this.transition) this.scheduleRouteSettle();
+        this.captureReach();
+        void this.flush();
+      };
+      this.onPageShow = () => this.onResume();
+      this.userId = userId;
+      this.samplingKey = sampleKey(config);
+      this.batchPrefix = scopeId(this.samplingKey);
+    }
+    initialize() {
+      const rate = this.config.heatmapSampleRate ?? 15;
+      if (this.monitoring || !this.config.enableHeatmaps || !Number.isFinite(rate) || rate <= 0 || rate > 100) return;
+      this.monitoring = true;
+      this.active = sample(this.config, this.samplingKey);
+      this.lastSampleSave = Date.now();
+      document.addEventListener("click", this.onClick, { capture: true, passive: true });
+      window.addEventListener("scroll", this.onScroll, { passive: true });
+      if (!this.active) return;
+      this.resetPage();
+      document.addEventListener("visibilitychange", this.onVisibilityChange);
+      window.addEventListener("resize", this.onResize, { passive: true });
+      window.addEventListener("load", this.onResize);
+      window.addEventListener("pagehide", this.onPageHide);
+      window.addEventListener("pageshow", this.onPageShow);
+      window.addEventListener("wheel", this.onScrollIntent, { passive: true });
+      window.addEventListener("touchmove", this.onScrollIntent, { passive: true });
+      window.addEventListener("keydown", this.onScrollIntent);
+      document.addEventListener("freeze", this.onFreeze);
+      document.addEventListener("resume", this.onResume);
+      if (typeof ResizeObserver !== "undefined") {
+        this.resizeObserver = new ResizeObserver(this.onResize);
+        for (const element of /* @__PURE__ */ new Set([document.documentElement, document.body, document.scrollingElement])) {
+          if (element) this.resizeObserver.observe(element);
+        }
+      }
+      if (typeof MutationObserver !== "undefined") {
+        this.mutationObserver = new MutationObserver(this.onMutation);
+        this.mutationObserver.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+      }
+      this.batchTimer = window.setInterval(() => {
+        if (this.suspended) return;
+        this.captureReach();
+        void this.flush();
+      }, FLUSH_INTERVAL_MS);
+    }
+    isActive() {
+      return this.active;
+    }
+    debug(message, error) {
+      if (this.config.debug) console.warn(`[Rybbit heatmaps] ${message}`, error ?? "");
+    }
+    currentPage() {
+      if (this.lastHref === window.location.href) return this.cachedPage;
+      this.lastHref = window.location.href;
+      const url = new URL(window.location.href);
+      const rawPath = getTrackedPathname(url, this.config.trackUrlFragments);
+      const page = getTrackedPage(url, this.config);
+      const pathname = page?.pathname === rawPath ? rawPath.split("?")[0] : page?.pathname;
+      this.cachedPageKey = `${url.hostname}\0${rawPath.split("?")[0]}\0${page ? pathname : "<skipped>"}`;
+      this.cachedPage = !page || !pathname || pathname.length > 2048 || page.hostname.length > 253 ? null : { key: this.cachedPageKey, hostname: page.hostname, pathname };
+      return this.cachedPage;
+    }
+    touchSample() {
+      const decision = memorySamples.get(this.samplingKey);
+      if (!decision) return;
+      memorySamples.set(this.samplingKey, { ...decision, expiresAt: Date.now() + SAMPLE_TTL_MS });
+      if (Date.now() - this.lastSampleSave >= SAMPLE_SAVE_INTERVAL_MS) this.persistSample();
+      else if (this.sampleSaveTimer === void 0) {
+        this.sampleSaveTimer = window.setTimeout(() => this.persistSample(), SAMPLE_SAVE_INTERVAL_MS);
+      }
+    }
+    persistSample() {
+      if (this.sampleSaveTimer !== void 0) window.clearTimeout(this.sampleSaveTimer);
+      this.sampleSaveTimer = void 0;
+      const decision = memorySamples.get(this.samplingKey);
+      if (decision) saveSample(this.samplingKey, decision);
+      this.lastSampleSave = Date.now();
+    }
+    resetPage() {
+      if (this.routeTimer !== void 0) window.clearTimeout(this.routeTimer);
+      this.transition = null;
+      this.routeGeneration++;
+      const page = this.currentPage();
+      this.pageKey = this.cachedPageKey;
+      this.page = page ? { ...page, pageVisitId: randomId() } : null;
+      this.reach = null;
+      this.reachDirty = false;
+      this.pendingReach = null;
+      this.cachedGeometry = null;
+      this.scrollGeometry = null;
+      this.captureReach(false);
+    }
+    ensurePage() {
+      this.onPageChange();
+    }
+    geometry(target) {
+      if (!this.page) return null;
+      const viewportWidth = window.innerWidth <= MAX_VIEWPORT_DIMENSION ? dimension(window.innerWidth) : null;
+      const viewportHeight = window.innerHeight <= MAX_VIEWPORT_DIMENSION ? dimension(window.innerHeight) : null;
+      if (!viewportWidth || !viewportHeight) return null;
+      let width = viewportWidth;
+      let height = viewportHeight;
+      for (const element of /* @__PURE__ */ new Set([document.documentElement, document.body, document.scrollingElement])) {
+        if (!element) continue;
+        for (const candidate of [element.scrollWidth, element.clientWidth, element.offsetWidth]) {
+          if (Number.isFinite(candidate) && candidate >= 0) width = Math.max(width, candidate);
+        }
+        for (const candidate of [element.scrollHeight, element.clientHeight, element.offsetHeight]) {
+          if (Number.isFinite(candidate) && candidate >= 0) height = Math.max(height, candidate);
+        }
+      }
+      if (target instanceof Element) {
+        const bounds = target.getBoundingClientRect();
+        if (Number.isFinite(bounds.right)) width = Math.max(width, bounds.right + Math.max(0, window.scrollX));
+        if (Number.isFinite(bounds.bottom)) height = Math.max(height, bounds.bottom + Math.max(0, window.scrollY));
+      }
+      const documentWidth = dimension(width);
+      const documentHeight = dimension(height);
+      if (!documentWidth || !documentHeight) return null;
+      return {
+        timestamp: Date.now(),
+        pageVisitId: this.page.pageVisitId,
+        hostname: this.page.hostname,
+        pathname: this.page.pathname,
+        viewportWidth,
+        viewportHeight,
+        documentWidth,
+        documentHeight
+      };
+    }
+    geometryForScroll() {
+      const cached = this.scrollGeometry;
+      if (this.scrollTimer !== void 0 && cached && cached.geometry.pageVisitId === this.page?.pageVisitId && cached.root === document.documentElement && cached.body === document.body && cached.scroller === document.scrollingElement && cached.geometry.viewportWidth === window.innerWidth && cached.geometry.viewportHeight === window.innerHeight && cached.extents.every(
+        ({ element, width, height }) => element.scrollWidth === width && element.scrollHeight === height
+      ))
+        return cached.geometry;
+      const geometry = this.geometry();
+      this.scrollGeometry = geometry ? {
+        geometry,
+        root: document.documentElement,
+        body: document.body,
+        scroller: document.scrollingElement,
+        extents: [.../* @__PURE__ */ new Set([document.documentElement, document.body, document.scrollingElement])].filter((element) => Boolean(element)).map((element) => ({ element, width: element.scrollWidth, height: element.scrollHeight }))
+      } : null;
+      return geometry;
+    }
+    measureReach(geometry = this.geometry()) {
+      if (!geometry || !Number.isFinite(window.scrollY)) return null;
+      this.cachedGeometry = geometry;
+      return {
+        ...geometry,
+        timestamp: Date.now(),
+        type: "scroll",
+        maxDepth: Math.max(
+          0,
+          Math.min(100, (Math.max(0, window.scrollY) + geometry.viewportHeight) / geometry.documentHeight * 100)
+        )
+      };
+    }
+    captureReach(checkPage = true) {
+      if (!this.active) return;
+      if (checkPage) this.ensurePage();
+      if (this.transition) return;
+      const reach = this.measureReach();
+      if (reach) this.mergeReach(reach);
+    }
+    mergeReach(reach) {
+      if (this.reach && compatible(this.reach, reach)) {
+        if (reach.maxDepth <= this.reach.maxDepth) return;
+      } else {
+        this.checkpointReach();
+      }
+      this.reach = reach;
+      this.reachDirty = true;
+    }
+    checkpointReach() {
+      if (this.reach && this.reachDirty) {
+        this.reachDirty = false;
+        this.enqueue(this.reach);
+      }
+    }
+    consumePendingReach() {
+      if (this.scrollTimer !== void 0) window.clearTimeout(this.scrollTimer);
+      this.scrollTimer = void 0;
+      const pending = this.pendingReach;
+      this.pendingReach = null;
+      if (pending) this.mergeReach(pending);
+    }
+    markRouteInteraction() {
+      const transition = this.transition;
+      if (!transition) return;
+      transition.interacted = true;
+      this.captureTransitionPosition();
+      const remaining = ROUTE_SETTLE_MS - (Date.now() - transition.startedAt);
+      if (remaining > 0) this.scheduleRouteSettle(remaining);
+      else this.settleRoute(transition.generation);
+    }
+    captureTransitionPosition() {
+      const transition = this.transition;
+      if (!transition?.interacted || !Number.isFinite(window.scrollY) || !Number.isFinite(window.innerHeight)) return;
+      transition.maxReachedY = Math.max(transition.maxReachedY || 0, Math.max(0, window.scrollY) + window.innerHeight);
+    }
+    bufferedEvents() {
+      return this.events.length + this.chunks.reduce((count, chunk) => count + chunk.eventCount, 0);
+    }
+    enqueue(event) {
+      if (this.userId.length > 256) {
+        this.debug("Interaction discarded because identified user ID exceeds 256 characters");
+        return;
+      }
+      if (this.bufferedEvents() >= MAX_BUFFERED_EVENTS) {
+        this.debug("Buffer full; interaction discarded after upload failures");
+        return;
+      }
+      this.events.push(event);
+      if (this.events.length >= MAX_BATCH_EVENTS) void this.flush();
+    }
+    queueChunks() {
+      if (!this.events.length) return;
+      const events = this.events;
+      this.events = [];
+      const userId = this.userId || void 0;
+      const encoder = new TextEncoder();
+      let batch = {
+        batchId: `${this.batchPrefix}-${randomId()}`,
+        events: [],
+        ...userId ? { userId } : {}
+      };
+      const seal = () => {
+        if (!batch.events.length) return;
+        this.chunks.push({
+          batchId: batch.batchId,
+          body: JSON.stringify(batch),
+          bytes: encoder.encode(JSON.stringify(batch)).byteLength,
+          eventCount: batch.events.length,
+          attempts: 0,
+          expiresAt: Date.now() + RETRY_RETENTION_MS,
+          retryAt: 0
+        });
+        batch = { batchId: `${this.batchPrefix}-${randomId()}`, events: [], ...userId ? { userId } : {} };
+      };
+      for (const event of events) {
+        batch.events.push(event);
+        if (encoder.encode(JSON.stringify(batch)).byteLength > HEATMAP_MAX_BATCH_BYTES) {
+          batch.events.pop();
+          seal();
+          batch.events.push(event);
+          if (encoder.encode(JSON.stringify(batch)).byteLength > HEATMAP_MAX_BATCH_BYTES) {
+            batch.events.pop();
+            this.debug("Oversized interaction discarded");
+          }
+        }
+        if (batch.events.length >= MAX_BATCH_EVENTS) seal();
+      }
+      seal();
+    }
+    flush() {
+      this.consumePendingReach();
+      this.checkpointReach();
+      this.queueChunks();
+      if (!this.sending && this.chunks.length) {
+        this.sending = this.sendChunks().finally(() => {
+          this.sending = void 0;
+          if (!this.suspended && this.chunks.some((chunk) => !chunk.normalSending && !chunk.exitSending && chunk.retryAt <= Date.now())) {
+            return this.flush();
+          }
+        });
+      }
+      return this.sending || Promise.resolve();
+    }
+    async sendChunks() {
+      while (!this.suspended) {
+        this.pruneExpiredChunks();
+        const chunk = this.chunks.find(
+          (chunk2) => !chunk2.normalSending && !chunk2.exitSending && chunk2.retryAt <= Date.now()
+        );
+        if (!chunk) return;
+        chunk.normalSending = true;
+        await this.sendChunk(chunk, false);
+        chunk.normalSending = false;
+      }
+    }
+    pruneExpiredChunks() {
+      this.chunks = this.chunks.filter((chunk) => {
+        if (chunk.expiresAt > Date.now()) return true;
+        this.debug(`Expired retry batch ${chunk.batchId}`);
+        return false;
+      });
+    }
+    removeChunk(chunk) {
+      const index = this.chunks.indexOf(chunk);
+      if (index >= 0) this.chunks.splice(index, 1);
+    }
+    async sendChunk(chunk, keepalive) {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      try {
+        const response = await fetch(
+          `${this.config.analyticsHost}/heatmaps/record/${encodeURIComponent(this.config.siteId)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: chunk.body,
+            mode: "cors",
+            credentials: "omit",
+            keepalive,
+            signal: controller.signal
+          }
+        );
+        if (response.ok) {
+          this.removeChunk(chunk);
+          return;
+        }
+        const retryAfter = response.headers?.get("Retry-After");
+        const seconds = retryAfter ? Number(retryAfter) : NaN;
+        const retryDate = retryAfter && !Number.isFinite(seconds) ? Date.parse(retryAfter) : NaN;
+        const delay = Number.isFinite(seconds) ? seconds * 1e3 : retryDate - Date.now();
+        if (response.status === 503 && retryAfter !== null && retryAfter !== void 0) {
+          chunk.retryAt = Date.now() + Math.max(FLUSH_INTERVAL_MS, Math.min(RETRY_RETENTION_MS, Number.isFinite(delay) ? delay : FLUSH_INTERVAL_MS));
+          return;
+        }
+        if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) {
+          this.debug(`Batch ${chunk.batchId} rejected with HTTP ${response.status}`);
+          this.removeChunk(chunk);
+          return;
+        }
+        if (Number.isFinite(delay))
+          chunk.retryAt = Date.now() + Math.max(FLUSH_INTERVAL_MS, Math.min(RETRY_RETENTION_MS, delay));
+        throw new Error(`HTTP ${response.status}`);
+      } catch (error) {
+        chunk.attempts++;
+        chunk.retryAt = Math.max(
+          chunk.retryAt,
+          Date.now() + Math.min(MAX_RETRY_DELAY_MS, FLUSH_INTERVAL_MS * 2 ** Math.min(chunk.attempts - 1, 4))
+        );
+        this.debug(`Upload failed for batch ${chunk.batchId} (attempt ${chunk.attempts})`, error);
+      } finally {
+        window.clearTimeout(timer);
+      }
+    }
+    flushForExit() {
+      if (!this.monitoring) return;
+      this.persistSample();
+      if (!this.active) return;
+      this.captureReach();
+      this.consumePendingReach();
+      this.checkpointReach();
+      this.queueChunks();
+      this.pruneExpiredChunks();
+      for (const chunk of [...this.chunks].reverse()) {
+        if (chunk.exitSending || exitBytes + chunk.bytes > HEATMAP_MAX_BATCH_BYTES) continue;
+        const release = reserveKeepalive(chunk.body);
+        if (!release) continue;
+        exitBytes += chunk.bytes;
+        chunk.exitSending = true;
+        void this.sendChunk(chunk, true).finally(() => {
+          release();
+          exitBytes -= chunk.bytes;
+          chunk.exitSending = false;
+          if (!this.suspended) void this.flush();
+        });
+      }
+    }
+    updateUserId(userId) {
+      if (userId === this.userId) return;
+      if (this.active) void this.flush();
+      this.userId = userId;
+      if (this.active) this.resetPage();
+    }
+    onPageChange() {
+      if (!this.monitoring) return;
+      if (!this.active) {
+        this.touchSample();
+        return;
+      }
+      const page = this.currentPage();
+      if (this.pageKey === this.cachedPageKey) return;
+      this.touchSample();
+      void this.flush();
+      const previous = this.reach || this.cachedGeometry || this.transition;
+      this.pageKey = this.cachedPageKey;
+      this.page = page ? { ...page, pageVisitId: randomId() } : null;
+      this.reach = null;
+      this.reachDirty = false;
+      this.transition = {
+        generation: ++this.routeGeneration,
+        startedAt: Date.now(),
+        documentWidth: previous?.documentWidth,
+        documentHeight: previous?.documentHeight,
+        interacted: false
+      };
+      this.scheduleRouteSettle();
+    }
+    scheduleRouteSettle(delay) {
+      if (!this.transition) return;
+      if (this.routeTimer !== void 0) window.clearTimeout(this.routeTimer);
+      const generation = this.transition.generation;
+      const wait = delay ?? (this.transition.interacted ? Math.max(0, ROUTE_SETTLE_MS - (Date.now() - this.transition.startedAt)) : ROUTE_SETTLE_MS);
+      this.routeTimer = window.setTimeout(() => this.settleRoute(generation), wait);
+    }
+    settleRoute(generation) {
+      const transition = this.transition;
+      if (!transition || transition.generation !== generation || this.suspended) return;
+      this.routeTimer = void 0;
+      const next = this.geometry();
+      const layoutChanged = next && transition.documentHeight !== void 0 && (transition.documentHeight !== next.documentHeight || transition.documentWidth !== next.documentWidth);
+      if (!transition.interacted && !(layoutChanged && window.scrollY <= 0)) return;
+      this.transition = null;
+      this.cachedGeometry = null;
+      this.captureReach(false);
+      if (transition.maxReachedY !== void 0 && next) {
+        this.mergeReach({
+          ...next,
+          type: "scroll",
+          maxDepth: Math.max(0, Math.min(100, transition.maxReachedY / next.documentHeight * 100))
+        });
+      }
+    }
+    cleanup() {
+      if (!this.monitoring) return;
+      if (this.active) {
+        this.captureReach();
+        void this.flush();
+      }
+      this.active = false;
+      this.monitoring = false;
+      this.persistSample();
+      if (this.batchTimer !== void 0) window.clearInterval(this.batchTimer);
+      if (this.scrollTimer !== void 0) window.clearTimeout(this.scrollTimer);
+      if (this.routeTimer !== void 0) window.clearTimeout(this.routeTimer);
+      this.transition = null;
+      this.batchTimer = void 0;
+      this.scrollTimer = void 0;
+      this.resizeObserver?.disconnect();
+      this.mutationObserver?.disconnect();
+      document.removeEventListener("click", this.onClick, true);
+      document.removeEventListener("visibilitychange", this.onVisibilityChange);
+      window.removeEventListener("scroll", this.onScroll);
+      window.removeEventListener("resize", this.onResize);
+      window.removeEventListener("load", this.onResize);
+      window.removeEventListener("pagehide", this.onPageHide);
+      window.removeEventListener("pageshow", this.onPageShow);
+      window.removeEventListener("wheel", this.onScrollIntent);
+      window.removeEventListener("touchmove", this.onScrollIntent);
+      window.removeEventListener("keydown", this.onScrollIntent);
+      document.removeEventListener("freeze", this.onFreeze);
+      document.removeEventListener("resume", this.onResume);
+    }
+  };
+
   // ../../../shared/src/botSignalContract.ts
   var CLIENT_BOT_SIGNAL_MASKS = {
     automationApi: 1 << 0,
@@ -702,6 +1353,10 @@
       if (config.enableSessionReplay) {
         this.initializeSessionReplay();
       }
+      if (config.enableHeatmaps) {
+        this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "");
+        this.heatmapRecorder.initialize();
+      }
     }
     serializeFeatureFlagValue(value) {
       if (value === null || value === void 0) return "";
@@ -751,7 +1406,7 @@
           }),
           mode: "cors",
           credentials: "omit",
-          keepalive: true,
+          keepalive: false,
           signal: controller.signal
         });
         if (!response.ok) return;
@@ -805,18 +1460,12 @@
     }
     createBasePayload() {
       const url = new URL(window.location.href);
-      let pathname = getTrackedPathname(url, this.config.trackUrlFragments);
-      if (findMatchingPattern(pathname, this.config.skipPatterns)) {
-        return null;
-      }
-      const maskMatch = findMatchingPattern(pathname, this.config.maskPatterns);
-      if (maskMatch) {
-        pathname = maskMatch;
-      }
+      const page = getTrackedPage(url, this.config);
+      if (!page) return null;
       const payload = {
         site_id: this.config.siteId,
         hostname: url.hostname,
-        pathname,
+        pathname: page.pathname,
         querystring: this.config.trackQuerystring ? url.search : "",
         screenWidth: screen.width,
         screenHeight: screen.height,
@@ -839,18 +1488,23 @@
       return payload;
     }
     async sendTrackingData(payload) {
+      let release = null;
       try {
+        const body = JSON.stringify(payload);
+        release = reserveKeepalive(body);
         await fetch(`${this.config.analyticsHost}/track`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(payload),
+          body,
           mode: "cors",
-          keepalive: true
+          keepalive: release !== null
         });
       } catch (error) {
         console.error("Failed to send tracking data:", error);
+      } finally {
+        release?.();
       }
     }
     track(eventType, eventName = "", properties = {}) {
@@ -1049,6 +1703,7 @@
       if (this.sessionReplayRecorder) {
         this.sessionReplayRecorder.updateUserId(this.customUserId);
       }
+      this.heatmapRecorder?.updateUserId(this.customUserId);
     }
     setTraits(traits) {
       if (!traits || typeof traits !== "object") {
@@ -1063,23 +1718,28 @@
       void this.sendIdentifyEvent(userId, traits, false).then(() => this.refreshFeatureFlags());
     }
     async sendIdentifyEvent(userId, traits, isNewIdentify = true) {
+      let release = null;
       try {
+        const body = JSON.stringify({
+          site_id: this.config.siteId,
+          user_id: userId,
+          traits,
+          is_new_identify: isNewIdentify
+        });
+        release = reserveKeepalive(body);
         await fetch(`${this.config.analyticsHost}/identify`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            site_id: this.config.siteId,
-            user_id: userId,
-            traits,
-            is_new_identify: isNewIdentify
-          }),
+          body,
           mode: "cors",
-          keepalive: true
+          keepalive: release !== null
         });
       } catch (error) {
         console.error("Failed to send identify event:", error);
+      } finally {
+        release?.();
       }
     }
     clearUserId() {
@@ -1091,6 +1751,7 @@
       if (this.sessionReplayRecorder) {
         this.sessionReplayRecorder.updateUserId("");
       }
+      this.heatmapRecorder?.updateUserId("");
       void this.refreshFeatureFlags();
     }
     getUserId() {
@@ -1118,12 +1779,18 @@
       if (this.sessionReplayRecorder) {
         this.sessionReplayRecorder.onPageChange();
       }
+      this.heatmapRecorder?.onPageChange();
+    }
+    flushForExit() {
+      this.heatmapRecorder?.flushForExit();
+      this.sessionReplayRecorder?.onPageChange();
     }
     // Cleanup
     cleanup() {
       if (this.sessionReplayRecorder) {
         this.sessionReplayRecorder.cleanup();
       }
+      this.heatmapRecorder?.cleanup();
     }
   };
 
@@ -1619,7 +2286,12 @@
     }
     const namespace = scriptTag.getAttribute("data-namespace") || "rybbit";
     const optOutKey = `disable-${namespace}`;
-    if (window.__RYBBIT_OPTOUT__ || localStorage.getItem(optOutKey) !== null) {
+    let storedOptOut = false;
+    try {
+      storedOptOut = localStorage.getItem(optOutKey) !== null;
+    } catch {
+    }
+    if (window.__RYBBIT_OPTOUT__ || storedOptOut) {
       window[namespace] = {
         pageview: () => {
         },
@@ -1789,8 +2461,13 @@
     }
     setupEventListeners();
     window.addEventListener("beforeunload", () => {
+      tracker.flushForExit();
+    });
+    window.addEventListener("pagehide", (event) => {
+      if (event.persisted) return;
       clickManager?.cleanup();
       copyManager?.cleanup();
+      formManager?.cleanup();
       tracker.cleanup();
     });
     if (config.autoTrackPageview) {

@@ -27,6 +27,8 @@ export async function getTrackingConfig(request: FastifyRequest<{ Params: { site
       type: config.type,
       featureFlagsEnabled,
       sessionReplay,
+      heatmaps: config.type === "mobile" ? false : config.heatmaps,
+      heatmapSampleRate: config.heatmapSampleRate,
       webVitals: config.type === "mobile" ? false : config.webVitals,
       trackErrors: config.trackErrors,
       trackOutbound: config.trackOutbound,

@@ -162,7 +162,7 @@ export function ActivityCalendar({
                 if (!day) return null;
                 const position = { gridRow: row + 2, gridColumn: column + 2 };
                 const selected = day.date === selectedDay;
-                const label = `${describeDay(day)} · ${formatDay(day.date)}`;
+                const label = `${describeDay(day)} (${formatDay(day.date)})`;
 
                 return (
                   <Tooltip key={day.date}>
@@ -194,7 +194,7 @@ export function ActivityCalendar({
                     </TooltipTrigger>
                     <TooltipContent>
                       <span className="font-medium tabular-nums">{describeDay(day)}</span>{" "}
-                      <span className="opacity-70">· {formatDay(day.date)}</span>
+                      <span className="opacity-70">({formatDay(day.date)})</span>
                     </TooltipContent>
                   </Tooltip>
                 );

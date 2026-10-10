@@ -92,7 +92,7 @@ export function OrganizationOwnerContact({ organizationId }: { organizationId: s
       <div className="flex min-w-0 flex-col">
         <span className="truncate text-sm text-neutral-900 dark:text-neutral-100">{displayName}</span>
         <span className="truncate text-xs text-neutral-500 dark:text-neutral-400">
-          {t("{email} · Owner", { email: owner.user.email })}
+          {t("{email} (Owner)", { email: owner.user.email })}
         </span>
       </div>
       <Button size="sm" onClick={copyEmail} className="ml-auto">

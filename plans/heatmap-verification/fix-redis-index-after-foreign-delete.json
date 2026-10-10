@@ -1,0 +1,17 @@
+{
+  "mode": "after-foreign-delete",
+  "startedAt": "2026-10-10T21:12:59.085Z",
+  "checks": [
+    {
+      "name": "Both QA sites and their active attribution indexes are removed",
+      "passed": true,
+      "observed": {
+        "removedSites": 2,
+        "removedIndexes": 2
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:12:59.479Z"
+}

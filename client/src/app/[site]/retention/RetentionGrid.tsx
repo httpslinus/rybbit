@@ -478,8 +478,9 @@ export function RetentionGrid({
               <span className={cn("tabular-nums", factLabel)}>
                 <span className={cn("font-medium", figure)}>{selectedCell.users.toLocaleString()}</span>{" "}
                 {t("of {size}", { size: selectedCohort.size.toLocaleString() })}
-                {" · "}
+                {" ("}
                 <span className={cn("font-medium", figure)}>{formatPercent(selectedCell.pct)}</span>
+                {")"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">

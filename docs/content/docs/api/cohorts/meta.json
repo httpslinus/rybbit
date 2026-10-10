@@ -1,0 +1,4 @@
+{
+  "title": "Cohorts",
+  "pages": ["list", "get", "create", "update", "delete"]
+}

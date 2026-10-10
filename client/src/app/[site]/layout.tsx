@@ -18,6 +18,7 @@ function isMainDashboardPath(pathname: string) {
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isHeatmaps = getSiteRouteContext(pathname).route === "heatmaps";
   const { setSiteContext, site, privateKey } = useStore();
   const { embed, hideSidebar } = useEmbedPageOptions();
 
@@ -42,12 +43,19 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   }, [hideSidebar, pathname, router]);
 
   const { width } = useWindowSize();
+  const header = isHeatmaps ? (
+    <div className="shrink-0">
+      <Header />
+    </div>
+  ) : (
+    <Header />
+  );
 
   if (width && width < 768) {
     return (
-      <div>
-        <Header />
-        <div>{children}</div>
+      <div className={isHeatmaps ? "flex h-dvh flex-col overflow-y-auto" : undefined}>
+        {header}
+        <div className={isHeatmaps ? "flex min-h-[32rem] flex-1 flex-col" : undefined}>{children}</div>
       </div>
     );
   }
@@ -61,17 +69,18 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
             <Sidebar />
           </div>
         )}
-        <div className="flex-1 overflow-auto">
-          <div className="min-h-full flex flex-col">
+        <div className={isHeatmaps ? "flex min-h-0 flex-1 flex-col overflow-y-auto" : "flex-1 overflow-auto"}>
+          <div className={isHeatmaps ? "flex min-h-0 flex-1 flex-col" : "min-h-full flex flex-col"}>
             {/* <div className="px-4 py-2 max-w-[1400px] mx-auto w-full mb-4"> */}
-            <Header />
-            <div className="flex-1">{children}</div>
+            {header}
+            <div className={isHeatmaps ? "flex min-h-[32rem] flex-1 flex-col" : "flex-1"}>{children}</div>
             {!pathname.includes("/map") &&
               !pathname.includes("/realtime") &&
               !pathname.includes("/replay") &&
               !pathname.includes("/globe") &&
               !pathname.includes("/api-playground") &&
-              !pathname.includes("/query") && <Footer disabled={embed} />}
+              !pathname.includes("/query") &&
+              !isHeatmaps && <Footer disabled={embed} />}
           </div>
         </div>
       </div>

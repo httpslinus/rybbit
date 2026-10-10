@@ -25,12 +25,21 @@ function coerceNumericString(value: unknown): unknown {
   return String(asNumber) === value ? asNumber : value;
 }
 
-export async function processResults<T>(results: ResultSet<"JSONEachRow">): Promise<T[]> {
+export async function processResults<T>(
+  results: ResultSet<"JSONEachRow">,
+  stringColumns: readonly string[] = []
+): Promise<T[]> {
   const data: T[] = await results.json();
   for (const row of data) {
     for (const key in row) {
       // Identifiers are opaque text even when they look numeric.
-      if (key === "session_id" || key === "user_id" || key === "identified_user_id" || key === "effective_user_id") {
+      if (
+        key === "session_id" ||
+        key === "user_id" ||
+        key === "identified_user_id" ||
+        key === "effective_user_id" ||
+        stringColumns.includes(key)
+      ) {
         continue;
       }
       row[key] = coerceNumericString(row[key]) as any;

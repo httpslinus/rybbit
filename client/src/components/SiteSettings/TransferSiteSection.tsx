@@ -58,7 +58,7 @@ export function TransferSiteSection({ siteId }: { siteId: number }) {
       ) : transfer ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-150 px-4 py-3 dark:border-neutral-800">
           <p className="min-w-0 text-sm text-foreground">
-            {t("Pending transfer to {email} · expires {date}", {
+            {t("Pending transfer to {email}. Expires {date}.", {
               email: transfer.recipientEmail,
               date: DateTime.fromISO(transfer.expiresAt).setZone(getTimezone()).toLocaleString(DateTime.DATE_MED),
             })}

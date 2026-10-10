@@ -1,0 +1,4772 @@
+{
+  "startedAt": "2026-10-10T18:50:21.626Z",
+  "siteId": 26,
+  "hostname": "tryout-8a7eef3c.heatmap.test",
+  "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+  "checks": [
+    {
+      "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+      "passed": true,
+      "count": 38,
+      "sessions": 3,
+      "points": 15
+    },
+    {
+      "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+      "passed": true
+    },
+    {
+      "name": "Page search and selection open persisted /pricing samples",
+      "passed": true
+    },
+    {
+      "name": "Scroll mode has ten reach bands and accessible reach table",
+      "passed": true
+    },
+    {
+      "name": "Geometry-only mode retains click overlay; live background restores",
+      "passed": true
+    },
+    {
+      "name": "Historical cohort editor opens and closes",
+      "passed": true
+    },
+    {
+      "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+      "caption": "Desktop click heatmap with fresh trusted tracker data",
+      "cssViewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      },
+      "outputPixels": {
+        "width": 3360,
+        "height": 2100
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+      "caption": "Desktop cumulative scroll-reach report",
+      "cssViewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      },
+      "outputPixels": {
+        "width": 3360,
+        "height": 2100
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+      "caption": "Historical cohort controls",
+      "cssViewport": {
+        "width": 1680,
+        "height": 1050,
+        "deviceScaleFactor": 2
+      },
+      "outputPixels": {
+        "width": 3360,
+        "height": 2100
+      }
+    },
+    {
+      "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+      "caption": "Phone fullscreen click heatmap",
+      "cssViewport": {
+        "width": 375,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "outputPixels": {
+        "width": 750,
+        "height": 1800
+      }
+    }
+  ],
+  "apiResponses": [
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "768",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/p",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/pr",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/prici",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/pricin",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/pric",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/pri",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "search": "/pricing",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/pricing",
+        "search": "/pricing",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/pricing",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "scroll",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "scroll",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "375",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "scroll",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "1440",
+        "match": "all"
+      }
+    },
+    {
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "Europe/Tirane",
+        "mode": "click",
+        "hostname": "tryout-8a7eef3c.heatmap.test",
+        "pathname": "/",
+        "bucket": "375",
+        "match": "all"
+      }
+    }
+  ],
+  "runtimeErrors": [
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+    "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+  ],
+  "runtimeErrorDetails": [
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "failedResources": [
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    },
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    },
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    }
+  ],
+  "backgroundUploads": 0,
+  "previousAttempts": [
+    {
+      "startedAt": "2026-10-10T15:37:19.823Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "passed": false,
+      "failure": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'Failed to load resource: the server responded with a status of 404 (Not Found)',\n+   'Failed to load resource: the server responded with a status of 404 (Not Found)',\n+   'Failed to load resource: the server responded with a status of 404 (Not Found)'\n+ ]\n- []\n"
+      },
+      "finishedAt": "2026-10-10T15:37:28.727Z"
+    },
+    {
+      "startedAt": "2026-10-10T15:38:52.948Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "passed": false,
+      "failure": {
+        "name": "ProtocolError",
+        "message": "Protocol error (Network.setCookies): Invalid cookie fields"
+      },
+      "finishedAt": "2026-10-10T15:39:01.726Z"
+    },
+    {
+      "startedAt": "2026-10-10T15:39:33.088Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "time_zone": "Europe/Tirane",
+            "past_minutes_start": "60",
+            "past_minutes_end": "0",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T15:39:42.383Z"
+    },
+    {
+      "startedAt": "2026-10-10T16:19:18.908Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          },
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T16:19:31.173Z"
+    },
+    {
+      "startedAt": "2026-10-10T16:25:59.097Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T16:26:09.959Z"
+    },
+    {
+      "startedAt": "2026-10-10T16:29:48.479Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T16:30:00.637Z"
+    },
+    {
+      "startedAt": "2026-10-10T16:46:12.455Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T16:46:28.672Z"
+    },
+    {
+      "startedAt": "2026-10-10T17:44:17.141Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "passed": false,
+      "failure": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',\n+   'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.'\n+ ]\n- []\n"
+      },
+      "finishedAt": "2026-10-10T17:44:32.015Z"
+    },
+    {
+      "startedAt": "2026-10-10T17:50:50.784Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "runtimeErrorDetails": [
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          },
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T17:51:00.956Z"
+    },
+    {
+      "startedAt": "2026-10-10T18:00:31.959Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "runtimeErrorDetails": [
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T18:00:41.602Z"
+    },
+    {
+      "startedAt": "2026-10-10T18:15:33.602Z",
+      "siteId": 26,
+      "hostname": "tryout-8a7eef3c.heatmap.test",
+      "source": "Fresh trusted browser interactions through the real tracker and unmodified local dashboard APIs",
+      "checks": [
+        {
+          "name": "Fresh recorded clicks and distinct hotspots returned by normal API",
+          "passed": true,
+          "count": 38,
+          "sessions": 3,
+          "points": 15
+        },
+        {
+          "name": "Observed viewport switch 1440 → 768 → 1440 updates live frame width",
+          "passed": true
+        },
+        {
+          "name": "Page search and selection open persisted /pricing samples",
+          "passed": true
+        },
+        {
+          "name": "Scroll mode has ten reach bands and accessible reach table",
+          "passed": true
+        },
+        {
+          "name": "Geometry-only mode retains click overlay; live background restores",
+          "passed": true
+        },
+        {
+          "name": "Historical cohort editor opens and closes",
+          "passed": true
+        },
+        {
+          "name": "Mobile page picker/fullscreen, no horizontal overflow and Escape focus restoration",
+          "passed": true
+        }
+      ],
+      "screenshots": [
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-clicks.png",
+          "caption": "Desktop click heatmap with fresh trusted tracker data",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/desktop-scroll.png",
+          "caption": "Desktop cumulative scroll-reach report",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/cohort-dialog.png",
+          "caption": "Historical cohort controls",
+          "cssViewport": {
+            "width": 1680,
+            "height": 1050,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 3360,
+            "height": 2100
+          }
+        },
+        {
+          "path": "/Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/screenshots/mobile-fullscreen.png",
+          "caption": "Phone fullscreen click heatmap",
+          "cssViewport": {
+            "width": 375,
+            "height": 900,
+            "deviceScaleFactor": 2
+          },
+          "outputPixels": {
+            "width": 750,
+            "height": 1800
+          }
+        }
+      ],
+      "apiResponses": [
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "768",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/p",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pri",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pr",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pric",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/prici",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricin",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "search": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/pricing",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "scroll",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "1440",
+            "match": "all"
+          }
+        },
+        {
+          "status": 200,
+          "query": {
+            "start_date": "2026-10-10",
+            "end_date": "2026-10-10",
+            "time_zone": "Europe/Tirane",
+            "mode": "click",
+            "hostname": "tryout-8a7eef3c.heatmap.test",
+            "pathname": "/",
+            "bucket": "375",
+            "match": "all"
+          }
+        }
+      ],
+      "runtimeErrors": [
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+        "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+      ],
+      "runtimeErrorDetails": [
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        }
+      ],
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)"
+      ],
+      "failedResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "backgroundUploads": 0,
+      "knownBaselineRuntimeErrors": [
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        },
+        {
+          "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+          "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+          "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+        }
+      ],
+      "existingDashboardBaseline": {
+        "consoleErrors": [
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "Failed to load resource: the server responded with a status of 404 (Not Found)"
+        ],
+        "failedResources": [
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          },
+          {
+            "status": 404,
+            "url": "http://localhost:18033/api/favicon"
+          }
+        ]
+      },
+      "knownBaselineMissingResources": [
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        },
+        {
+          "status": 404,
+          "url": "http://localhost:18033/api/favicon"
+        }
+      ],
+      "passed": true,
+      "finishedAt": "2026-10-10T18:15:47.151Z"
+    }
+  ],
+  "knownBaselineRuntimeErrors": [
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    }
+  ],
+  "existingDashboardBaseline": {
+    "consoleErrors": [
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Error: <path> attribute d: Expected moveto path command ('M' or 'm'), \"null\".",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "failedResources": [
+      {
+        "status": 404,
+        "url": "http://localhost:18033/api/favicon"
+      }
+    ]
+  },
+  "knownBaselineMissingResources": [
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    },
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    },
+    {
+      "status": 404,
+      "url": "http://localhost:18033/api/favicon"
+    }
+  ],
+  "passed": true,
+  "finishedAt": "2026-10-10T18:50:34.690Z"
+}

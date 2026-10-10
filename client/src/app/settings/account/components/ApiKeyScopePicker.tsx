@@ -20,12 +20,14 @@ const SCOPE_MATRIX = {
   dashboards: ["read", "write"],
   annotations: ["read", "write"],
   segments: ["read", "write"],
+  cohorts: ["read", "write"],
   flags: ["read", "write"],
   experiments: ["read", "write"],
   sites: ["read", "write"],
   gsc: ["read", "write"],
   org: ["read", "write"],
   replay: ["read", "write"],
+  heatmaps: ["read"],
   sql: ["read"],
   ingest: ["write"],
 } as const;
@@ -34,7 +36,11 @@ type ScopeResource = keyof typeof SCOPE_MATRIX;
 type ScopeAction = "read" | "write";
 
 const SCOPE_DESCRIPTORS: { resource: ScopeResource; label: string; description: string }[] = [
-  { resource: "analytics", label: "Analytics", description: "Traffic overview, metrics, retention, journeys, performance, and errors" },
+  {
+    resource: "analytics",
+    label: "Analytics",
+    description: "Traffic overview, metrics, retention, journeys, performance, and errors",
+  },
   { resource: "sessions", label: "Sessions", description: "Visitor sessions and their locations" },
   { resource: "events", label: "Events", description: "Raw events, custom event names, and properties" },
   { resource: "users", label: "Users", description: "Visitor profiles and traits; write covers identify and deletion" },
@@ -43,12 +49,14 @@ const SCOPE_DESCRIPTORS: { resource: ScopeResource; label: string; description: 
   { resource: "dashboards", label: "Dashboards", description: "Saved dashboards" },
   { resource: "annotations", label: "Annotations", description: "Timeline notes on the traffic chart" },
   { resource: "segments", label: "Segments", description: "Saved filter segments" },
+  { resource: "cohorts", label: "Cohorts", description: "Saved historical visitor cohorts" },
   { resource: "flags", label: "Feature flags", description: "Feature flag definitions and evaluation" },
   { resource: "experiments", label: "Experiments", description: "A/B experiments and their results" },
   { resource: "sites", label: "Sites", description: "Site configuration; write covers create, update, and delete" },
   { resource: "gsc", label: "Search Console", description: "Google Search Console connection and data" },
   { resource: "org", label: "Organization", description: "Members and teams; write covers management" },
   { resource: "replay", label: "Session replay", description: "Recorded replays; write covers deletion" },
+  { resource: "heatmaps", label: "Heatmaps", description: "Sampled click and scroll reports" },
   { resource: "sql", label: "Custom SQL", description: "Read-only ClickHouse queries" },
   { resource: "ingest", label: "Event ingestion", description: "Trusted server-side event tracking" },
 ];

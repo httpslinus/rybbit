@@ -71,6 +71,19 @@ Updates site configuration settings. All fields are optional - only include the 
       type: 'boolean',
       required: false,
     },
+    heatmaps: {
+      description: 'Enable heatmap collection for web sites, independently of session replay',
+      type: 'boolean',
+      default: 'false',
+      required: false,
+    },
+    heatmapSampleRate: {
+      description: 'Percentage of eligible sessions selected for heatmaps',
+      type: 'number',
+      typeDescription: 'Finite number from 0 to 100; 0 disables collection',
+      default: '15',
+      required: false,
+    },
     webVitals: {
       description: 'Enable Web Vitals tracking',
       type: 'boolean',

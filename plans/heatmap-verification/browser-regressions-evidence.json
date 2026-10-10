@@ -1,0 +1,647 @@
+{
+  "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+  "startedAt": "2026-10-10T21:11:12.163Z",
+  "steps": [
+    {
+      "check": "Trusted automatic button capture and declarative custom event remain separate",
+      "buttons": 2,
+      "customEvents": 1,
+      "spaPageviews": 1
+    },
+    {
+      "check": "Real rrweb script/upload/list/read and compact heatmaps coexist",
+      "rrwebRequests": 1,
+      "replayUploads": 2,
+      "eventCount": 11,
+      "hasFullSnapshot": true,
+      "hasIncrementalSnapshot": true,
+      "maskedInput": true,
+      "heatmapClicks": 3,
+      "metadata": {
+        "event_count": 11,
+        "screen_width": 800,
+        "screen_height": 600,
+        "hostname": "replay-8f69bf0dd1.heatmap.test"
+      }
+    }
+  ],
+  "replayUploads": [
+    {
+      "status": 200,
+      "userId": "replay-regression-8f69bf0dd1",
+      "events": 8,
+      "types": [
+        4,
+        2,
+        3
+      ]
+    },
+    {
+      "status": 200,
+      "userId": "replay-regression-8f69bf0dd1",
+      "events": 3,
+      "types": [
+        3
+      ]
+    }
+  ],
+  "ordinaryUploads": [
+    {
+      "status": 200,
+      "type": "pageview",
+      "pathname": "/a",
+      "eventName": ""
+    },
+    {
+      "status": 200,
+      "type": "button_click",
+      "pathname": "/a",
+      "eventName": "",
+      "properties": {
+        "text": "Sensitive DOM sentinel",
+        "source": "browser-regression"
+      }
+    },
+    {
+      "status": 200,
+      "type": "custom_event",
+      "pathname": "/a",
+      "eventName": "qa_regression_custom",
+      "properties": {}
+    },
+    {
+      "status": 200,
+      "type": "button_click",
+      "pathname": "/a",
+      "eventName": "",
+      "properties": {
+        "text": "Sensitive DOM sentinel",
+        "source": "browser-regression"
+      }
+    },
+    {
+      "status": 200,
+      "type": "pageview",
+      "pathname": "/b",
+      "eventName": ""
+    }
+  ],
+  "heatmapUploads": [
+    {
+      "status": 200,
+      "events": 4,
+      "types": [
+        "click",
+        "scroll"
+      ]
+    }
+  ],
+  "rrwebRequests": 1,
+  "runtimeErrors": [],
+  "consoleErrors": [],
+  "passed": true,
+  "interruptedRuns": [
+    {
+      "siteId": 5,
+      "name": "Replay/button browser QA 532d2cbac6",
+      "domain": "replay-532d2cbac6.heatmap.test",
+      "reason": "Stopped at root's all-container restart hold before gate completion",
+      "exitCode": 130,
+      "cleanup": {
+        "normalSiteDeleteApi": true,
+        "success": true
+      }
+    },
+    {
+      "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+      "startedAt": "2026-10-10T15:20:27.416Z",
+      "steps": [],
+      "replayUploads": [
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "userId": "replay-regression-b74c666604",
+          "events": 8,
+          "types": [
+            4,
+            2,
+            3
+          ]
+        },
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "userId": "replay-regression-b74c666604",
+          "events": 3,
+          "types": [
+            3
+          ]
+        }
+      ],
+      "ordinaryUploads": [
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "type": "pageview",
+          "pathname": "/a",
+          "eventName": ""
+        },
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "type": "custom_event",
+          "pathname": "/a",
+          "eventName": "qa_regression_custom",
+          "properties": {}
+        },
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        }
+      ],
+      "heatmapUploads": [
+        {
+          "status": 200,
+          "body": {
+            "success": true
+          },
+          "events": 4,
+          "types": [
+            "click",
+            "scroll"
+          ]
+        }
+      ],
+      "rrwebRequests": 1,
+      "runtimeErrors": [],
+      "consoleErrors": [],
+      "passed": false,
+      "siteId": 20,
+      "stage": "trusted clicks and SPA pageview captured",
+      "reason": "QA response-body observer did not resolve after browser unload; persisted normal replay list already showed 11 events",
+      "exitCode": 130,
+      "cleanup": {
+        "success": true,
+        "normalSiteDeleteApi": true
+      }
+    }
+  ],
+  "previousAttempts": [
+    {
+      "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+      "startedAt": "2026-10-10T15:23:02.882Z",
+      "steps": [],
+      "replayUploads": [
+        {
+          "status": 200,
+          "userId": "replay-regression-1abbbd5162",
+          "events": 8,
+          "types": [
+            4,
+            2,
+            3
+          ]
+        },
+        {
+          "status": 200,
+          "userId": "replay-regression-1abbbd5162",
+          "events": 3,
+          "types": [
+            3
+          ]
+        }
+      ],
+      "ordinaryUploads": [
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/a",
+          "eventName": ""
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "custom_event",
+          "pathname": "/a",
+          "eventName": "qa_regression_custom",
+          "properties": {}
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/b",
+          "eventName": ""
+        }
+      ],
+      "heatmapUploads": [
+        {
+          "status": 200,
+          "events": 4,
+          "types": [
+            "click",
+            "scroll"
+          ]
+        }
+      ],
+      "rrwebRequests": 1,
+      "runtimeErrors": [
+        "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+      ],
+      "consoleErrors": [],
+      "passed": false,
+      "siteId": 22,
+      "stage": "real recorder uploads observed",
+      "failure": {
+        "name": "AssertionError",
+        "message": "The expression evaluated to a falsy value:\n\n  assert.ok(buttons.length >= 2)\n"
+      },
+      "cleanup": {
+        "siteId": 22,
+        "success": true
+      },
+      "finishedAt": "2026-10-10T15:23:07.106Z"
+    },
+    {
+      "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+      "startedAt": "2026-10-10T15:23:45.756Z",
+      "steps": [
+        {
+          "check": "Trusted automatic button capture and declarative custom event remain separate",
+          "buttons": 2,
+          "customEvents": 1,
+          "spaPageviews": 1
+        }
+      ],
+      "replayUploads": [
+        {
+          "status": 200,
+          "userId": "replay-regression-fd9820907c",
+          "events": 8,
+          "types": [
+            4,
+            2,
+            3
+          ]
+        },
+        {
+          "status": 200,
+          "userId": "replay-regression-fd9820907c",
+          "events": 3,
+          "types": [
+            3
+          ]
+        }
+      ],
+      "ordinaryUploads": [
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/a",
+          "eventName": ""
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "custom_event",
+          "pathname": "/a",
+          "eventName": "qa_regression_custom",
+          "properties": {}
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/b",
+          "eventName": ""
+        }
+      ],
+      "heatmapUploads": [
+        {
+          "status": 200,
+          "events": 4,
+          "types": [
+            "click",
+            "scroll"
+          ]
+        }
+      ],
+      "rrwebRequests": 1,
+      "runtimeErrors": [
+        "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+      ],
+      "consoleErrors": [],
+      "passed": false,
+      "siteId": 23,
+      "stage": "real recorder uploads observed",
+      "failure": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly equal:\n\n1 !== true\n"
+      },
+      "cleanup": {
+        "siteId": 23,
+        "success": true
+      },
+      "finishedAt": "2026-10-10T15:23:49.421Z"
+    },
+    {
+      "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+      "startedAt": "2026-10-10T15:24:05.212Z",
+      "steps": [
+        {
+          "check": "Trusted automatic button capture and declarative custom event remain separate",
+          "buttons": 2,
+          "customEvents": 1,
+          "spaPageviews": 1
+        },
+        {
+          "check": "Real rrweb script/upload/list/read and compact heatmaps coexist",
+          "rrwebRequests": 1,
+          "replayUploads": 2,
+          "eventCount": 11,
+          "hasFullSnapshot": true,
+          "hasIncrementalSnapshot": true,
+          "maskedInput": true,
+          "heatmapClicks": 3,
+          "metadata": {
+            "event_count": 11,
+            "screen_width": 800,
+            "screen_height": 600,
+            "hostname": "replay-08c3d8dcda.heatmap.test"
+          }
+        }
+      ],
+      "replayUploads": [
+        {
+          "status": 200,
+          "userId": "replay-regression-08c3d8dcda",
+          "events": 8,
+          "types": [
+            4,
+            2,
+            3
+          ]
+        },
+        {
+          "status": 200,
+          "userId": "replay-regression-08c3d8dcda",
+          "events": 3,
+          "types": [
+            3
+          ]
+        }
+      ],
+      "ordinaryUploads": [
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/a",
+          "eventName": ""
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "custom_event",
+          "pathname": "/a",
+          "eventName": "qa_regression_custom",
+          "properties": {}
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/b",
+          "eventName": ""
+        }
+      ],
+      "heatmapUploads": [
+        {
+          "status": 200,
+          "events": 4,
+          "types": [
+            "click",
+            "scroll"
+          ]
+        }
+      ],
+      "rrwebRequests": 1,
+      "runtimeErrors": [
+        "SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document."
+      ],
+      "consoleErrors": [],
+      "passed": false,
+      "siteId": 24,
+      "stage": "real recorder uploads observed",
+      "failure": {
+        "name": "AssertionError",
+        "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   \"SecurityError: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.\"\n+ ]\n- []\n"
+      },
+      "cleanup": {
+        "siteId": 24,
+        "success": true
+      },
+      "finishedAt": "2026-10-10T15:24:09.675Z"
+    },
+    {
+      "source": "Trusted real browser clicks and rrweb recorder, normal ingestion/read APIs",
+      "startedAt": "2026-10-10T15:24:27.149Z",
+      "steps": [
+        {
+          "check": "Trusted automatic button capture and declarative custom event remain separate",
+          "buttons": 2,
+          "customEvents": 1,
+          "spaPageviews": 1
+        },
+        {
+          "check": "Real rrweb script/upload/list/read and compact heatmaps coexist",
+          "rrwebRequests": 1,
+          "replayUploads": 2,
+          "eventCount": 11,
+          "hasFullSnapshot": true,
+          "hasIncrementalSnapshot": true,
+          "maskedInput": true,
+          "heatmapClicks": 3,
+          "metadata": {
+            "event_count": 11,
+            "screen_width": 800,
+            "screen_height": 600,
+            "hostname": "replay-32cffb29fb.heatmap.test"
+          }
+        }
+      ],
+      "replayUploads": [
+        {
+          "status": 200,
+          "userId": "replay-regression-32cffb29fb",
+          "events": 8,
+          "types": [
+            4,
+            2,
+            3
+          ]
+        },
+        {
+          "status": 200,
+          "userId": "replay-regression-32cffb29fb",
+          "events": 3,
+          "types": [
+            3
+          ]
+        }
+      ],
+      "ordinaryUploads": [
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/a",
+          "eventName": ""
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "custom_event",
+          "pathname": "/a",
+          "eventName": "qa_regression_custom",
+          "properties": {}
+        },
+        {
+          "status": 200,
+          "type": "button_click",
+          "pathname": "/a",
+          "eventName": "",
+          "properties": {
+            "text": "Sensitive DOM sentinel",
+            "source": "browser-regression"
+          }
+        },
+        {
+          "status": 200,
+          "type": "pageview",
+          "pathname": "/b",
+          "eventName": ""
+        }
+      ],
+      "heatmapUploads": [
+        {
+          "status": 200,
+          "events": 4,
+          "types": [
+            "click",
+            "scroll"
+          ]
+        }
+      ],
+      "rrwebRequests": 1,
+      "runtimeErrors": [],
+      "consoleErrors": [],
+      "passed": true,
+      "siteId": 25,
+      "stage": "real recorder uploads observed",
+      "cleanup": {
+        "siteId": 25,
+        "success": true
+      },
+      "finishedAt": "2026-10-10T15:24:31.668Z"
+    }
+  ],
+  "siteId": 35,
+  "stage": "real recorder uploads observed",
+  "cleanup": {
+    "siteId": 35,
+    "success": true
+  },
+  "finishedAt": "2026-10-10T21:11:17.428Z"
+}

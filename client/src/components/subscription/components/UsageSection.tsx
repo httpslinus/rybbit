@@ -177,7 +177,7 @@ export function UsageSection({
       description={t("Events are counted per calendar month in UTC and reset on the 1st.")}
       actions={
         <span className="text-sm tabular-nums text-neutral-500 dark:text-neutral-400">
-          {t("{range} · day {day} of {days}", {
+          {t("{range} (day {day} of {days})", {
             range: day.formatRange(monthStart.toJSDate(), nextMonth.minus({ days: 1 }).toJSDate()),
             day: number.format(now.day),
             days: number.format(daysInMonth),

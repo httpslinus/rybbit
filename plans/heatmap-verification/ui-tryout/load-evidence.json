@@ -1,0 +1,82 @@
+{
+  "startedAt": "2026-10-10T18:16:21.331Z",
+  "source": "Fresh production page loads and normal APIs with CPU throttling",
+  "checks": [
+    {
+      "width": 1680,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    },
+    {
+      "width": 375,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    },
+    {
+      "width": 320,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    },
+    {
+      "width": 1680,
+      "cpuThrottling": 6,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    },
+    {
+      "width": 375,
+      "cpuThrottling": 6,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    },
+    {
+      "width": 320,
+      "cpuThrottling": 6,
+      "name": "Fresh load renders the report with no new runtime errors relative to the recorded previous build",
+      "knownBaselineErrors": 1,
+      "passed": true
+    }
+  ],
+  "runtimeErrors": [
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    }
+  ],
+  "status": "passed",
+  "completedAt": "2026-10-10T18:16:41.695Z"
+}

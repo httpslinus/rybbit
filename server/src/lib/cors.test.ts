@@ -18,6 +18,8 @@ async function buildCorsTestApp(env: NodeJS.ProcessEnv) {
   app.delete("/api/sites/:siteId", async () => ({ success: true }));
   app.get("/api/sites/:siteId/sessions", async () => ({ data: [] }));
   app.post("/api/track", async () => ({ success: true }));
+  app.post("/api/heatmaps/record/:siteId", async () => ({ success: true }));
+  app.get("/api/sites/:siteId/heatmaps", async () => ({ data: [] }));
   app.post("/api/mcp", async () => ({ success: true }));
   app.get("/api/version", async () => ({ version: "0.0.0" }));
 
@@ -26,6 +28,17 @@ async function buildCorsTestApp(env: NodeJS.ProcessEnv) {
 }
 
 describe("CORS policy", () => {
+  it("permits credential-less heatmap recording but keeps reports restricted", async () => {
+    const app = await buildCorsTestApp({ NODE_ENV: "production", BASE_URL: "https://rybbit.example.com" });
+    try {
+      const upload = await app.inject({ method: "POST", url: "/api/heatmaps/record/1", headers: { origin: "https://customer.example" } });
+      expect(upload.statusCode).toBe(200);
+      expect(upload.headers["access-control-allow-origin"]).toBe("https://customer.example");
+      expect(upload.headers["access-control-allow-credentials"]).toBeUndefined();
+      const report = await app.inject({ method: "OPTIONS", url: "/api/sites/1/heatmaps", headers: { origin: "https://customer.example", "access-control-request-method": "GET" } });
+      expect(report.headers["access-control-allow-origin"]).toBeUndefined();
+    } finally { await app.close(); }
+  });
   it("allows credentialed management requests only from BASE_URL origin", async () => {
     const app = await buildCorsTestApp({
       NODE_ENV: "production",

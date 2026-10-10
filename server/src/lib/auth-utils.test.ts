@@ -137,6 +137,8 @@ CREATE TABLE "sites" (
   "excluded_asns" jsonb DEFAULT '[]',
   "excluded_query_params" jsonb DEFAULT '[]',
   "sessionReplay" boolean DEFAULT false,
+  "heatmaps" boolean NOT NULL DEFAULT false,
+  "heatmap_sample_rate" real NOT NULL DEFAULT 15,
   "webVitals" boolean DEFAULT false,
   "trackErrors" boolean DEFAULT false,
   "trackOutbound" boolean DEFAULT true,

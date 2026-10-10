@@ -1,0 +1,62 @@
+{
+  "startedAt": "2026-10-10T18:08:16.967Z",
+  "source": "Fresh production page loads and normal APIs with CPU throttling",
+  "checks": [
+    {
+      "width": 1680,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report without hydration or other new runtime errors",
+      "passed": true
+    },
+    {
+      "width": 375,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report without hydration or other new runtime errors",
+      "passed": true
+    },
+    {
+      "width": 320,
+      "cpuThrottling": 1,
+      "name": "Fresh load renders the report without hydration or other new runtime errors",
+      "passed": true
+    }
+  ],
+  "runtimeErrors": [
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=1440&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=/&heatmap_click_width=375&bucket=day&stat=users",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=%2F&heatmap_click_width=1440",
+      "stack": "Error: Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string.\n    at u (https://js.stripe.com/clover/stripe.js:1:308904)\n    at e (https://js.stripe.com/clover/stripe.js:1:852493)\n    at Kh (https://js.stripe.com/clover/stripe.js:1:918366)\n    at h (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:3299)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0z1viv-~b_m9y.js:1:16453)"
+    },
+    {
+      "message": "Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=%2F&heatmap_click_width=1440",
+      "stack": "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at rX (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:46285)\n    at rY (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:47318)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:141666)\n    at sh (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:146827)\n    at sd (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:138077)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137861)\n    at sf (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137869)\n    at se (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:133009)\n    at sQ (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:159688)\n    at sU (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:157902)"
+    },
+    {
+      "message": "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+      "url": "http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=%2F&heatmap_click_width=1440",
+      "stack": "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at rX (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:46285)\n    at iu (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:97326)\n    at sd (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:138016)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137861)\n    at sf (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137869)\n    at se (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:133009)\n    at sQ (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:159688)\n    at sU (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:157902)\n    at sk (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:155548)\n    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:152974)"
+    }
+  ],
+  "status": "failed",
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     message: 'Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',\n+     stack: 'Error: Minified React error #418; visit https://react.dev/errors/418?args[]=text&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\\n' +\n+       '    at rX (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:46285)\\n' +\n+       '    at rY (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:47318)\\n' +\n+       '    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:141666)\\n' +\n+       '    at sh (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:146827)\\n' +\n+       '    at sd (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:138077)\\n' +\n+       '    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137861)\\n' +\n+       '    at sf (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137869)\\n' +\n+       '    at se (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:133009)\\n' +\n+       '    at sQ (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:159688)\\n' +\n+       '    at sU (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:157902)',\n+     url: 'http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=%2F&heatmap_click_width=1440'\n+   },\n+   {\n+     message: 'Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.',\n+     stack: 'Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\\n' +\n+       '    at rX (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:46285)\\n' +\n+       '    at iu (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:97326)\\n' +\n+       '    at sd (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:138016)\\n' +\n+       '    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137861)\\n' +\n+       '    at sf (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:137869)\\n' +\n+       '    at se (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:133009)\\n' +\n+       '    at sQ (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:159688)\\n' +\n+       '    at sU (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:157902)\\n' +\n+       '    at sk (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:155548)\\n' +\n+       '    at <anonymous> (http://localhost:18033/_next/static/chunks/0fio2tr8868-9.js:1:152974)',\n+     url: 'http://localhost:18033/26/heatmaps?timeMode=range&startDate=2026-10-10&endDate=2026-10-10&heatmap_mode=click&heatmap_click_host=tryout-8a7eef3c.heatmap.test&heatmap_click_path=%2F&heatmap_click_width=1440'\n+   }\n+ ]\n- []\n\n    at file:///Users/linus/Projects/forks/rybbit/plans/heatmap-verification/ui-tryout/load-check.mjs:65:14",
+  "completedAt": "2026-10-10T18:08:30.738Z",
+  "buildLabel": "71eed09",
+  "image": "sha256:71eed096e3193aacf2be60ca51d16d0e30be724519d2e1b466a72a547ab3751c",
+  "comparison": "Previous UI, same retained QA site and normal APIs. Reproduced both hydration messages under 6x CPU throttling after three normal-speed loads passed. The failed status is preserved as evidence of the pre-existing issue."
+}

@@ -1,0 +1,19 @@
+{
+  "mode": "after-user-delete",
+  "startedAt": "2026-10-10T21:12:56.948Z",
+  "checks": [
+    {
+      "name": "HTTP user erasure removes every identified/linked anonymous context while preserving Bob and the foreign site",
+      "passed": true,
+      "observed": {
+        "erased": 1500,
+        "bobRetained": 300,
+        "foreignRetained": 100,
+        "ownIndexMembers": 300
+      }
+    }
+  ],
+  "cleanup": [],
+  "passed": true,
+  "finishedAt": "2026-10-10T21:12:57.396Z"
+}

@@ -217,3 +217,7 @@ export type { TraitKey, TraitKeysResponse, TraitGroupStats, TraitValueGroup, Tra
 // Export endpoints
 export { exportPdfReport } from "./export";
 export type { ExportPdfParams } from "./export";
+
+export { fetchHeatmaps } from "./heatmaps";
+export type { HeatmapSelection, HeatmapParams } from "./heatmaps";
+export { fetchCohorts, fetchCohort, createCohort, updateCohort, deleteCohort } from "./cohorts";

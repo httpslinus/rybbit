@@ -77,7 +77,7 @@ export function UsersStatBand({ comparisonEnabled }: { comparisonEnabled: boolea
           value: count(current?.new_users),
           delta: percentDelta(current?.new_users, previous?.new_users),
           sub: context(
-            t("{percent} · first visit in {days} days", {
+            t("{percent} first visited within {days} days", {
               percent: formatShare(share(current?.new_users ?? 0, users)),
               days: String(days),
             }),
@@ -92,7 +92,7 @@ export function UsersStatBand({ comparisonEnabled }: { comparisonEnabled: boolea
           value: count(current?.returning_users),
           delta: percentDelta(current?.returning_users, previous?.returning_users),
           sub: context(
-            t("{percent} · back within {days} days", {
+            t("{percent} returned within {days} days", {
               percent: formatShare(share(current?.returning_users ?? 0, users)),
               days: String(days),
             }),

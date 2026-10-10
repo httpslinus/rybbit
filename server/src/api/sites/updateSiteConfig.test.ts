@@ -279,3 +279,47 @@ describe("updateSiteConfig — request validation", () => {
     expect(reply.body.error).toBe("No fields to update");
   });
 });
+
+describe("updateSiteConfig — independent heatmap settings", () => {
+  it.each([0, 15, 100])("persists heatmaps with replay off and sample rate %s", async rate => {
+    const reply = replyStub();
+
+    await updateSiteConfig(makeRequest({ sessionReplay: false, heatmaps: true, heatmapSampleRate: rate }), reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(state.updates[0]).toMatchObject({ sessionReplay: false, heatmaps: true, heatmapSampleRate: rate });
+    expect(mocks.getSubscriptionInner).not.toHaveBeenCalled();
+    expect(mocks.invalidate).toHaveBeenCalledWith(state.site);
+  });
+
+  it.each([-1, 101, NaN, Infinity, -Infinity, "15", null])("rejects an invalid sample rate %s", async rate => {
+    const reply = replyStub();
+
+    await updateSiteConfig(makeRequest({ heatmapSampleRate: rate }), reply);
+
+    expect(reply.statusCode).toBe(400);
+    expect(state.updates).toHaveLength(0);
+    expect(mocks.invalidate).not.toHaveBeenCalled();
+  });
+
+  it("rejects enabling heatmaps for a mobile site", async () => {
+    state.site = makeSite({ type: "mobile", domain: "com.example.app" });
+    const reply = replyStub();
+
+    await updateSiteConfig(makeRequest({ heatmaps: true }), reply);
+
+    expect(reply.statusCode).toBe(400);
+    expect(reply.body.error).toBe("Heatmaps are only available for web sites");
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("disables heatmaps when converting a web site to mobile", async () => {
+    state.site = makeSite({ heatmaps: true });
+    const reply = replyStub();
+
+    await updateSiteConfig(makeRequest({ type: "mobile", domain: "com.example.app" }), reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(state.updates[0]).toMatchObject({ type: "mobile", heatmaps: false });
+  });
+});

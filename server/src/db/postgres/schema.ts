@@ -3,6 +3,7 @@ import type { AnnotationColor, DashboardConfig, Filter, SegmentType } from "@ryb
 import {
   boolean,
   check,
+  date,
   foreignKey,
   index,
   integer,
@@ -90,6 +91,8 @@ export const sites = pgTable(
     excludedASNs: jsonb("excluded_asns").default([]).$type<string[]>(), // Array of autonomous system numbers to exclude, with or without "AS" prefix (e.g., ["AS13335", "16509"])
     excludedQueryParams: jsonb("excluded_query_params").default([]).$type<string[]>(), // Array of query param exclusions: "name" (param present) or "name=value" (value supports * glob), e.g. ["preview", "utm_source=internal-*"]
     sessionReplay: boolean().default(false),
+    heatmaps: boolean("heatmaps").default(false).notNull(),
+    heatmapSampleRate: real("heatmap_sample_rate").default(15).notNull(),
     webVitals: boolean().default(false),
     trackErrors: boolean().default(false),
     trackOutbound: boolean().default(true),
@@ -114,6 +117,10 @@ export const sites = pgTable(
   },
   table => [
     check("sites_type_check", sql`${table.type} IS NULL OR ${table.type} IN ('web', 'mobile')`),
+    check(
+      "sites_heatmap_sample_rate_check",
+      sql`${table.heatmapSampleRate} >= 0 AND ${table.heatmapSampleRate} <= 100`
+    ),
     // Tracking and the route guards resolve a Site by its text id on every
     // cache miss.
     index("sites_id_idx").on(table.id),
@@ -203,6 +210,28 @@ export const segments = pgTable(
   table => [
     index("segments_organization_idx").on(table.organizationId),
     index("segments_site_idx").on(table.siteId),
+  ]
+);
+
+export const cohorts = pgTable(
+  "cohorts",
+  {
+    cohortId: serial("cohort_id").primaryKey().notNull(),
+    siteId: integer("site_id")
+      .notNull()
+      .references(() => sites.siteId, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    name: text("name").notNull(),
+    startDate: date("start_date", { mode: "string" }).notNull(),
+    endDate: date("end_date", { mode: "string" }).notNull(),
+    timeZone: text("time_zone").notNull(),
+    filters: jsonb("filters").notNull().$type<Filter[]>(),
+    createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow().notNull(),
+  },
+  table => [
+    index("cohorts_site_idx").on(table.siteId),
+    check("cohorts_date_order_check", sql`${table.startDate} <= ${table.endDate}`),
   ]
 );
 

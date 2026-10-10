@@ -18,6 +18,8 @@ type SiteRow = {
   claimExpiresAt?: string | null;
   organizationId: string | null;
   sessionReplay: boolean | null;
+  heatmaps: boolean | null;
+  heatmapSampleRate: number | null;
   webVitals: boolean | null;
   trackErrors: boolean | null;
   trackOutbound: boolean | null;
@@ -69,6 +71,8 @@ function createSiteRow(overrides: Partial<SiteRow>): SiteRow {
     privateLinkKey: null,
     organizationId: "org_1",
     sessionReplay: false,
+    heatmaps: false,
+    heatmapSampleRate: 15,
     webVitals: false,
     trackErrors: false,
     trackOutbound: true,
@@ -134,6 +138,38 @@ beforeEach(() => {
 });
 
 describe("siteConfig.getConfig", () => {
+  it("defaults absent legacy heatmap settings to off and 15 percent", async () => {
+    const row = createSiteRow({});
+    delete (row as Partial<SiteRow>).heatmaps;
+    delete (row as Partial<SiteRow>).heatmapSampleRate;
+    dbMock.rows.push(row);
+
+    expect(await siteConfig.getConfig(123)).toMatchObject({ heatmaps: false, heatmapSampleRate: 15 });
+  });
+
+  it.each([0, 15, 100])("preserves rate %s alongside heatmaps enabled and replay disabled", async rate => {
+    dbMock.rows.push(createSiteRow({ heatmaps: true, heatmapSampleRate: rate, sessionReplay: false }));
+
+    expect(await siteConfig.getConfig(123)).toMatchObject({
+      heatmaps: true,
+      heatmapSampleRate: rate,
+      sessionReplay: false,
+    });
+  });
+
+  it("reloads heatmap settings for every cached identifier after invalidation", async () => {
+    dbMock.rows.push(createSiteRow({}));
+    await siteConfig.getConfig(123);
+    await siteConfig.getConfig("abcdef123456");
+    dbMock.rows[0].heatmaps = true;
+    dbMock.rows[0].heatmapSampleRate = 100;
+
+    siteConfig.invalidate({ siteId: 123, id: "abcdef123456" });
+
+    expect(await siteConfig.getConfig(123)).toMatchObject({ heatmaps: true, heatmapSampleRate: 100 });
+    expect(await siteConfig.getConfig("abcdef123456")).toMatchObject({ heatmaps: true, heatmapSampleRate: 100 });
+  });
+
   it.each([true, false, null])("defaults or preserves URL fragment tracking set to %s", async value => {
     dbMock.rows.push(createSiteRow({ trackUrlFragments: value }));
     const config = await siteConfig.getConfig(123);

@@ -163,7 +163,7 @@ export function UserHeader({ userId, displayName, data, isLoading, latestReplayS
                 {localTimeValid && (
                   <span
                     className="inline-flex items-center gap-1 whitespace-nowrap"
-                    title={`${t("Local time")} · ${data?.timezone}`}
+                    title={`${t("Local time")} (${data?.timezone})`}
                   >
                     <Clock className="h-3 w-3 text-neutral-400 dark:text-neutral-500" />
                     {localTimeValid.setLocale(locale).toLocaleString(DateTime.TIME_SIMPLE)}

@@ -53,14 +53,14 @@ describe("request lifecycle logging", () => {
     ]);
   });
 
-  it("logs successful ingestion requests at debug", async () => {
+  it.each(["/api/track", "/api/heatmaps/record/:siteId"])("logs successful ingestion %s at debug", async route => {
     const { app, events } = createApp();
-    app.post("/api/track", () => ({ success: true }));
+    app.post(route, () => ({ success: true }));
 
-    await app.inject({ method: "POST", url: "/api/track" });
+    await app.inject({ method: "POST", url: route.replace(":siteId", "1") });
 
     expect(requestEvents(events)).toEqual([
-      expect.objectContaining({ level: 20, route: "/api/track", statusCode: 200, msg: "Request completed" }),
+      expect.objectContaining({ level: 20, route, statusCode: 200, msg: "Request completed" }),
     ]);
   });
 

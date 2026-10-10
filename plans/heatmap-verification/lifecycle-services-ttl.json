@@ -1,0 +1,34 @@
+{
+  "mode": "ttl",
+  "startedAt": "2026-10-10T21:10:01.240Z",
+  "checks": [
+    {
+      "name": "Repeated production ClickHouse initializer and real 30-day TTL remove only an expired fixture",
+      "passed": true,
+      "observed": {
+        "before": [
+          {
+            "pathname": "/fresh"
+          },
+          {
+            "pathname": "/old"
+          }
+        ],
+        "after": [
+          {
+            "pathname": "/fresh"
+          }
+        ],
+        "codec": "ZSTD(1)"
+      }
+    }
+  ],
+  "cleanup": [
+    {
+      "droppedDatabase": "rybbit_heatmap_lifecycle_4ef0a515afab",
+      "verifiedAbsent": true
+    }
+  ],
+  "passed": true,
+  "completedAt": "2026-10-10T21:10:01.475Z"
+}

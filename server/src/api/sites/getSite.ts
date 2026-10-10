@@ -73,6 +73,8 @@ export async function getSite(request: FastifyRequest<GetSiteParams>, reply: Fas
       requiresPlan,
       // Analytics features
       sessionReplay: site.sessionReplay,
+      heatmaps: site.heatmaps ?? false,
+      heatmapSampleRate: site.heatmapSampleRate ?? 15,
       webVitals: site.webVitals,
       trackErrors: site.trackErrors,
       trackOutbound: site.trackOutbound,

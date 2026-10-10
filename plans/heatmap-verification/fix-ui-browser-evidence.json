@@ -1,0 +1,780 @@
+{
+  "source": "Local production build, authenticated real cohort/site/report APIs; requests delayed but responses never substituted",
+  "startedAt": "2026-10-10T21:28:58.784Z",
+  "checks": [
+    {
+      "name": "Keyboard actions/edit/delete on unrelated cohort B preserve A URL and real report",
+      "selectedCohortId": 33,
+      "deletedCohortId": 34,
+      "count": 5,
+      "passed": true
+    },
+    {
+      "name": "Site switch clears all site-owned URL keys, preserves dates, and hides old report while permissions wait",
+      "destinationSiteId": 44,
+      "delayMs": 500,
+      "passed": true
+    },
+    {
+      "name": "Destination uses its own permissions and empty report; no foreign page or cohort query",
+      "destinationSiteId": 44,
+      "requests": 2,
+      "passed": true
+    },
+    {
+      "name": "Fresh heatmap-only site keeps usable viewport and separate outer/document scroll",
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "minimumVisibleHeight": 240,
+      "ordinaryPageviews": false,
+      "layout": {
+        "regionHeight": 246,
+        "regionScrollHeight": 1904,
+        "outerScrollAvailable": true,
+        "outerHeight": 900,
+        "outerScrollHeight": 1121,
+        "outerBefore": 0,
+        "outerAfter": 221,
+        "outerAfterInnerScroll": 221,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 246,
+        "detailHeaderHeight": 109,
+        "detailClipsViewport": false,
+        "canvasHeight": 492,
+        "dpr": 2
+      },
+      "passed": true
+    },
+    {
+      "name": "Fresh heatmap-only site keeps usable viewport and separate outer/document scroll",
+      "viewport": {
+        "width": 320,
+        "height": 500
+      },
+      "minimumVisibleHeight": 200,
+      "ordinaryPageviews": false,
+      "layout": {
+        "regionHeight": 238,
+        "regionScrollHeight": 1611,
+        "outerScrollAvailable": true,
+        "outerHeight": 500,
+        "outerScrollHeight": 1183,
+        "outerBefore": 0,
+        "outerAfter": 683,
+        "outerAfterInnerScroll": 683,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 238,
+        "detailHeaderHeight": 117,
+        "detailClipsViewport": false,
+        "canvasHeight": 476,
+        "dpr": 2
+      },
+      "passed": true
+    },
+    {
+      "name": "Fresh heatmap-only site keeps usable viewport and separate outer/document scroll",
+      "viewport": {
+        "width": 1680,
+        "height": 650
+      },
+      "minimumVisibleHeight": 240,
+      "ordinaryPageviews": false,
+      "layout": {
+        "regionHeight": 300,
+        "regionScrollHeight": 2000,
+        "outerScrollAvailable": true,
+        "outerHeight": 650,
+        "outerScrollHeight": 909,
+        "outerBefore": 0,
+        "outerAfter": 259,
+        "outerAfterInnerScroll": 259,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 300,
+        "detailHeaderHeight": 87,
+        "detailClipsViewport": false,
+        "canvasHeight": 600,
+        "dpr": 2
+      },
+      "passed": true
+    }
+  ],
+  "requests": [
+    {
+      "step": "selected cohort A",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/cohorts",
+      "query": {}
+    },
+    {
+      "step": "selected cohort A",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "33"
+      }
+    },
+    {
+      "step": "selected cohort A",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all",
+        "cohort_id": "33"
+      }
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "method": "DELETE",
+      "path": "/api/sites/1/cohorts/34",
+      "query": {}
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/cohorts",
+      "query": {}
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "33"
+      }
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "method": "GET",
+      "path": "/api/sites/1/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all",
+        "cohort_id": "33"
+      }
+    },
+    {
+      "step": "destination permissions and empty detail",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/cohorts",
+      "query": {}
+    },
+    {
+      "step": "destination permissions and empty detail",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "match": "all"
+      }
+    },
+    {
+      "step": "destination permissions and empty detail",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/cohorts",
+      "query": {}
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/cohorts",
+      "query": {}
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/cohorts",
+      "query": {}
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      }
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "siteId": 44,
+      "method": "GET",
+      "path": "/api/sites/44/heatmaps",
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      }
+    }
+  ],
+  "reports": [
+    {
+      "step": "selected cohort A",
+      "siteId": 1,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all",
+        "cohort_id": "33"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "selected cohort A",
+      "siteId": 1,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "33"
+      },
+      "selectedPage": {
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a"
+      },
+      "count": 5,
+      "cohortId": 33
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all",
+        "cohort_id": "33"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "keyboard unrelated cohort B actions",
+      "siteId": 1,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a",
+        "bucket": "375",
+        "match": "all",
+        "cohort_id": "33"
+      },
+      "selectedPage": {
+        "hostname": "qa.heatmap.test",
+        "pathname": "/a"
+      },
+      "count": 5,
+      "cohortId": 33
+    },
+    {
+      "step": "destination permissions and empty detail",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "match": "all"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "destination permissions and empty detail",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      },
+      "selectedPage": {
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only"
+      },
+      "count": 1
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      },
+      "selectedPage": {
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only"
+      },
+      "count": 1
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "view": "pages",
+        "mode": "click",
+        "match": "all"
+      },
+      "selectedPage": null,
+      "count": 0
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "siteId": 44,
+      "status": 200,
+      "query": {
+        "start_date": "2026-10-10",
+        "end_date": "2026-10-10",
+        "time_zone": "UTC",
+        "mode": "click",
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only",
+        "bucket": "375",
+        "match": "all"
+      },
+      "selectedPage": {
+        "hostname": "qa.heatmap.test",
+        "pathname": "/layout-only"
+      },
+      "count": 1
+    }
+  ],
+  "metadata": [
+    {
+      "siteId": 1,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 1,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 1,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 1,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    },
+    {
+      "siteId": 44,
+      "status": 200,
+      "heatmaps": true,
+      "hasHeatmapRead": true
+    }
+  ],
+  "runtimeErrors": [
+    {
+      "step": "selected cohort A",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "heatmap-only 375x900 layout",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "heatmap-only 320x500 layout",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "heatmap-only 1680x650 layout",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    }
+  ],
+  "baselineErrors": [
+    {
+      "step": "baseline main",
+      "message": "Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+    },
+    {
+      "step": "baseline main",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "baseline main",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "baseline main",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    },
+    {
+      "step": "baseline main",
+      "message": "Uncaught (in promise) IntegrationError: Please call Stripe() with your publishable key. You used an empty string."
+    }
+  ],
+  "cleanup": [
+    {
+      "cohortId": 33,
+      "success": true
+    },
+    {
+      "siteId": 44,
+      "success": true
+    }
+  ],
+  "passed": true,
+  "sourceSiteId": 1,
+  "destinationSiteId": 44,
+  "layoutMeasurements": [
+    {
+      "viewport": {
+        "width": 375,
+        "height": 900
+      },
+      "layout": {
+        "regionHeight": 246,
+        "regionScrollHeight": 1904,
+        "outerScrollAvailable": true,
+        "outerHeight": 900,
+        "outerScrollHeight": 1121,
+        "outerBefore": 0,
+        "outerAfter": 221,
+        "outerAfterInnerScroll": 221,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 246,
+        "detailHeaderHeight": 109,
+        "detailClipsViewport": false,
+        "canvasHeight": 492,
+        "dpr": 2
+      }
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 500
+      },
+      "layout": {
+        "regionHeight": 238,
+        "regionScrollHeight": 1611,
+        "outerScrollAvailable": true,
+        "outerHeight": 500,
+        "outerScrollHeight": 1183,
+        "outerBefore": 0,
+        "outerAfter": 683,
+        "outerAfterInnerScroll": 683,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 238,
+        "detailHeaderHeight": 117,
+        "detailClipsViewport": false,
+        "canvasHeight": 476,
+        "dpr": 2
+      }
+    },
+    {
+      "viewport": {
+        "width": 1680,
+        "height": 650
+      },
+      "layout": {
+        "regionHeight": 300,
+        "regionScrollHeight": 2000,
+        "outerScrollAvailable": true,
+        "outerHeight": 650,
+        "outerScrollHeight": 909,
+        "outerBefore": 0,
+        "outerAfter": 259,
+        "outerAfterInnerScroll": 259,
+        "innerScrollTop": 200,
+        "visibleRegionHeight": 300,
+        "detailHeaderHeight": 87,
+        "detailClipsViewport": false,
+        "canvasHeight": 600,
+        "dpr": 2
+      }
+    }
+  ],
+  "newRuntimeErrors": [],
+  "finishedAt": "2026-10-10T21:29:18.283Z"
+}

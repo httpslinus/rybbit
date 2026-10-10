@@ -1,0 +1,19 @@
+---
+title: Get Cohort
+description: Read one historical cohort definition on a site
+full: true
+method: GET
+---
+
+```text
+GET /api/sites/:siteId/cohorts/:cohortId
+```
+
+Requires authenticated site access with `cohorts:read`; bearer keys need that scope. Returns the cohort object described in [Get Cohorts](/docs/api/cohorts/list), including `canEdit` for the caller. It returns the saved definition, not its current members.
+
+Both IDs must be positive integers. A cohort belonging to another site, or one unavailable to the caller, returns **404**.
+
+```bash title="Request"
+curl "https://analytics.example.com/api/sites/1/cohorts/7" \
+  -H "Authorization: Bearer your_api_key_here"
+```

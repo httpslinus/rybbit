@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createClient } from "@clickhouse/client";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   command: vi.fn(),
@@ -15,7 +16,7 @@ vi.mock("../../lib/logger/logger.js", () => ({
 vi.useFakeTimers();
 const { identityBackfillQueue } = await import("./identityBackfillQueue.js");
 
-const TABLE_COUNT = 3;
+const TABLE_COUNT = 4;
 
 /** Every key interpolated into the mutations of the most recent flush. */
 function flushedKeys() {
@@ -61,6 +62,18 @@ describe("identityBackfillQueue", () => {
     await identityBackfillQueue.flush();
 
     expect(mocks.command.mock.calls[0][0].query_params.userIds).toEqual(["first"]);
+  });
+
+  it("preserves UInt32 site IDs in every backfill table", async () => {
+    identityBackfillQueue.enqueue({ siteId: 70001, anonymousId: "shared-device", userId: "alice" }, 30);
+    await identityBackfillQueue.flush();
+
+    expect(mocks.command).toHaveBeenCalledTimes(TABLE_COUNT);
+    for (const [{ query, query_params }] of mocks.command.mock.calls) {
+      expect(query).toContain("site_id IN {siteIds: Array(UInt32)}");
+      expect(query_params.siteIds).toEqual([70001]);
+      expect(query_params.keys).toEqual(["70001:shared-device"]);
+    }
   });
 
   it("keeps windows apart so an all-history backfill does not widen the routine ones", async () => {
@@ -194,5 +207,62 @@ describe("identityBackfillQueue", () => {
     mocks.command.mockResolvedValue(undefined);
     await identityBackfillQueue.flush();
     expect(mocks.command).not.toHaveBeenCalled();
+  });
+});
+
+// Run the production assignment expression and WHERE predicate over a CTE;
+// no tables or stored rows are created or changed by this check.
+describe.skipIf(!process.env.CLICKHOUSE_TEST_URL)("identity backfill UInt32 predicate against ClickHouse", () => {
+  let client: ReturnType<typeof createClient>;
+
+  beforeAll(() => {
+    vi.useRealTimers();
+    client = createClient({
+      url: process.env.CLICKHOUSE_TEST_URL,
+      username: process.env.CLICKHOUSE_TEST_USER || "default",
+      password: process.env.CLICKHOUSE_TEST_PASSWORD || "",
+      compression: { request: false, response: false },
+      clickhouse_settings: { readonly: "2", max_threads: 2, max_execution_time: 10 },
+    });
+  });
+  afterAll(async () => {
+    await client.close();
+  });
+
+  it("backfills a high site while preserving shared-device identities, foreign sites and expired rows", async () => {
+    identityBackfillQueue.enqueue({ siteId: 70001, anonymousId: "shared-device", userId: "alice" }, 30);
+    await identityBackfillQueue.flush();
+    const command = mocks.command.mock.calls
+      .map(([value]) => value)
+      .find(value => value.query.includes("ALTER TABLE heatmap_events"));
+    expect(command).toBeDefined();
+    const [, expression, predicate] = command.query.match(/UPDATE identified_user_id = ([\s\S]+?)\s+WHERE ([\s\S]+)/);
+    const fixture = `WITH heatmap_events AS (SELECT * FROM values(
+      'row_id String, site_id UInt32, user_id String, identified_user_id String, age_days UInt16',
+      ('high-anonymous', 70001, 'shared-device', '', 0),
+      ('high-alice', 70001, 'shared-device', 'alice', 0),
+      ('high-bob', 70001, 'shared-device', 'bob', 0),
+      ('high-unlinked', 70001, 'unlinked-device', '', 0),
+      ('high-expired', 70001, 'shared-device', '', 40),
+      ('wrapped-anonymous', 4465, 'shared-device', '', 0),
+      ('foreign-anonymous', 70002, 'shared-device', '', 0)
+    )), Fixture AS (
+      SELECT *, now() - toIntervalDay(age_days) AS timestamp FROM heatmap_events
+    )`;
+    const result = await client.query({
+      query: `${fixture} SELECT row_id, if(${predicate}, ${expression}, identified_user_id) AS resolved
+        FROM Fixture ORDER BY row_id`,
+      query_params: command.query_params,
+      format: "JSONEachRow",
+    });
+    expect(await result.json<{ row_id: string; resolved: string }>()).toEqual([
+      { row_id: "foreign-anonymous", resolved: "" },
+      { row_id: "high-alice", resolved: "alice" },
+      { row_id: "high-anonymous", resolved: "alice" },
+      { row_id: "high-bob", resolved: "bob" },
+      { row_id: "high-expired", resolved: "" },
+      { row_id: "high-unlinked", resolved: "" },
+      { row_id: "wrapped-anonymous", resolved: "" },
+    ]);
   });
 });

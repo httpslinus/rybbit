@@ -9,3 +9,5 @@ export * from "./performance";
 export * from "./aiOperators";
 export * from "./annotations";
 export * from "./permissions";
+export * from "./heatmaps";
+export * from "./cohorts";

@@ -3,7 +3,7 @@
 import { Filter, FilterParameter, Segment } from "@rybbit/shared";
 import { ListFilterPlus } from "lucide-react";
 import { useExtracted } from "next-intl";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../../../components/ui/basic-tabs";
 import { Button } from "../../../../../components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../../components/ui/popover";
@@ -13,15 +13,27 @@ import { FilterPicker } from "./FilterPicker";
 import { SegmentDialog } from "./SegmentDialog";
 import { SegmentsTab } from "./SegmentsTab";
 
-type Tab = "filters" | "segments";
+type Tab = "filters" | "segments" | "report";
 type DialogState = { segment?: Segment; initialFilters?: Filter[] } | null;
 
+export interface AdditionalFilterTab {
+  label: ReactNode;
+  content: (onClose: () => void) => ReactNode;
+}
+
 /**
- * The Filter button. Its popover has two tabs: the filter picker that was
- * always here, and the saved segments for this site. Segments live entirely
- * inside this popover so the toolbar gains nothing.
+ * The shared filter picker and saved segments. Reports can supply local
+ * options and another saved-group tab without adding idle toolbar controls.
  */
-export function NewFilterButton({ availableFilters }: { availableFilters?: FilterParameter[] }) {
+export function NewFilterButton({
+  availableFilters,
+  filterOptions,
+  additionalTab,
+}: {
+  availableFilters?: FilterParameter[];
+  filterOptions?: ReactNode;
+  additionalTab?: AdditionalFilterTab;
+}) {
   const t = useExtracted();
   const { site, privateKey, filters } = useStore();
   const canWriteSegments = useCanOnSite("segments:write", site);
@@ -76,8 +88,11 @@ export function NewFilterButton({ availableFilters }: { availableFilters?: Filte
             {t("Filter")}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-0" align="start">
-          <Tabs value={tab} onValueChange={value => selectTab(value as Tab)}>
+        <PopoverContent className="w-72 max-w-[calc(100vw-1rem)] p-0" align="start">
+          <Tabs
+            value={tab === "report" && !additionalTab ? "filters" : tab}
+            onValueChange={value => selectTab(value as Tab)}
+          >
             {/* Full-width underline tabs; -mb-px lays the underline over the list's hairline. */}
             <TabsList className="flex h-auto w-full space-x-0 border-b border-neutral-200 dark:border-neutral-700">
               <TabsTrigger value="filters" className="-mb-px flex-1 py-2 text-xs">
@@ -86,8 +101,14 @@ export function NewFilterButton({ availableFilters }: { availableFilters?: Filte
               <TabsTrigger value="segments" className="-mb-px flex-1 py-2 text-xs">
                 {t("Segments")}
               </TabsTrigger>
+              {additionalTab && (
+                <TabsTrigger value="report" className="-mb-px flex-1 py-2 text-xs">
+                  {additionalTab.label}
+                </TabsTrigger>
+              )}
             </TabsList>
             <TabsContent value="filters" className="mt-0">
+              {parameter === null && filterOptions}
               <FilterPicker
                 availableFilters={availableFilters}
                 onCommit={addFilter}
@@ -97,6 +118,11 @@ export function NewFilterButton({ availableFilters }: { availableFilters?: Filte
                 setParameter={setParameter}
               />
             </TabsContent>
+            {additionalTab && (
+              <TabsContent value="report" className="mt-0">
+                {additionalTab.content(() => setOpen(false))}
+              </TabsContent>
+            )}
             <TabsContent value="segments" className="mt-0">
               <SegmentsTab
                 siteId={site}

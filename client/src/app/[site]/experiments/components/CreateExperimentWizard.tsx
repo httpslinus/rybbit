@@ -846,7 +846,7 @@ export function CreateExperimentWizard({
                           VARIANT_SEGMENT_COLORS[index % VARIANT_SEGMENT_COLORS.length]
                         )}
                         style={{ width: `${Math.min(100, Number(variant.rolloutPercentage))}%` }}
-                        title={`${variant.key || t("variant")} · ${variant.rolloutPercentage}%`}
+                        title={`${variant.key || t("variant")} (${variant.rolloutPercentage}%)`}
                       />
                     ) : null
                   )}

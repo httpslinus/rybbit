@@ -41,6 +41,34 @@ describe("permission guards", () => {
 
     app = Fastify();
     app.get(
+      "/sites/:siteId/heatmaps",
+      {
+        preHandler: [resolveSiteId, requireSitePermission("heatmaps:read")] as any,
+      },
+      async () => ({ ok: true })
+    );
+    app.get(
+      "/sites/:siteId/cohorts",
+      {
+        preHandler: [resolveSiteId, requireSitePermission("cohorts:read")] as any,
+      },
+      async () => ({ ok: true })
+    );
+    app.post(
+      "/sites/:siteId/cohorts",
+      {
+        preHandler: [resolveSiteId, requireSitePermission("cohorts:write")] as any,
+      },
+      async () => ({ ok: true })
+    );
+    app.delete(
+      "/sites/:siteId/cohorts/:cohortId/manage",
+      {
+        preHandler: [resolveSiteId, requireSitePermission("cohorts:manage")] as any,
+      },
+      async () => ({ ok: true })
+    );
+    app.get(
       "/sites/:siteId/goals",
       { preHandler: [resolveSiteId, requireSitePermission("goals:read")] as any },
       async request => ({ role: request.accessRole ?? null })
@@ -85,6 +113,61 @@ describe("permission guards", () => {
 
     expect(response.statusCode).toBe(403);
     expect(response.json()).toEqual({ error: "Insufficient scope", required: "goals:write" });
+  });
+
+  it("requires authenticated heatmap access even on public sites", async () => {
+    mocks.getSiteIsPubliclyReadable.mockResolvedValue(true);
+    expect((await app.inject({ method: "GET", url: "/sites/5/heatmaps" })).statusCode).toBe(403);
+    mocks.getSessionFromReq.mockResolvedValue({ user: { id: "reader" } });
+    for (const role of ["viewer", "owner"]) {
+      mocks.getUserSiteRole.mockResolvedValue(role);
+      expect((await app.inject({ method: "GET", url: "/sites/5/heatmaps" })).statusCode).toBe(200);
+    }
+    mocks.getUserSiteRole.mockResolvedValue(null);
+    expect((await app.inject({ method: "GET", url: "/sites/6/heatmaps" })).statusCode).toBe(403);
+    expect(mocks.getSiteIsPubliclyReadable).not.toHaveBeenCalled();
+  });
+
+  it("requires the dedicated heatmap bearer scope", async () => {
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ replay: ["read"] }, "viewer"));
+    const denied = await app.inject({ method: "GET", url: "/sites/5/heatmaps", headers: bearer });
+    expect(denied.statusCode).toBe(403);
+    expect(denied.json()).toEqual({ error: "Insufficient scope", required: "heatmaps:read" });
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ heatmaps: ["read"] }, "viewer"));
+    expect((await app.inject({ method: "GET", url: "/sites/5/heatmaps", headers: bearer })).statusCode).toBe(200);
+  });
+
+  it("keeps cohort definitions authenticated with viewer read, member write and editor manage", async () => {
+    mocks.getSiteIsPubliclyReadable.mockResolvedValue(true);
+    expect((await app.inject({ method: "GET", url: "/sites/5/cohorts" })).statusCode).toBe(403);
+    mocks.getSessionFromReq.mockResolvedValue({ user: { id: "cohort_reader" } });
+    for (const [role, read, write, manage] of [
+      ["viewer", 200, 403, 403],
+      ["member", 200, 200, 403],
+      ["editor", 200, 200, 200],
+    ] as const) {
+      mocks.getUserSiteRole.mockResolvedValue(role);
+      expect((await app.inject({ method: "GET", url: "/sites/5/cohorts" })).statusCode).toBe(read);
+      expect((await app.inject({ method: "POST", url: "/sites/5/cohorts" })).statusCode).toBe(write);
+      expect((await app.inject({ method: "DELETE", url: "/sites/5/cohorts/7/manage" })).statusCode).toBe(manage);
+    }
+    mocks.getUserSiteRole.mockResolvedValue(null);
+    expect((await app.inject({ method: "GET", url: "/sites/6/cohorts" })).statusCode).toBe(403);
+    expect(mocks.getSiteIsPubliclyReadable).not.toHaveBeenCalled();
+  });
+
+  it("requires cohort scopes without letting scoped writes elevate a viewer", async () => {
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ heatmaps: ["read"] }, "viewer"));
+    const denied = await app.inject({ method: "GET", url: "/sites/5/cohorts", headers: bearer });
+    expect(denied.statusCode).toBe(403);
+    expect(denied.json()).toEqual({ error: "Insufficient scope", required: "cohorts:read" });
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ cohorts: ["read"] }, "viewer"));
+    expect((await app.inject({ method: "GET", url: "/sites/5/cohorts", headers: bearer })).statusCode).toBe(200);
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ cohorts: ["write"] }, "viewer"));
+    expect((await app.inject({ method: "POST", url: "/sites/5/cohorts", headers: bearer })).statusCode).toBe(403);
+    mocks.checkApiKey.mockResolvedValue(bearerResult({ cohorts: ["write"] }, "member"));
+    expect((await app.inject({ method: "GET", url: "/sites/5/cohorts", headers: bearer })).statusCode).toBe(200);
+    expect((await app.inject({ method: "POST", url: "/sites/5/cohorts", headers: bearer })).statusCode).toBe(200);
   });
 
   it("allows a scoped key on routes it has the scope for", async () => {

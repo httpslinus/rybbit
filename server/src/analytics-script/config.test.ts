@@ -75,6 +75,9 @@ describe("parseScriptConfig", () => {
       enableWebVitals: true, // webVitals from API
       trackErrors: false, // trackErrors from API
       enableSessionReplay: true, // sessionReplay from API
+      enableHeatmaps: false,
+      heatmapSampleRate: 15,
+      debug: false,
       trackButtonClicks: false,
       trackCopy: false,
       trackFormInteractions: false,
@@ -204,6 +207,9 @@ describe("parseScriptConfig", () => {
       enableWebVitals: false,
       trackErrors: false,
       enableSessionReplay: false,
+      enableHeatmaps: false,
+      heatmapSampleRate: 15,
+      debug: false,
       trackButtonClicks: false,
       trackCopy: false,
       trackFormInteractions: false,
@@ -254,6 +260,9 @@ describe("parseScriptConfig", () => {
       enableWebVitals: false,
       trackErrors: false,
       enableSessionReplay: false,
+      enableHeatmaps: false,
+      heatmapSampleRate: 15,
+      debug: false,
       trackButtonClicks: false,
       trackCopy: false,
       trackFormInteractions: false,
@@ -540,6 +549,43 @@ describe("parseScriptConfig", () => {
     expect(config?.sessionReplayBlockSelector).toBe(".sensitive-content");
     expect(config?.sessionReplayIgnoreClass).toBe("my-ignore-class");
     expect(config?.sessionReplayIgnoreSelector).toBe("input[type='password']");
+  });
+
+  it.each([0, 15, 100, 12.5])(
+    "reads independent heatmap settings at %s percent with replay disabled",
+    async heatmapSampleRate => {
+      mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js?siteId=123");
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ heatmaps: true, heatmapSampleRate, sessionReplay: false }),
+      } as Response);
+      const config = await parseScriptConfig(mockScriptTag);
+      expect(config).toMatchObject({ enableHeatmaps: true, heatmapSampleRate, enableSessionReplay: false });
+    }
+  );
+
+  it.each([-1, 101, NaN, Infinity, "100", null])(
+    "falls back to the heatmap default for invalid rate %s",
+    async heatmapSampleRate => {
+      mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js?siteId=123");
+      vi.mocked(fetch).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ heatmaps: true, heatmapSampleRate }),
+      } as Response);
+      expect(await parseScriptConfig(mockScriptTag)).toMatchObject({ enableHeatmaps: true, heatmapSampleRate: 15 });
+    }
+  );
+
+  it("requires explicit API enablement and exposes upload errors only when data-debug is true", async () => {
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js?siteId=123");
+    mockScriptTag.setAttribute("data-debug", "true");
+    mockScriptTag.setAttribute("data-heatmaps", "true");
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({}) } as Response);
+    expect(await parseScriptConfig(mockScriptTag)).toMatchObject({
+      enableHeatmaps: false,
+      heatmapSampleRate: 15,
+      debug: true,
+    });
   });
 
   it("should parse rrweb mask text class option", async () => {

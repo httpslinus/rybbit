@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   clickhouseCommand: vi.fn(),
   invalidate: vi.fn(),
   getConfig: vi.fn(),
+  clearAttributions: vi.fn(),
 }));
 
 vi.mock("../../db/postgres/postgres.js", () => ({
@@ -52,6 +53,9 @@ vi.mock("../../db/postgres/postgres.js", () => ({
 vi.mock("../../db/clickhouse/clickhouse.js", () => ({
   clickhouse: { command: mocks.clickhouseCommand },
 }));
+vi.mock("../heatmaps/heatmapBatchClaims.js", () => ({
+  heatmapBatchClaims: { clearAttributions: mocks.clearAttributions },
+}));
 
 vi.mock("../../lib/siteConfig.js", () => ({
   siteConfig: { invalidate: mocks.invalidate, getConfig: mocks.getConfig },
@@ -81,10 +85,41 @@ beforeEach(() => {
   state.updates.length = 0;
   state.deletes = 0;
   mocks.clickhouseCommand.mockResolvedValue(undefined);
+  mocks.clearAttributions.mockResolvedValue(undefined);
   mocks.getConfig.mockResolvedValue({ siteId: 1, id: "abcdef123456", name: "Renamed" });
 });
 
 describe("siteConfigurationLifecycle", () => {
+  it.each([0, 15, 100])("persists the independent heatmap rate %s and reloads its cached config", async rate => {
+    mocks.getConfig.mockResolvedValue({ siteId: 1, heatmaps: true, heatmapSampleRate: rate });
+
+    const config = await siteConfigurationLifecycle.update(1, { heatmaps: true, heatmapSampleRate: rate });
+
+    expect(state.updates).toEqual([expect.objectContaining({ heatmaps: true, heatmapSampleRate: rate })]);
+    expect(mocks.invalidate).toHaveBeenCalledWith(state.site);
+    expect(mocks.getConfig).toHaveBeenCalledWith(1);
+    expect(config).toMatchObject({ heatmaps: true, heatmapSampleRate: rate });
+  });
+
+  it.each([-1, 101, NaN, Infinity, -Infinity])("rejects invalid rate %s at the lifecycle boundary", async rate => {
+    await expect(siteConfigurationLifecycle.update(1, { heatmapSampleRate: rate })).rejects.toThrow(
+      "Heatmap sample rate must be a finite number between 0 and 100"
+    );
+
+    expect(state.updates).toHaveLength(0);
+    expect(mocks.invalidate).not.toHaveBeenCalled();
+  });
+
+  it("rejects enabling heatmaps on a mobile site at the lifecycle boundary", async () => {
+    state.site = { ...makeSite(), type: "mobile", domain: "com.example.app" };
+
+    await expect(siteConfigurationLifecycle.update(1, { heatmaps: true })).rejects.toThrow(
+      "Heatmaps are only available for web sites"
+    );
+
+    expect(state.updates).toHaveLength(0);
+  });
+
   it.each([true, false])("persists URL fragment tracking set to %s and invalidates the cache", async enabled => {
     await siteConfigurationLifecycle.update(1, { trackUrlFragments: enabled });
 
@@ -124,7 +159,15 @@ describe("siteConfigurationLifecycle", () => {
     await siteConfigurationLifecycle.delete(1);
 
     expect(state.deletes).toBe(2);
-    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(2);
+    expect(mocks.clickhouseCommand).toHaveBeenCalledTimes(3);
+    expect(mocks.clearAttributions).toHaveBeenCalledWith(1);
+    expect(mocks.clearAttributions.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.clickhouseCommand.mock.invocationCallOrder[0]
+    );
+    expect(mocks.clickhouseCommand).toHaveBeenCalledWith({
+      query: "DELETE FROM heatmap_events WHERE site_id = {id:UInt32}",
+      query_params: { id: 1 },
+    });
     expect(mocks.invalidate).toHaveBeenCalledWith(state.site);
   });
 
@@ -143,6 +186,14 @@ describe("siteConfigurationLifecycle", () => {
     await expect(siteConfigurationLifecycle.delete(1)).rejects.toThrow("clickhouse unavailable");
 
     expect(state.deletes).toBe(0);
+    expect(mocks.invalidate).not.toHaveBeenCalled();
+  });
+
+  it("rolls the Site back before data cleanup if retry attribution erasure fails", async () => {
+    mocks.clearAttributions.mockRejectedValueOnce(new Error("Redis unavailable"));
+    await expect(siteConfigurationLifecycle.delete(1)).rejects.toThrow("Redis unavailable");
+    expect(state.deletes).toBe(0);
+    expect(mocks.clickhouseCommand).not.toHaveBeenCalled();
     expect(mocks.invalidate).not.toHaveBeenCalled();
   });
 });

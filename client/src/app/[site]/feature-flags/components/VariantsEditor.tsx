@@ -95,7 +95,7 @@ export function VariantsEditor({
                   key={variant.id}
                   className={cn("h-full transition-[width]", VARIANT_PALETTE[index % VARIANT_PALETTE.length])}
                   style={{ width: `${(width / Math.max(totalRollout, 100)) * 100}%` }}
-                  title={`${variant.key || variant.name || `Variant ${index + 1}`} • ${width}%`}
+                  title={`${variant.key || variant.name || `Variant ${index + 1}`} (${width}%)`}
                 />
               );
             })}
