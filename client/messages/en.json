@@ -2778,5 +2778,9 @@
   "qIJIMf": "Page background",
   "bIQcfe": "Background capture time",
   "eFVlKG": "Captured {date}",
-  "z6C5KP": "This page is too long for a page background. Geometry is shown."
+  "z6C5KP": "This page is too long for a page background. Geometry is shown.",
+  "DCHyqC": "Show {count} more pages in {section}",
+  "a8woL2": "Top {count} pages",
+  "dzMcH1": "Hide pages",
+  "lM5Klt": "Show pages"
 }

@@ -2778,5 +2778,9 @@
   "qIJIMf": "Arrière-plan de la page",
   "bIQcfe": "Date de capture de l’arrière-plan",
   "eFVlKG": "Capturé le {date}",
-  "z6C5KP": "Cette page est trop longue pour afficher un arrière-plan. La géométrie est affichée."
+  "z6C5KP": "Cette page est trop longue pour afficher un arrière-plan. La géométrie est affichée.",
+  "DCHyqC": "Afficher plus de pages dans {section} ({count})",
+  "a8woL2": "Top {count} pages",
+  "dzMcH1": "Masquer les pages",
+  "lM5Klt": "Afficher les pages"
 }

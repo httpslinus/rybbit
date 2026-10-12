@@ -2778,5 +2778,9 @@
   "qIJIMf": "Fondo de página",
   "bIQcfe": "Fecha de captura del fondo",
   "eFVlKG": "Capturado el {date}",
-  "z6C5KP": "Esta página es demasiado larga para mostrar el fondo. Se muestra la geometría."
+  "z6C5KP": "Esta página es demasiado larga para mostrar el fondo. Se muestra la geometría.",
+  "DCHyqC": "Mostrar más páginas en {section} ({count})",
+  "a8woL2": "{count} páginas principales",
+  "dzMcH1": "Ocultar páginas",
+  "lM5Klt": "Mostrar páginas"
 }

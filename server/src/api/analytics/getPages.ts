@@ -57,13 +57,25 @@ export const pagesQuerySchema = z
     sort: z.enum(Object.keys(SORT_COLUMNS) as [PagesSort, ...PagesSort[]]).default("pageviews"),
     order: z.enum(["asc", "desc"]).default("desc"),
     search: optionalText(200),
+    hostname: optionalText(2048),
+    paths: z
+      .string()
+      .transform((raw, ctx) => {
+        try {
+          return z.array(z.string().max(2048)).min(1).max(100).parse(JSON.parse(raw));
+        } catch {
+          ctx.addIssue({ code: "custom", message: "Expected a JSON array of 1–100 paths" });
+          return z.NEVER;
+        }
+      })
+      .optional(),
     limit: z.coerce.number().int().min(1).max(100).default(25),
     page: z.coerce.number().int().min(1).max(10_000).default(1),
   })
   // A section row is a rollup of all its pages, so it cannot be narrowed by a
   // search or nested in another section.
-  .refine(query => query.group === "page" || (!query.section && !query.search), {
-    message: "section and search only apply to page rows",
+  .refine(query => query.group === "page" || (!query.section && !query.search && !query.paths), {
+    message: "section, search and paths only apply to page rows",
   });
 
 export type PagesQuery = z.infer<typeof pagesQuerySchema>;
@@ -133,6 +145,7 @@ function pageViewsCTE(siteId: number, scope: ReturnType<typeof sessionScope>, re
       SELECT
         session_id,
         pathname,
+        hostname,
         page_title,
         timestamp_ms,
         lagInFrame(toNullable(timestamp_ms)) OVER (
@@ -173,6 +186,12 @@ export interface PageRow {
 export const buildPagesQuery = (params: WindowParams, query: PagesQuery, siteId: number): QuerySpec => {
   const scope = sessionScope(params, siteId);
   const sectionFilter = query.section ? `${sectionOf("pathname")} = {section:String}` : undefined;
+  const pageFilters = [
+    sectionFilter,
+    query.paths ? "pathname IN {paths:Array(String)}" : undefined,
+    query.hostname ? "hostname = {hostname:String}" : undefined,
+  ].filter(Boolean);
+  const pageFilter = pageFilters.length ? pageFilters.join(" AND ") : undefined;
   const pageHaving = [
     query.group === "page" && query.mode === "entry" ? "entry_views > 0" : "",
     query.group === "page" && query.mode === "exit" ? "exit_views > 0" : "",
@@ -195,7 +214,7 @@ export const buildPagesQuery = (params: WindowParams, query: PagesQuery, siteId:
         sumIf(${timeOnPage}, next_view IS NOT NULL) AS timed_seconds,
         countIf(next_view IS NOT NULL) AS timed_views
       FROM PageViews
-      ${sectionFilter ? `WHERE ${sectionFilter}` : ""}
+      ${pageFilter ? `WHERE ${pageFilter}` : ""}
       GROUP BY pathname
       ${pageHaving.length ? `HAVING ${pageHaving.join(" AND ")}` : ""}
     )`;
@@ -239,7 +258,7 @@ export const buildPagesQuery = (params: WindowParams, query: PagesQuery, siteId:
 
   return {
     query: `
-      ${withClause(scope.filteredSessionsCTE, pageViewsCTE(siteId, scope, sectionFilter), pageStats)}
+      ${withClause(scope.filteredSessionsCTE, pageViewsCTE(siteId, scope, pageFilter), pageStats)}
       ${rows}
       ORDER BY ${SORT_COLUMNS[query.sort]} ${query.order === "asc" ? "ASC" : "DESC"} NULLS LAST, ${
         // Ties break the way the section list does, so a section's place there is its place here.
@@ -251,6 +270,8 @@ export const buildPagesQuery = (params: WindowParams, query: PagesQuery, siteId:
       siteId,
       ...(query.section ? { section: query.section } : {}),
       ...(query.search ? { search: query.search } : {}),
+      ...(query.paths ? { paths: query.paths } : {}),
+      ...(query.hostname ? { hostname: query.hostname } : {}),
     },
   };
 };

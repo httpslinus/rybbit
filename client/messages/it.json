@@ -2778,5 +2778,9 @@
   "qIJIMf": "Sfondo della pagina",
   "bIQcfe": "Data di acquisizione dello sfondo",
   "eFVlKG": "Acquisito il {date}",
-  "z6C5KP": "Questa pagina è troppo lunga per mostrare uno sfondo. Viene mostrata la geometria."
+  "z6C5KP": "Questa pagina è troppo lunga per mostrare uno sfondo. Viene mostrata la geometria.",
+  "DCHyqC": "Mostra altre pagine in {section} ({count})",
+  "a8woL2": "Prime {count} pagine",
+  "dzMcH1": "Nascondi le pagine",
+  "lM5Klt": "Mostra le pagine"
 }

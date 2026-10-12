@@ -1,11 +1,12 @@
 "use client";
 
 import type { HeatmapMode, HeatmapPage, HeatmapWidthBucket } from "@rybbit/shared";
-import { ChevronDown, Info, Layers, Maximize2, MousePointer2, PanelLeft, X } from "lucide-react";
+import { ChevronDown, Info, Layers, Maximize2, MousePointer2, PanelLeft, PanelLeftClose, X } from "lucide-react";
 import { useExtracted, useFormatter } from "next-intl";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useGetSite } from "@/api/admin/hooks/useSites";
+import { useGetHeatmapPageTitles } from "@/api/analytics/hooks/heatmaps/useGetHeatmapPageTitles";
 import { useGetHeatmaps } from "@/api/analytics/hooks/heatmaps/useGetHeatmaps";
 import { SegmentedControl } from "@/components/interior/segmented-control";
 import { AnalysisBar } from "@/components/site/AnalysisBar";
@@ -21,7 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useHeatmapUrlState } from "@/lib/heatmapUrlState";
 import { useStore } from "@/lib/store";
-import { cn } from "@/lib/utils";
+import { HeatmapPageList } from "./HeatmapPageList";
 import { HeatmapViewer } from "./HeatmapViewer";
 import { HeatmapLegend } from "./HeatmapLegend";
 import { pageSnapshot } from "./snapshot";
@@ -54,6 +55,7 @@ export function HeatmapReport() {
     cohortId,
   } = useHeatmapUrlState();
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [pagesCollapsed, setPagesCollapsed] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showBackground, setShowBackground] = useState(true);
   const [pageSearch, setPageSearch] = useState(search);
@@ -92,6 +94,7 @@ export function HeatmapReport() {
     enabled,
   });
   const pageData = enabled ? pageQuery.data : undefined;
+  const titledPages = useGetHeatmapPageTitles(pageData?.pages ?? [], enabled);
   const showHostname =
     new Set([
       ...(pageData?.pages.map(page => page.hostname) ?? []),
@@ -112,7 +115,7 @@ export function HeatmapReport() {
 
   const pages = (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-neutral-150 p-2 dark:border-neutral-800">
+      <div className="shrink-0 p-3">
         <Input
           isSearch
           inputSize="sm"
@@ -136,43 +139,19 @@ export function HeatmapReport() {
           action={<Button onClick={() => void pageQuery.refetch()}>{t("Retry")}</Button>}
         />
       ) : pageData?.pages.length ? (
-        <ul aria-label={t("Pages")} className="min-h-0 flex-1 overflow-y-auto">
-          {pageData.pages.map(page => (
-            <li key={`${page.hostname}\u0000${page.pathname}`}>
-              <button
-                type="button"
-                aria-pressed={
-                  data?.selectedPage?.hostname === page.hostname && data.selectedPage?.pathname === page.pathname
-                }
-                onClick={() => selectPage(page)}
-                className={cn(
-                  "w-full cursor-pointer border-b border-neutral-150 px-2.5 py-2 text-left transition-colors dark:border-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-500",
-                  data?.selectedPage?.hostname === page.hostname && data.selectedPage?.pathname === page.pathname
-                    ? "bg-neutral-100 dark:bg-neutral-800"
-                    : "hover:bg-neutral-50 dark:hover:bg-neutral-900"
-                )}
-              >
-                <span className="block break-all text-sm font-medium">{page.pathname}</span>
-                {showHostname && (
-                  <span className="block truncate text-xs text-neutral-500 dark:text-neutral-400" title={page.hostname}>
-                    {page.hostname}
-                  </span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <HeatmapPageList
+          pages={titledPages}
+          selectedPage={data?.selectedPage ?? null}
+          showHostname={showHostname}
+          search={search}
+          truncated={pageData.truncated.pages}
+          limit={pageData.limits.pages}
+          onSelect={selectPage}
+        />
       ) : (
         <div className="py-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
           {search ? t("No matching pages") : t("No pages with samples")}
         </div>
-      )}
-      {pageData?.truncated.pages && (
-        <p className="shrink-0 p-2 text-xs text-neutral-500 dark:text-neutral-400">
-          {t("Showing the top {count} pages. Search to find another page.", {
-            count: pageData.limits.pages.toLocaleString(),
-          })}
-        </p>
       )}
     </div>
   );
@@ -375,9 +354,17 @@ export function HeatmapReport() {
         </Alert>
       )}
       <div className="flex min-h-0 flex-1 gap-3">
-        <aside className="hidden w-52 shrink-0 flex-col overflow-hidden rounded-lg border border-neutral-150 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
-          {pages}
-        </aside>
+        {!pagesCollapsed && (
+          <aside className="hidden w-[300px] shrink-0 flex-col overflow-hidden rounded-lg border border-neutral-150 bg-white dark:border-neutral-800 dark:bg-neutral-900 md:flex">
+            <div className="flex shrink-0 items-center justify-between px-3.5 pt-3">
+              <h2 className="text-sm font-medium">{t("Pages")}</h2>
+              <Button size="xs" variant="ghost" aria-label={t("Hide pages")} onClick={() => setPagesCollapsed(true)}>
+                <PanelLeftClose className="size-4 text-neutral-500 dark:text-neutral-400" />
+              </Button>
+            </div>
+            {pages}
+          </aside>
+        )}
         <section
           aria-label={t("Heatmap detail")}
           className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-neutral-150 bg-white dark:border-neutral-800 dark:bg-neutral-900"
@@ -397,6 +384,18 @@ export function HeatmapReport() {
                 </>
               )}
             </div>
+            {pagesCollapsed && (
+              <Button
+                size="sm"
+                variant="ghost"
+                aria-label={t("Show pages")}
+                className="hidden md:inline-flex"
+                onClick={() => setPagesCollapsed(false)}
+              >
+                <PanelLeft />
+                {t("Pages")}
+              </Button>
+            )}
             {sampleDetails}
             <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
               <DialogTrigger asChild>

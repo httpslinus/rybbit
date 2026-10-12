@@ -2778,5 +2778,9 @@
   "qIJIMf": "Pozadí stránky",
   "bIQcfe": "Čas pořízení pozadí",
   "eFVlKG": "Pořízeno {date}",
-  "z6C5KP": "Stránka je příliš dlouhá pro zobrazení pozadí. Zobrazuje se geometrie."
+  "z6C5KP": "Stránka je příliš dlouhá pro zobrazení pozadí. Zobrazuje se geometrie.",
+  "DCHyqC": "Zobrazit další stránky v {section} ({count})",
+  "a8woL2": "Nejnavštěvovanější stránky: {count}",
+  "dzMcH1": "Skrýt stránky",
+  "lM5Klt": "Zobrazit stránky"
 }

@@ -39,8 +39,8 @@ const events: [number, string, string, string, string, string][] = [
   [1, "2026-09-09 13:00:00", "s7", "/pricing", "Pricing", "pageview"],
 ];
 const fixture = `WITH events AS (SELECT * FROM values(
-  'site_id Int32, timestamp DateTime(\\'UTC\\'), timestamp_ms DateTime64(3, \\'UTC\\'), session_id String, pathname String, page_title String, type String',
-  ${events.map(([site, time, session, path, title, type]) => `(${site}, '${time}', '${time}', '${session}', '${path}', '${title}', '${type}')`).join(",")}
+  'site_id Int32, timestamp DateTime(\\'UTC\\'), timestamp_ms DateTime64(3, \\'UTC\\'), session_id String, pathname String, hostname String, page_title String, type String',
+  ${events.map(([site, time, session, path, title, type]) => `(${site}, '${time}', '${time}', '${session}', '${path}', 'example.com', '${title}', '${type}')`).join(",")}
 ))`;
 
 const day = { start_date: "2026-09-10", end_date: "2026-09-10", time_zone: "UTC", filters: "" };
@@ -81,6 +81,18 @@ describe.skipIf(!process.env.CLICKHOUSE_TEST_URL)("Pages report: ClickHouse resu
 
   const pages = (query: Record<string, unknown> = {}, params = day) =>
     run<Record<string, unknown>>(buildPagesQuery(params, pagesQuerySchema.parse(query), 1));
+
+  it("returns titles only for the requested paths and host, preserving page metrics", async () => {
+    const rows = await pages({ paths: '["/docs/script"]', hostname: "example.com" });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      key: "/docs/script",
+      title: "Tracking script",
+      pageviews: 3,
+      time_on_page_seconds: 40,
+    });
+    expect(await pages({ paths: '["/docs/script"]', hostname: "other.test" })).toEqual([]);
+  });
 
   it("keys rows by path with entries, exits, entry bounce and time on page without exit views", async () => {
     const rows = await pages();

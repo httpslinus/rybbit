@@ -2778,5 +2778,9 @@
   "qIJIMf": "Seitenhintergrund",
   "bIQcfe": "Aufnahmezeit des Hintergrunds",
   "eFVlKG": "Aufgenommen am {date}",
-  "z6C5KP": "Diese Seite ist für einen Seitenhintergrund zu lang. Die Geometrie wird angezeigt."
+  "z6C5KP": "Diese Seite ist für einen Seitenhintergrund zu lang. Die Geometrie wird angezeigt.",
+  "DCHyqC": "Weitere Seiten in {section} anzeigen ({count})",
+  "a8woL2": "Top {count} Seiten",
+  "dzMcH1": "Seiten ausblenden",
+  "lM5Klt": "Seiten anzeigen"
 }

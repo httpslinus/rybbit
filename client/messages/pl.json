@@ -2778,5 +2778,9 @@
   "qIJIMf": "Tło strony",
   "bIQcfe": "Czas przechwycenia tła",
   "eFVlKG": "Przechwycono {date}",
-  "z6C5KP": "Ta strona jest zbyt długa, aby wyświetlić tło. Wyświetlana jest geometria."
+  "z6C5KP": "Ta strona jest zbyt długa, aby wyświetlić tło. Wyświetlana jest geometria.",
+  "DCHyqC": "Pokaż więcej stron w {section} ({count})",
+  "a8woL2": "{count} najpopularniejszych stron",
+  "dzMcH1": "Ukryj strony",
+  "lM5Klt": "Pokaż strony"
 }

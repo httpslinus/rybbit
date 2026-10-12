@@ -25,6 +25,15 @@ const params = {
 const campaignFilter = JSON.stringify([{ parameter: "utm_campaign", type: "equals", value: ["spring"] }]);
 
 describe("pagesQuerySchema", () => {
+  it("validates bounded path lookups", () => {
+    expect(pagesQuerySchema.parse({ paths: '["/docs/script"]', hostname: "example.com" }).paths).toEqual([
+      "/docs/script",
+    ]);
+    for (const paths of ["not json", "[]", "[1]", JSON.stringify(Array.from({ length: 101 }, (_, i) => `/p/${i}`))]) {
+      expect(pagesQuerySchema.safeParse({ paths }).success).toBe(false);
+    }
+    expect(pagesQuerySchema.safeParse({ group: "section", paths: '["/docs"]' }).success).toBe(false);
+  });
   it("defaults to all pages by views, 25 at a time", () => {
     expect(pagesQuerySchema.parse({})).toEqual({
       group: "page",
@@ -72,6 +81,18 @@ describe("trendsQuerySchema", () => {
 });
 
 describe("buildPagesQuery", () => {
+  it("reuses page title aggregation for an exact host/path lookup while retaining session neighbors", () => {
+    const { query, params: bound } = buildPagesQuery(
+      params,
+      pagesQuerySchema.parse({ hostname: "it's.test", paths: '["/docs/script"]' }),
+      1
+    );
+    expect(bound).toEqual({ siteId: 1, hostname: "it's.test", paths: ["/docs/script"] });
+    expect(query).not.toContain("it's.test");
+    expect(query).toContain("WHERE pathname IN {paths:Array(String)} AND hostname = {hostname:String}");
+    expect(query).toContain("argMaxIf(page_title, timestamp_ms, page_title != '') AS title");
+    expect(query).toContain("lagInFrame(toNullable(timestamp_ms))");
+  });
   it("binds search and section as parameters instead of interpolating them", () => {
     const spec = buildPagesQuery(params, pagesQuerySchema.parse({ section: "/it's", search: "o'brien" }), 1);
 

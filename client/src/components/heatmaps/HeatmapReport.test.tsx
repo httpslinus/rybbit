@@ -117,6 +117,9 @@ vi.mock("@/api/analytics/hooks/heatmaps/useGetHeatmaps", () => ({
     };
   },
 }));
+vi.mock("@/api/analytics/hooks/heatmaps/useGetHeatmapPageTitles", () => ({
+  useGetHeatmapPageTitles: (pages: HeatmapResponse["pages"]) => pages,
+}));
 vi.mock("./HeatmapViewer", () => ({
   HeatmapViewer: (props: { showBackground: boolean; fullscreen: boolean }) => {
     React.useEffect(() => {
@@ -249,7 +252,7 @@ describe("heatmap report", () => {
   it("distinguishes identical paths on different hosts and selects the correct host", () => {
     mocks.response!.pages[1] = { hostname: "shop.fixture.test", pathname: "/a", sessions: 2, count: 4 };
     render(<HeatmapReport />);
-    expect(screen.getByRole("button", { name: /^\/afixture\.test$/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^\/a fixture\.test$/ })).toBeTruthy();
     const shop = screen.getByRole("button", { name: /\/a.*shop\.fixture\.test/ });
     fireEvent.click(shop);
     expect(mocks.getHeatmaps).toHaveBeenLastCalledWith(
@@ -271,7 +274,9 @@ describe("heatmap report", () => {
     fireEvent.click(screen.getByRole("switch", { name: "Page background" }));
     expect(mocks.viewer).toHaveBeenLastCalledWith(expect.objectContaining({ showBackground: false }));
     expect(screen.getByText("Geometry only")).toBeTruthy();
-    expect(screen.getByText("Showing the top 100 pages. Search to find another page.")).toBeTruthy();
+    expect(screen.getByText("Top 100 pages").getAttribute("title")).toBe(
+      "Showing the top 100 pages. Search to find another page."
+    );
     expect(screen.getByText("Showing the 5,000 most frequent click points.")).toBeTruthy();
   });
 
@@ -290,6 +295,14 @@ describe("heatmap report", () => {
     fireEvent.click(within(picker).getByRole("button", { name: "/b" }));
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(mocks.getHeatmaps).toHaveBeenLastCalledWith(expect.objectContaining({ pathname: "/b" }));
+  });
+
+  it("hides and restores the desktop page browser", () => {
+    render(<HeatmapReport />);
+    fireEvent.click(screen.getByRole("button", { name: "Hide pages" }));
+    expect(screen.queryByRole("button", { name: "/b" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Show pages" }));
+    expect(screen.getByRole("button", { name: "/b" })).toBeTruthy();
   });
 
   it("opens and closes an accessible fullscreen detail and restores keyboard focus", async () => {
