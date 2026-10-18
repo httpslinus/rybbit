@@ -1,19 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HeatmapBatch, HeatmapEvent, HeatmapSnapshotRequest } from "@rybbit/shared";
 import { HEATMAP_MAX_SNAPSHOT_BYTES, heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
-import { HeatmapRecorder, HEATMAP_MAX_BATCH_BYTES } from "./heatmaps.js";
+import { HeatmapCollector, HEATMAP_MAX_BATCH_BYTES } from "./heatmapCollector.js";
 import type { ScriptConfig } from "./types.js";
 
 let siteCounter = 0;
 const last = <T>(array: T[]): T | undefined => array[array.length - 1];
 
-describe("HeatmapRecorder", () => {
+describe("HeatmapCollector", () => {
   let config: ScriptConfig;
   let location: { href: string };
   let originalLocation: PropertyDescriptor | undefined;
   let listeners: ReturnType<typeof vi.spyOn>;
   let windowListeners: ReturnType<typeof vi.spyOn>;
-  let recorders: HeatmapRecorder[];
+  let recorders: HeatmapCollector[];
   let resize: () => void;
   let disconnect: ReturnType<typeof vi.fn>;
 
@@ -37,7 +37,7 @@ describe("HeatmapRecorder", () => {
   }
 
   function start(overrides: Partial<ScriptConfig> = {}, userId = "") {
-    const recorder = new HeatmapRecorder({ ...config, ...overrides }, userId);
+    const recorder = new HeatmapCollector({ ...config, ...overrides }, userId);
     recorders.push(recorder);
     recorder.initialize();
     return recorder;
@@ -100,7 +100,7 @@ describe("HeatmapRecorder", () => {
     location = { href: "https://example.com/page?password=secret" };
     Object.defineProperty(window, "location", { value: location, configurable: true });
     document.body.innerHTML = '<button data-private="secret">Private text</button><input value="private input">';
-    delete window.rybbitHeatmapSnapshot;
+    delete window.rybbitPageCapture;
     document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
     listeners = vi.spyOn(document, "addEventListener");
     windowListeners = vi.spyOn(window, "addEventListener");
@@ -154,7 +154,7 @@ describe("HeatmapRecorder", () => {
     vi.mocked(fetch).mockResolvedValue({ ok: true, status: 200 } as Response);
     for (const recorder of recorders) recorder.cleanup();
     for (const recorder of recorders) await recorder.flush();
-    delete window.rybbitHeatmapSnapshot;
+    delete window.rybbitPageCapture;
     document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     vi.restoreAllMocks();
@@ -886,7 +886,7 @@ describe("HeatmapRecorder", () => {
 
   it("captures only a nominated background with capture-time geometry and leaves ordinary batches compact", async () => {
     const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-    window.rybbitHeatmapSnapshot = { capture };
+    window.rybbitPageCapture = { capture };
     nominateSnapshot();
     const recorder = start({ sessionReplayMaskTextSelectors: [".private"] });
     await recorder.flush();
@@ -917,7 +917,7 @@ describe("HeatmapRecorder", () => {
     "keeps clicked pages ineligible for backgrounds after %s while recording interactions",
     async change => {
       const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-      window.rybbitHeatmapSnapshot = { capture };
+      window.rybbitPageCapture = { capture };
       nominateSnapshot();
       const recorder = start();
       click(change === "invalid click" ? { clientX: -1 } : {});
@@ -941,7 +941,7 @@ describe("HeatmapRecorder", () => {
 
   it("allows backgrounds after synthetic clicks and scrolling", async () => {
     const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-    window.rybbitHeatmapSnapshot = { capture };
+    window.rybbitPageCapture = { capture };
     nominateSnapshot();
     const recorder = start();
     click({ isTrusted: false });
@@ -954,7 +954,7 @@ describe("HeatmapRecorder", () => {
 
   it("allows a fresh SPA page to supply a background after the previous page was clicked", async () => {
     const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-    window.rybbitHeatmapSnapshot = { capture };
+    window.rybbitPageCapture = { capture };
     const recorder = start();
     click();
     await recorder.flush();
@@ -991,7 +991,7 @@ describe("HeatmapRecorder", () => {
       else if (race === "cleanup") recorder.cleanup();
       else window.dispatchEvent(new Event("pagehide"));
       const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-      window.rybbitHeatmapSnapshot = { capture };
+      window.rybbitPageCapture = { capture };
       script!.dispatchEvent(new Event("load"));
       await vi.advanceTimersByTimeAsync(0);
       expect(capture).not.toHaveBeenCalled();
@@ -1000,7 +1000,7 @@ describe("HeatmapRecorder", () => {
   );
 
   it("does not hold or retry successful interaction batches when snapshot upload fails", async () => {
-    window.rybbitHeatmapSnapshot = { capture: () => ({ type: 0, id: 1, childNodes: [] }) };
+    window.rybbitPageCapture = { capture: () => ({ type: 0, id: 1, childNodes: [] }) };
     let rejectUpload!: (error: Error) => void;
     nominateSnapshot(
       () =>
@@ -1023,7 +1023,7 @@ describe("HeatmapRecorder", () => {
   });
 
   it("rejects oversized static backgrounds without changing interaction delivery", async () => {
-    window.rybbitHeatmapSnapshot = {
+    window.rybbitPageCapture = {
       capture: () => ({
         type: 0,
         id: 1,
@@ -1040,12 +1040,12 @@ describe("HeatmapRecorder", () => {
   });
 
   it("ignores nominations received through unload keepalive responses", async () => {
-    window.rybbitHeatmapSnapshot = { capture: vi.fn(() => ({ type: 0, id: 1, childNodes: [] })) };
+    window.rybbitPageCapture = { capture: vi.fn(() => ({ type: 0, id: 1, childNodes: [] })) };
     nominateSnapshot();
     start();
     window.dispatchEvent(new Event("pagehide"));
     await vi.advanceTimersByTimeAsync(0);
-    expect(window.rybbitHeatmapSnapshot.capture).not.toHaveBeenCalled();
+    expect(window.rybbitPageCapture.capture).not.toHaveBeenCalled();
     expect(snapshotUploads()).toHaveLength(0);
   });
 
@@ -1102,7 +1102,7 @@ describe("HeatmapRecorder", () => {
 
   it("honors a snapshot grant only once even if a later successful batch repeats it", async () => {
     const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-    window.rybbitHeatmapSnapshot = { capture };
+    window.rybbitPageCapture = { capture };
     vi.mocked(fetch).mockImplementation(async (url, init) => {
       if (String(url).includes("/heatmaps/snapshot/")) return { ok: true } as Response;
       const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];

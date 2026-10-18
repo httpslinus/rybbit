@@ -34,6 +34,12 @@ export const SNAPSHOT_BEGIN_UPLOAD_LUA = `
   redis.call('PEXPIRE', KEYS[2], ARGV[2])
   return 1
 `;
+export const SNAPSHOT_REPLAY_COVERED_LUA = `
+  redis.call('SET', KEYS[1], 'done', 'PX', ARGV[1])
+  redis.call('DEL', KEYS[2])
+  redis.call('ZREM', KEYS[3], KEYS[2])
+  return 1
+`;
 const indexKey = (siteId: number) => `heatmap-snapshot-leases:${siteId}`;
 export function heatmapSnapshotKey(
   siteId: number,
@@ -137,7 +143,10 @@ export class HeatmapSnapshotClaims {
     bucket: HeatmapWidthBucket,
     timestamp: number
   ): Promise<void> {
-    await this.client.set(heatmapSnapshotKey(siteId, context, bucket, timestamp), "done", "PX", 2 * DAY_MS);
+    const key = heatmapSnapshotKey(siteId, context, bucket, timestamp);
+    // Revoke pending and in-flight fallback uploads atomically with coverage.
+    // In-flight inserts already clean themselves up when consume loses its lease.
+    await this.client.eval(SNAPSHOT_REPLAY_COVERED_LUA, 3, key, `${key}:lease`, indexKey(siteId), 2 * DAY_MS);
   }
   async clear(siteId: number, userId?: string, deviceIds: readonly string[] = []): Promise<void> {
     const keys = await this.client.zrangebyscore(indexKey(siteId), Date.now(), "+inf");

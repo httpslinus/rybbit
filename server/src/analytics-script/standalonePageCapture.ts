@@ -1,13 +1,13 @@
 import { sanitizeHeatmapSnapshot } from "@rybbit/shared/dist/heatmapSnapshot.js";
 import type { HeatmapSnapshotNode } from "@rybbit/shared";
 import { snapshot } from "rrweb-snapshot";
-import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
+import { pageCapturePrivacyOptions, pageCaptureSlimDOMOptions } from "./pageCapturePrivacy.js";
 import type { ScriptConfig } from "./types.js";
 
-/** One static background, using the same privacy settings as session recording. */
-export function captureHeatmapSnapshot(config: ScriptConfig): HeatmapSnapshotNode | null {
-  const privacy = replayPrivacyOptions(config);
-  const slimDOM = replaySlimDOMOptions(config);
+/** Capture page state when no active session recorder can provide it. */
+export function capturePage(config: ScriptConfig): HeatmapSnapshotNode | null {
+  const privacy = pageCapturePrivacyOptions(config);
+  const slimDOM = pageCaptureSlimDOMOptions(config);
   const node = snapshot(document, {
     blockClass: privacy.blockClass,
     blockSelector: privacy.blockSelector,
@@ -27,4 +27,6 @@ export function captureHeatmapSnapshot(config: ScriptConfig): HeatmapSnapshotNod
   return node ? sanitizeHeatmapSnapshot(node) : null;
 }
 
-window.rybbitHeatmapSnapshot = { capture: captureHeatmapSnapshot };
+window.rybbitPageCapture = { capture: capturePage };
+// Keep previously cached trackers compatible with the renamed capture API.
+window.rybbitHeatmapSnapshot = window.rybbitPageCapture;

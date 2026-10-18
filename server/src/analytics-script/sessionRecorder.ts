@@ -1,7 +1,8 @@
 import type { record } from "@rrweb/record";
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch, SessionReplayBatchResult } from "./types.js";
-import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
-import { captureSnapshotContext, SnapshotInteractionGuard } from "./snapshotContext.js";
+import { pageCapturePrivacyOptions, pageCaptureSlimDOMOptions } from "./pageCapturePrivacy.js";
+import { capturePageContext } from "./pageCaptureContext.js";
+import { PageCapture } from "./pageCapture.js";
 
 const SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
 
@@ -35,17 +36,21 @@ function shouldSampleSession(sampleRate: number): boolean {
 declare global {
   interface Window {
     rrweb?: {
-      record: (
+      record: ((
         options: NonNullable<Parameters<typeof record>[0]> & { emit: (event: any) => void }
-      ) => ReturnType<typeof record>;
+      ) => ReturnType<typeof record>) & { takeFullSnapshot?: typeof record.takeFullSnapshot };
     };
   }
 }
 
-export class SessionReplayRecorder {
+export class SessionRecorder {
   private config: ScriptConfig;
   private isRecording: boolean = false;
-  private readonly snapshotInteraction: SnapshotInteractionGuard;
+  private disposed = false;
+  private readonly pageCapture: PageCapture;
+  private readonly ownsPageCapture: boolean;
+  private unregisterCapture?: () => void;
+  private pendingCapture?: { node?: unknown };
   // Set once the server reports the session is over its size cap; recording
   // stays off for the rest of this page.
   private capped: boolean = false;
@@ -59,16 +64,17 @@ export class SessionReplayRecorder {
     config: ScriptConfig,
     userId: string,
     sendBatch: (batch: SessionReplayBatch) => Promise<SessionReplayBatchResult | void>,
-    pageAlreadyClicked = false
+    pageCapture?: PageCapture
   ) {
     this.config = config;
-    this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
+    this.pageCapture = pageCapture ?? new PageCapture(config);
+    this.ownsPageCapture = !pageCapture;
     this.userId = userId;
     this.sendBatch = sendBatch;
   }
 
   async initialize(): Promise<void> {
-    if (!this.config.enableSessionReplay) {
+    if (this.disposed || !this.config.enableSessionReplay) {
       return;
     }
 
@@ -78,14 +84,14 @@ export class SessionReplayRecorder {
       return;
     }
 
-    this.snapshotInteraction.initialize();
+    this.pageCapture.initialize();
 
     // Load rrweb if not already loaded
     if (!window.rrweb) {
       await this.loadRrweb();
     }
 
-    if (window.rrweb) {
+    if (!this.disposed && window.rrweb) {
       this.startRecording();
     }
   }
@@ -105,11 +111,11 @@ export class SessionReplayRecorder {
   }
 
   public startRecording(): void {
-    if (this.capped || this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+    if (this.disposed || this.capped || this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
       return;
     }
 
-    this.snapshotInteraction.initialize();
+    this.pageCapture.initialize();
     try {
       // Default sampling configuration (can be overridden via config)
       const defaultSampling = {
@@ -133,8 +139,9 @@ export class SessionReplayRecorder {
 
       const recordingOptions: any = {
         emit: (event: any) => {
-          const heatmapEligible = event.type === 2 && this.snapshotInteraction.canCapture();
-          const snapshotContext = heatmapEligible ? captureSnapshotContext(this.config) : null;
+          const heatmapEligible = event.type === 2 && this.pageCapture.canCapture();
+          const snapshotContext = heatmapEligible ? capturePageContext(this.config) : null;
+          if (this.pendingCapture && heatmapEligible && snapshotContext) this.pendingCapture.node = event.data?.node;
           this.addEvent({
             type: event.type,
             // Keep replay recording intact, but prevent ineligible DOM from
@@ -148,17 +155,19 @@ export class SessionReplayRecorder {
         checkoutEveryNms: 60000, // Checkout every 60 seconds
         checkoutEveryNth: 500, // Checkout every 500 events
         // Use config values with fallbacks to defaults
-        ...replayPrivacyOptions(this.config),
+        ...pageCapturePrivacyOptions(this.config),
         ignoreClass: this.config.sessionReplayIgnoreClass ?? "rr-ignore",
         ignoreSelector: this.config.sessionReplayIgnoreSelector ?? null,
         collectFonts: this.config.sessionReplayCollectFonts ?? true,
         sampling: this.config.sessionReplaySampling ?? defaultSampling,
-        slimDOMOptions: replaySlimDOMOptions(this.config),
+        slimDOMOptions: pageCaptureSlimDOMOptions(this.config),
       };
 
       this.stopRecordingFn = window.rrweb.record(recordingOptions);
+      if (!this.stopRecordingFn) return;
 
       this.isRecording = true;
+      this.unregisterCapture = this.pageCapture.registerRecorder(() => this.capturePage());
       this.setupBatchTimer();
     } catch (error) {
       // Recording failed silently
@@ -175,6 +184,8 @@ export class SessionReplayRecorder {
     }
 
     this.isRecording = false;
+    this.unregisterCapture?.();
+    this.unregisterCapture = undefined;
     this.clearBatchTimer();
 
     // Send any remaining events
@@ -185,6 +196,21 @@ export class SessionReplayRecorder {
 
   public isActive(): boolean {
     return this.isRecording;
+  }
+
+  private capturePage(): unknown {
+    const takeFullSnapshot = window.rrweb?.record.takeFullSnapshot;
+    if (!this.isRecording || !takeFullSnapshot || !this.pageCapture.canCapture()) return null;
+    const pending: { node?: unknown } = {};
+    this.pendingCapture = pending;
+    try {
+      // Use rrweb's public API so its mirror and mutation observers stay intact.
+      // This fresh checkpoint also remains in the normal replay event stream.
+      takeFullSnapshot();
+      return pending.node ?? null;
+    } finally {
+      this.pendingCapture = undefined;
+    }
   }
 
   private addEvent(event: SessionReplayEvent): void {
@@ -250,6 +276,8 @@ export class SessionReplayRecorder {
       this.stopRecordingFn = undefined;
     }
     this.isRecording = false;
+    this.unregisterCapture?.();
+    this.unregisterCapture = undefined;
     this.clearBatchTimer();
     this.eventBuffer = [];
   }
@@ -272,7 +300,7 @@ export class SessionReplayRecorder {
 
   // Handle page navigation for SPAs
   public onPageChange(): void {
-    this.snapshotInteraction.onPageChange();
+    this.pageCapture.onPageChange();
     if (this.isRecording) {
       // Flush current events before page change
       this.flushEvents();
@@ -281,7 +309,8 @@ export class SessionReplayRecorder {
 
   // Cleanup on page unload
   public cleanup(): void {
+    this.disposed = true;
     this.stopRecording();
-    this.snapshotInteraction.cleanup();
+    if (this.ownsPageCapture) this.pageCapture.cleanup();
   }
 }

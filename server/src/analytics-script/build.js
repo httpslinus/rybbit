@@ -4,6 +4,7 @@ import { dirname, resolve } from "path";
 import { minify } from "terser";
 import { fileURLToPath } from "url";
 import { gzipSync } from "zlib";
+import { pageCaptureBuildPlugin } from "./pageCaptureBuildPlugin.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,7 +23,7 @@ const bundleContractFromSource = {
   "@rybbit/shared/dist/heatmapSnapshot.js": resolve(__dirname, "../../../shared/src/heatmapSnapshot.ts"),
 };
 
-async function buildScript(entry, name, minified = true) {
+async function buildScript(entry, name, minified = true, plugins = []) {
   const result = await build({
     absWorkingDir: __dirname,
     entryPoints: [entry],
@@ -33,6 +34,7 @@ async function buildScript(entry, name, minified = true) {
     sourcemap: false,
     platform: "browser",
     alias: bundleContractFromSource,
+    plugins,
     write: false,
   });
   let code = result.outputFiles[0].text;
@@ -54,8 +56,8 @@ try {
   await buildScript("./index.ts", "script.js");
   // Build only the recorder. Shipping rrweb's full UMD bundle also sends the
   // playback engine and its CSS parser to every recorded visitor.
-  await buildScript("./replay.ts", "rrweb.min.js");
-  await buildScript("./heatmapSnapshot.ts", "heatmap-snapshot.js");
+  await buildScript("./sessionRecorderBundle.ts", "rrweb.min.js");
+  await buildScript("./standalonePageCapture.ts", "heatmap-snapshot.js", true, [pageCaptureBuildPlugin()]);
 } catch (error) {
   console.error("Build failed:", error);
   process.exitCode = 1;

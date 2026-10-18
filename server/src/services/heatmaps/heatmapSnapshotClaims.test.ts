@@ -56,6 +56,24 @@ describe("sampled heatmap snapshot claims", () => {
     vi.advanceTimersByTime(HEATMAP_SNAPSHOT_GRACE_MS);
     expect(await nominate()).toBeUndefined();
   });
+  it("revokes a nomination when replay coverage arrives before its upload", async () => {
+    const request = await nominated();
+    const claim = await claims.get(42, request);
+    await claims.markReplay(42, context, 375, Date.now());
+    expect(await claims.get(42, request)).toBeNull();
+    expect(await claims.beginUpload(request, claim!.value)).toBe(false);
+    expect(await nominate()).toBeUndefined();
+    expect(await redis.zrange("heatmap-snapshot-leases:42", 0, -1)).toEqual([]);
+  });
+  it("revokes an in-flight fallback so its stored copy can be removed", async () => {
+    const request = await nominated();
+    const claim = await claims.get(42, request);
+    expect(await claims.beginUpload(request, claim!.value)).toBe(true);
+    await claims.markReplay(42, context, 375, Date.now());
+    expect(await claims.consume(42, request, `uploading:${claim!.value}`)).toBe(false);
+    expect(await nominate()).toBeUndefined();
+    expect(await redis.get(`${request.key}:lease`)).toBeNull();
+  });
   it("binds tokens to their site, page, width, and page visit", async () => {
     const request = await nominated();
     expect(await claims.get(43, request)).toBeNull();

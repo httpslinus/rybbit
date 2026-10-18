@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { captureHeatmapSnapshot } from "./heatmapSnapshot.js";
+import { capturePage } from "./standalonePageCapture.js";
 import type { ScriptConfig } from "./types.js";
 
 const config = {
@@ -25,11 +25,12 @@ describe("static heatmap snapshot privacy", () => {
   afterEach(() => {
     document.head.innerHTML = "";
     document.body.innerHTML = "";
+    delete window.rybbitPageCapture;
     delete window.rybbitHeatmapSnapshot;
   });
 
   it("uses replay defaults to block private DOM, mask text and all inputs, and retain styles", () => {
-    const node = captureHeatmapSnapshot(config);
+    const node = capturePage(config);
     const serialized = JSON.stringify(node);
     expect(node?.type).toBe(0);
     expect(serialized).not.toMatch(
@@ -48,7 +49,7 @@ describe("static heatmap snapshot privacy", () => {
       <input type="text" value="permitted-text">
       <input type="email" value="email-secret@example.com">
     `;
-    const node = captureHeatmapSnapshot({
+    const node = capturePage({
       ...config,
       sessionReplayBlockSelector: ".custom-block",
       sessionReplayMaskTextClass: "custom-mask",

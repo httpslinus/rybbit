@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Tracker } from "./tracking.js";
-import { HeatmapRecorder } from "./heatmaps.js";
+import { HeatmapCollector } from "./heatmapCollector.js";
 import { ScriptConfig } from "./types.js";
 import { resetBotScoreCacheForTests } from "./botSignals.js";
 import { reserveKeepalive } from "./keepalive.js";
@@ -124,6 +124,7 @@ describe("Tracker", () => {
   });
 
   afterEach(() => {
+    tracker.cleanup();
     vi.clearAllMocks();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -502,9 +503,7 @@ describe("Tracker", () => {
 
     it("shares pending identify requests with the heatmap keepalive budget and releases it on completion", async () => {
       let completeIdentify!: (response: Response) => void;
-      vi.mocked(fetch).mockImplementationOnce(
-        () => new Promise<Response>(resolve => (completeIdentify = resolve))
-      );
+      vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>(resolve => (completeIdentify = resolve)));
       const releaseHeatmap = reserveKeepalive("x".repeat(48 * 1024));
       let releaseRemainder: (() => void) | null = null;
       try {
@@ -545,9 +544,10 @@ describe("Tracker", () => {
     it("should clear user ID", () => {
       const updateReplayUserId = vi.fn();
       (
-        tracker as unknown as { sessionReplayRecorder: { updateUserId: (userId: string) => void } }
-      ).sessionReplayRecorder = {
+        tracker as unknown as { sessionRecorder: { updateUserId: (userId: string) => void; cleanup: () => void } }
+      ).sessionRecorder = {
         updateUserId: updateReplayUserId,
+        cleanup: vi.fn(),
       };
 
       tracker.identify("user-789");
@@ -591,17 +591,50 @@ describe("Tracker", () => {
     });
   });
 
-  describe("heatmap recorder lifecycle", () => {
+  describe("shared capture lifecycle", () => {
+    afterEach(() => {
+      delete window.rrweb;
+    });
+
+    it("shares one click guard between recording and heatmap collection", () => {
+      window.rrweb = { record: vi.fn(() => vi.fn()) };
+      const listeners = vi.spyOn(window, "addEventListener");
+      tracker = new Tracker({ ...config, enableSessionReplay: true, enableHeatmaps: true, heatmapSampleRate: 100 });
+      expect(listeners.mock.calls.filter(([name]) => name === "click")).toHaveLength(1);
+    });
+
+    it("remembers clicks before manually starting a sampled-out recording", () => {
+      let emit: (event: unknown) => void;
+      window.rrweb = {
+        record: vi.fn(options => {
+          emit = options.emit;
+          return vi.fn();
+        }),
+      };
+      const listeners = vi.spyOn(window, "addEventListener");
+      tracker = new Tracker({ ...config, enableSessionReplay: true, sessionReplaySampleRate: 0 });
+      expect(window.rrweb.record).not.toHaveBeenCalled();
+      const listener = listeners.mock.calls.find(([name]) => name === "click")![1] as EventListener;
+      listener({ isTrusted: true, button: 0 } as MouseEvent);
+      tracker.startSessionReplay();
+      emit!({ type: 2, data: { node: {} }, timestamp: Date.now() });
+      tracker.stopSessionReplay();
+      const request = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/session-replay/record/"));
+      expect(JSON.parse(request![1]!.body as string).events[0].data.heatmapEligible).toBe(false);
+    });
+  });
+
+  describe("heatmap collector lifecycle", () => {
     let initialize: ReturnType<typeof vi.spyOn>;
     let updateUserId: ReturnType<typeof vi.spyOn>;
     let onPageChange: ReturnType<typeof vi.spyOn>;
     let cleanup: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      initialize = vi.spyOn(HeatmapRecorder.prototype, "initialize").mockImplementation(() => {});
-      updateUserId = vi.spyOn(HeatmapRecorder.prototype, "updateUserId");
-      onPageChange = vi.spyOn(HeatmapRecorder.prototype, "onPageChange");
-      cleanup = vi.spyOn(HeatmapRecorder.prototype, "cleanup");
+      initialize = vi.spyOn(HeatmapCollector.prototype, "initialize").mockImplementation(() => {});
+      updateUserId = vi.spyOn(HeatmapCollector.prototype, "updateUserId");
+      onPageChange = vi.spyOn(HeatmapCollector.prototype, "onPageChange");
+      cleanup = vi.spyOn(HeatmapCollector.prototype, "cleanup");
     });
 
     it("initializes heatmaps independently while replay is disabled", () => {
@@ -613,7 +646,7 @@ describe("Tracker", () => {
       expect(tracker.isSessionReplayActive()).toBe(false);
     });
 
-    it("forwards trimmed identity changes and clearing to the recorder", () => {
+    it("forwards trimmed identity changes and clearing to the collector", () => {
       tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
 
       tracker.identify("  user-456  ");
@@ -623,7 +656,7 @@ describe("Tracker", () => {
       expect(tracker.getUserId()).toBeNull();
     });
 
-    it("does not forward an invalid identity to the recorder", () => {
+    it("does not forward an invalid identity to the collector", () => {
       tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
       vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -632,7 +665,7 @@ describe("Tracker", () => {
       expect(updateUserId).not.toHaveBeenCalled();
     });
 
-    it("forwards page changes and cleanup to the recorder", () => {
+    it("forwards page changes and cleanup to the collector", () => {
       tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
 
       tracker.onPageChange();
@@ -642,8 +675,8 @@ describe("Tracker", () => {
       expect(cleanup).toHaveBeenCalledOnce();
     });
 
-    it("flushes impending navigation without disposing the heatmap recorder", () => {
-      const flush = vi.spyOn(HeatmapRecorder.prototype, "flushForExit");
+    it("flushes impending navigation without disposing the heatmap collector", () => {
+      const flush = vi.spyOn(HeatmapCollector.prototype, "flushForExit");
       tracker = new Tracker({ ...config, enableHeatmaps: true, heatmapSampleRate: 100 });
       tracker.flushForExit();
       expect(flush).toHaveBeenCalledOnce();

@@ -24,7 +24,7 @@
     "start:cluster": "node dist/cluster.js",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:analytics-bundles": "pnpm run build:analytics && node src/analytics-script/verify-bundles.js",
+    "test:analytics-bundles": "pnpm run build:analytics && node src/analytics-script/verify-bundles.js && node src/analytics-script/verify-page-capture.js && node src/analytics-script/verify-capture-sharing.js",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",

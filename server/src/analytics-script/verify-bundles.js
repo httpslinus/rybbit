@@ -11,7 +11,7 @@ const sizes = {};
 for (const [name, budget] of [
   ["script.js", 18_000],
   ["rrweb.min.js", 25_000],
-  ["heatmap-snapshot.js", 25_000],
+  ["heatmap-snapshot.js", 9_000],
 ]) {
   const code = await readFile(new URL(name, publicDir));
   sizes[name] = { raw: code.length, gzip: gzipSync(code).length };
@@ -53,23 +53,45 @@ try {
   await page.waitForFunction(() =>
     [0, 2, 3, 5].every(source => window.recorded.some(event => event.type === 3 && event.data.source === source))
   );
-  const events = await page.evaluate(() => {
-    window.stopRecording();
-    return window.recorded;
-  });
   const privateContent = /blocked-secret|masked-secret|selector-secret|input-secret|changed-secret/;
-  assert.doesNotMatch(JSON.stringify(events), privateContent);
   assert.equal(await page.evaluate(() => typeof window.rrweb.Replayer), "undefined");
 
   await page.addScriptTag({ path: fileURLToPath(new URL("heatmap-snapshot.js", publicDir)) });
+  assert.equal(
+    await page.evaluate(() => window.rybbitPageCapture.capture === window.rybbitHeatmapSnapshot.capture),
+    true,
+    "Cached trackers lost the legacy capture API"
+  );
   const snapshot = await page.evaluate(() =>
-    window.rybbitHeatmapSnapshot.capture({ sessionReplayMaskTextSelectors: ["[data-private]"] })
+    window.rybbitPageCapture.capture({ sessionReplayMaskTextSelectors: ["[data-private]"] })
   );
   assert.equal(snapshot.type, 0);
   assert.doesNotMatch(JSON.stringify(snapshot), privateContent);
   assert.match(JSON.stringify(snapshot), /Updated public text/);
   assert.match(JSON.stringify(snapshot), /121, 23, 77/);
   assert.doesNotMatch(JSON.stringify(snapshot), /"tagName":"script"/);
+
+  // Shared capture adds a normal replay checkpoint. Verify that the current
+  // dashboard player handles it and subsequent mutations in the same stream.
+  await page.evaluate(() => window.rrweb.record.takeFullSnapshot());
+
+  // Static capture must not reset the active recorder's mirror or observers.
+  await page.evaluate(() => {
+    const node = document.createElement("p");
+    node.id = "after-capture";
+    node.textContent = "Public node after heatmap capture";
+    document.body.appendChild(node);
+  });
+  await page.waitForFunction(() =>
+    window.recorded.some(
+      event => event.type === 3 && JSON.stringify(event.data).includes("Public node after heatmap capture")
+    )
+  );
+  const events = await page.evaluate(() => {
+    window.stopRecording();
+    return window.recorded;
+  });
+  assert.doesNotMatch(JSON.stringify(events), privateContent);
 
   const playback = await browser.newPage();
   playback.on("pageerror", error => runtimeErrors.push(error.message));
@@ -96,11 +118,13 @@ try {
       inserted: doc.querySelector("#dynamic").textContent,
       input: doc.querySelector("#input").value,
       color: doc.defaultView.getComputedStyle(doc.querySelector("h1")).color,
+      afterCapture: doc.querySelector("#after-capture")?.textContent,
     };
   });
   assert.equal(replay.inserted, "Inserted public node");
   assert.match(replay.input, /^\*+$/);
   assert.equal(replay.color, "rgb(121, 23, 77)");
+  assert.equal(replay.afterCapture, "Public node after heatmap capture");
   assert.deepEqual(runtimeErrors, []);
   console.log(
     JSON.stringify({ passed: true, sizes, replayEvents: events.length, replay, privacyVerified: true }, null, 2)

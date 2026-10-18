@@ -3,7 +3,7 @@ import type { ScriptConfig } from "./types.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
 
 /** Tracks clicks before either snapshot library finishes loading. */
-export class SnapshotInteractionGuard {
+export class PageCaptureGuard {
   private href = "";
   private pageKey = "";
   private clicked = false;
@@ -48,7 +48,7 @@ export class SnapshotInteractionGuard {
 }
 
 /** Capture page attribution together with the DOM, rather than at batch upload time. */
-export function captureSnapshotContext(config: ScriptConfig): HeatmapSnapshotContext | null {
+export function capturePageContext(config: ScriptConfig): HeatmapSnapshotContext | null {
   const url = new URL(window.location.href);
   const page = getTrackedPage(url, config);
   if (!page) return null;

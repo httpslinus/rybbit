@@ -298,8 +298,8 @@
     return resolvedConfig;
   }
 
-  // replayPrivacy.ts
-  function replaySlimDOMOptions(config) {
+  // pageCapturePrivacy.ts
+  function pageCaptureSlimDOMOptions(config) {
     return config.sessionReplaySlimDOMOptions ?? {
       script: false,
       comment: true,
@@ -313,7 +313,7 @@
       headMetaVerification: true
     };
   }
-  function replayPrivacyOptions(config) {
+  function pageCapturePrivacyOptions(config) {
     return {
       blockClass: config.sessionReplayBlockClass ?? "rr-block",
       blockSelector: config.sessionReplayBlockSelector ?? null,
@@ -324,8 +324,8 @@
     };
   }
 
-  // snapshotContext.ts
-  var SnapshotInteractionGuard = class {
+  // pageCaptureContext.ts
+  var PageCaptureGuard = class {
     constructor(config, pageAlreadyClicked = false) {
       this.config = config;
       this.href = "";
@@ -360,7 +360,7 @@
       window.removeEventListener("click", this.onClick, true);
     }
   };
-  function captureSnapshotContext(config) {
+  function capturePageContext(config) {
     const url = new URL(window.location.href);
     const page = getTrackedPage(url, config);
     if (!page) return null;
@@ -388,7 +388,154 @@
     return { hostname: page.hostname, pathname, viewportWidth, viewportHeight, documentWidth, documentHeight };
   }
 
-  // sessionReplay.ts
+  // ../../../shared/src/heatmaps.ts
+  var HEATMAP_WIDTH_BUCKETS = [320, 375, 425, 768, 1024, 1440, 1920];
+  var HEATMAP_MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
+  function heatmapWidthBucket(width) {
+    return HEATMAP_WIDTH_BUCKETS.reduce(
+      (nearest, bucket) => Math.abs(bucket - width) < Math.abs(nearest - width) ? bucket : nearest
+    );
+  }
+
+  // ../../../shared/src/heatmapSnapshot.ts
+  var OMIT_TAGS = /* @__PURE__ */ new Set(["script", "noscript", "iframe", "frame", "frameset", "object", "embed", "base", "meta"]);
+  var STRING_FIELDS = ["textContent", "name", "publicId", "systemId", "compatMode"];
+  var BOOLEAN_FIELDS = ["isSVG", "isShadow", "isShadowHost", "isStyle"];
+  function sanitizeHeatmapSnapshot(input) {
+    if (new TextEncoder().encode(JSON.stringify(input)).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) {
+      throw new Error("Snapshot exceeds size limit");
+    }
+    let count = 0;
+    function visit(value, depth) {
+      if (++count > 5e4 || depth > 200) throw new Error("Snapshot tree exceeds limits");
+      if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid snapshot node");
+      const raw = value;
+      if (!Number.isInteger(raw.type) || Number(raw.type) < 0 || Number(raw.type) > 5 || !Number.isSafeInteger(raw.id)) {
+        throw new Error("Invalid snapshot node type or ID");
+      }
+      const node = { type: Number(raw.type), id: Number(raw.id) };
+      if (node.type === 2) {
+        if (typeof raw.tagName !== "string" || !/^[a-zA-Z][\w:-]*$/.test(raw.tagName))
+          throw new Error("Invalid snapshot tag");
+        node.tagName = raw.tagName.toLowerCase();
+        if (OMIT_TAGS.has(node.tagName)) return null;
+        if (!raw.attributes || typeof raw.attributes !== "object" || Array.isArray(raw.attributes)) {
+          throw new Error("Invalid snapshot attributes");
+        }
+        node.attributes = /* @__PURE__ */ Object.create(null);
+        for (const [name, attribute] of Object.entries(raw.attributes)) {
+          if (/^on/i.test(name) || /^(srcdoc|nonce|integrity|autofocus|autoplay|rr_mediaState)$/i.test(name)) continue;
+          if (attribute !== null && !["string", "number", "boolean"].includes(typeof attribute))
+            throw new Error("Invalid snapshot attribute");
+          if (typeof attribute === "number" && !Number.isFinite(attribute)) throw new Error("Invalid attribute number");
+          if (typeof attribute === "string" && /^(href|src|xlink:href|action|formaction)$/i.test(name) && !/^(https?:\/\/|data:image\/|#)/i.test(attribute))
+            continue;
+          node.attributes[name] = attribute;
+        }
+      }
+      for (const field of STRING_FIELDS) {
+        if (raw[field] !== void 0) {
+          if (typeof raw[field] !== "string") throw new Error("Invalid snapshot text");
+          node[field] = raw[field];
+        }
+      }
+      for (const field of BOOLEAN_FIELDS) {
+        if (raw[field] !== void 0) {
+          if (typeof raw[field] !== "boolean") throw new Error("Invalid snapshot flag");
+          node[field] = raw[field];
+        }
+      }
+      if (node.type === 0 || node.type === 2) {
+        if (!Array.isArray(raw.childNodes)) throw new Error("Invalid snapshot children");
+        node.childNodes = raw.childNodes.map((child) => visit(child, depth + 1)).filter((child) => child !== null);
+      }
+      return node;
+    }
+    const root = visit(input, 0);
+    if (!root || root.type !== 0) throw new Error("Snapshot must contain a document");
+    return root;
+  }
+
+  // pageCapture.ts
+  var standaloneLoading;
+  var standaloneCapture = () => window.rybbitPageCapture ?? window.rybbitHeatmapSnapshot;
+  function loadStandaloneCapture(analyticsHost) {
+    if (standaloneCapture()) return Promise.resolve();
+    if (standaloneLoading) return standaloneLoading;
+    standaloneLoading = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const timer = window.setTimeout(() => {
+        script.remove();
+        reject(new Error("Page capture timed out"));
+      }, 1e4);
+      script.src = `${analyticsHost}/heatmap-snapshot.js`;
+      script.async = true;
+      script.onload = () => {
+        window.clearTimeout(timer);
+        if (standaloneCapture()) resolve();
+        else reject(new Error("Page capture did not initialize"));
+      };
+      script.onerror = () => {
+        window.clearTimeout(timer);
+        script.remove();
+        reject(new Error("Failed to load page capture"));
+      };
+      document.head.appendChild(script);
+    }).finally(() => {
+      standaloneLoading = void 0;
+    });
+    return standaloneLoading;
+  }
+  var PageCapture = class {
+    constructor(config, pageAlreadyClicked = false) {
+      this.config = config;
+      this.initialized = false;
+      this.guard = new PageCaptureGuard(config, pageAlreadyClicked);
+    }
+    initialize() {
+      if (this.initialized) return;
+      this.initialized = true;
+      this.guard.initialize();
+    }
+    canCapture() {
+      return this.initialized && this.guard.canCapture();
+    }
+    onPageChange() {
+      this.guard.onPageChange();
+    }
+    registerRecorder(capture) {
+      this.recorderCapture = capture;
+      return () => {
+        if (this.recorderCapture === capture) this.recorderCapture = void 0;
+      };
+    }
+    async capture(isCurrent) {
+      const eligible = () => this.canCapture() && isCurrent();
+      if (!eligible()) return null;
+      if (this.recorderCapture) {
+        try {
+          const context2 = capturePageContext(this.config);
+          const node2 = this.recorderCapture();
+          if (context2 && node2 && eligible()) return { context: context2, node: sanitizeHeatmapSnapshot(node2) };
+        } catch {
+        }
+      }
+      if (!eligible()) return null;
+      await loadStandaloneCapture(this.config.analyticsHost);
+      if (!eligible()) return null;
+      const context = capturePageContext(this.config);
+      if (!context) return null;
+      const node = standaloneCapture()?.capture(this.config);
+      return node && eligible() ? { context, node } : null;
+    }
+    cleanup() {
+      this.initialized = false;
+      this.recorderCapture = void 0;
+      this.guard.cleanup();
+    }
+  };
+
+  // sessionRecorder.ts
   var SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
   function shouldSampleSession(sampleRate) {
     if (sampleRate >= 100) return true;
@@ -405,31 +552,33 @@
       return Math.random() * 100 < sampleRate;
     }
   }
-  var SessionReplayRecorder = class {
-    constructor(config, userId, sendBatch, pageAlreadyClicked = false) {
+  var SessionRecorder = class {
+    constructor(config, userId, sendBatch, pageCapture) {
       this.isRecording = false;
+      this.disposed = false;
       // Set once the server reports the session is over its size cap; recording
       // stays off for the rest of this page.
       this.capped = false;
       this.eventBuffer = [];
       this.config = config;
-      this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
+      this.pageCapture = pageCapture ?? new PageCapture(config);
+      this.ownsPageCapture = !pageCapture;
       this.userId = userId;
       this.sendBatch = sendBatch;
     }
     async initialize() {
-      if (!this.config.enableSessionReplay) {
+      if (this.disposed || !this.config.enableSessionReplay) {
         return;
       }
       const sampleRate = this.config.sessionReplaySampleRate;
       if (sampleRate !== void 0 && !shouldSampleSession(sampleRate)) {
         return;
       }
-      this.snapshotInteraction.initialize();
+      this.pageCapture.initialize();
       if (!window.rrweb) {
         await this.loadRrweb();
       }
-      if (window.rrweb) {
+      if (!this.disposed && window.rrweb) {
         this.startRecording();
       }
     }
@@ -446,10 +595,10 @@
       });
     }
     startRecording() {
-      if (this.capped || this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+      if (this.disposed || this.capped || this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
         return;
       }
-      this.snapshotInteraction.initialize();
+      this.pageCapture.initialize();
       try {
         const defaultSampling = {
           // Aggressive sampling to reduce data volume
@@ -476,8 +625,9 @@
         };
         const recordingOptions = {
           emit: (event) => {
-            const heatmapEligible = event.type === 2 && this.snapshotInteraction.canCapture();
-            const snapshotContext = heatmapEligible ? captureSnapshotContext(this.config) : null;
+            const heatmapEligible = event.type === 2 && this.pageCapture.canCapture();
+            const snapshotContext = heatmapEligible ? capturePageContext(this.config) : null;
+            if (this.pendingCapture && heatmapEligible && snapshotContext) this.pendingCapture.node = event.data?.node;
             this.addEvent({
               type: event.type,
               // Keep replay recording intact, but prevent ineligible DOM from
@@ -494,15 +644,17 @@
           checkoutEveryNth: 500,
           // Checkout every 500 events
           // Use config values with fallbacks to defaults
-          ...replayPrivacyOptions(this.config),
+          ...pageCapturePrivacyOptions(this.config),
           ignoreClass: this.config.sessionReplayIgnoreClass ?? "rr-ignore",
           ignoreSelector: this.config.sessionReplayIgnoreSelector ?? null,
           collectFonts: this.config.sessionReplayCollectFonts ?? true,
           sampling: this.config.sessionReplaySampling ?? defaultSampling,
-          slimDOMOptions: replaySlimDOMOptions(this.config)
+          slimDOMOptions: pageCaptureSlimDOMOptions(this.config)
         };
         this.stopRecordingFn = window.rrweb.record(recordingOptions);
+        if (!this.stopRecordingFn) return;
         this.isRecording = true;
+        this.unregisterCapture = this.pageCapture.registerRecorder(() => this.capturePage());
         this.setupBatchTimer();
       } catch (error) {
       }
@@ -515,6 +667,8 @@
         this.stopRecordingFn();
       }
       this.isRecording = false;
+      this.unregisterCapture?.();
+      this.unregisterCapture = void 0;
       this.clearBatchTimer();
       if (this.eventBuffer.length > 0) {
         this.flushEvents();
@@ -522,6 +676,18 @@
     }
     isActive() {
       return this.isRecording;
+    }
+    capturePage() {
+      const takeFullSnapshot = window.rrweb?.record.takeFullSnapshot;
+      if (!this.isRecording || !takeFullSnapshot || !this.pageCapture.canCapture()) return null;
+      const pending = {};
+      this.pendingCapture = pending;
+      try {
+        takeFullSnapshot();
+        return pending.node ?? null;
+      } finally {
+        this.pendingCapture = void 0;
+      }
     }
     addEvent(event) {
       this.eventBuffer.push(event);
@@ -576,6 +742,8 @@
         this.stopRecordingFn = void 0;
       }
       this.isRecording = false;
+      this.unregisterCapture?.();
+      this.unregisterCapture = void 0;
       this.clearBatchTimer();
       this.eventBuffer = [];
     }
@@ -591,26 +759,18 @@
     }
     // Handle page navigation for SPAs
     onPageChange() {
-      this.snapshotInteraction.onPageChange();
+      this.pageCapture.onPageChange();
       if (this.isRecording) {
         this.flushEvents();
       }
     }
     // Cleanup on page unload
     cleanup() {
+      this.disposed = true;
       this.stopRecording();
-      this.snapshotInteraction.cleanup();
+      if (this.ownsPageCapture) this.pageCapture.cleanup();
     }
   };
-
-  // ../../../shared/src/heatmaps.ts
-  var HEATMAP_WIDTH_BUCKETS = [320, 375, 425, 768, 1024, 1440, 1920];
-  var HEATMAP_MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
-  function heatmapWidthBucket(width) {
-    return HEATMAP_WIDTH_BUCKETS.reduce(
-      (nearest, bucket) => Math.abs(bucket - width) < Math.abs(nearest - width) ? bucket : nearest
-    );
-  }
 
   // keepalive.ts
   var MAX_KEEPALIVE_BYTES = 64 * 1024;
@@ -627,7 +787,7 @@
     };
   }
 
-  // heatmaps.ts
+  // heatmapCollector.ts
   var SAMPLE_TTL_MS = 30 * 6e4;
   var FLUSH_INTERVAL_MS = 5e3;
   var SCROLL_INTERVAL_MS = 100;
@@ -643,34 +803,6 @@
   var MAX_VIEWPORT_DIMENSION = 65535;
   var memorySamples = /* @__PURE__ */ new Map();
   var exitBytes = 0;
-  var snapshotBundleLoading;
-  function loadSnapshotBundle(analyticsHost) {
-    if (window.rybbitHeatmapSnapshot) return Promise.resolve();
-    if (snapshotBundleLoading) return snapshotBundleLoading;
-    snapshotBundleLoading = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      const timer = window.setTimeout(() => {
-        script.remove();
-        reject(new Error("Heatmap snapshot bundle timed out"));
-      }, REQUEST_TIMEOUT_MS);
-      script.src = `${analyticsHost}/heatmap-snapshot.js`;
-      script.async = true;
-      script.onload = () => {
-        window.clearTimeout(timer);
-        if (window.rybbitHeatmapSnapshot) resolve();
-        else reject(new Error("Heatmap snapshot bundle did not initialize"));
-      };
-      script.onerror = () => {
-        window.clearTimeout(timer);
-        script.remove();
-        reject(new Error("Failed to load heatmap snapshot bundle"));
-      };
-      document.head.appendChild(script);
-    }).finally(() => {
-      snapshotBundleLoading = void 0;
-    });
-    return snapshotBundleLoading;
-  }
   function randomId() {
     try {
       if (crypto.randomUUID) return crypto.randomUUID();
@@ -721,8 +853,8 @@
   function compatible(a2, b2) {
     return a2.pageVisitId === b2.pageVisitId && a2.viewportWidth === b2.viewportWidth && a2.viewportHeight === b2.viewportHeight && a2.documentWidth === b2.documentWidth && a2.documentHeight === b2.documentHeight;
   }
-  var HeatmapRecorder = class {
-    constructor(config, userId = "", pageAlreadyClicked = false) {
+  var HeatmapCollector = class {
+    constructor(config, userId = "", pageCapture) {
       this.config = config;
       this.active = false;
       this.monitoring = false;
@@ -836,7 +968,8 @@
       };
       this.onPageShow = () => this.onResume();
       this.userId = userId;
-      this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
+      this.pageCapture = pageCapture ?? new PageCapture(config);
+      this.ownsPageCapture = !pageCapture;
       this.samplingKey = sampleKey(config);
       this.batchPrefix = scopeId(this.samplingKey);
     }
@@ -849,7 +982,7 @@
       document.addEventListener("click", this.onClick, { capture: true, passive: true });
       window.addEventListener("scroll", this.onScroll, { passive: true });
       if (!this.active) return;
-      this.snapshotInteraction.initialize();
+      this.pageCapture.initialize();
       this.resetPage();
       document.addEventListener("visibilitychange", this.onVisibilityChange);
       window.addEventListener("resize", this.onResize, { passive: true });
@@ -1176,7 +1309,7 @@
     snapshotGeometry(request) {
       if (!this.active || !this.monitoring || this.suspended) return null;
       this.ensurePage();
-      if (this.transition || !this.snapshotInteraction.canCapture()) return null;
+      if (this.transition || !this.pageCapture.canCapture()) return null;
       const geometry = this.geometry();
       if (!geometry || geometry.pageVisitId !== request.pageVisitId || geometry.hostname !== request.hostname || geometry.pathname !== request.pathname || heatmapWidthBucket(geometry.viewportWidth) !== request.bucket)
         return null;
@@ -1198,12 +1331,13 @@
         this.handledSnapshotRequests.add(requestId);
         this.snapshotInFlight = true;
         try {
-          await loadSnapshotBundle(this.config.analyticsHost);
+          const capture = await this.pageCapture.capture(() => Boolean(this.snapshotGeometry(request)));
           const geometry = this.snapshotGeometry(request);
-          if (!geometry) return;
-          const node = window.rybbitHeatmapSnapshot?.capture(this.config);
-          if (!node) return;
-          const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node });
+          if (!capture || !geometry || Object.entries(capture.context).some(
+            ([key, value]) => geometry[key] !== value
+          ))
+            return;
+          const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node: capture.node });
           if (new TextEncoder().encode(payload).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) return;
           const controller = new AbortController();
           const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -1258,7 +1392,7 @@
     }
     onPageChange() {
       if (!this.monitoring) return;
-      this.snapshotInteraction.onPageChange();
+      this.pageCapture.onPageChange();
       if (!this.active) {
         this.touchSample();
         return;
@@ -1314,7 +1448,7 @@
       }
       this.active = false;
       this.monitoring = false;
-      this.snapshotInteraction.cleanup();
+      if (this.ownsPageCapture) this.pageCapture.cleanup();
       this.persistSample();
       if (this.batchTimer !== void 0) window.clearInterval(this.batchTimer);
       if (this.scrollTimer !== void 0) window.clearTimeout(this.scrollTimer);
@@ -1539,20 +1673,21 @@
   var FEATURE_FLAG_REQUEST_TIMEOUT_MS2 = 2e3;
   var Tracker = class {
     constructor(config, pageAlreadyClicked = false) {
-      this.pageAlreadyClicked = pageAlreadyClicked;
       this.customUserId = null;
       this.errorDedupeCache = /* @__PURE__ */ new Map();
       this.errorDedupeLastCleanup = 0;
       this.exposedFeatureFlags = /* @__PURE__ */ new Set();
       this.config = config;
+      this.pageCapture = new PageCapture(config, pageAlreadyClicked);
+      if (config.enableSessionReplay || config.enableHeatmaps) this.pageCapture.initialize();
       this.lastPageviewUrl = this.getPageviewUrl();
       this.loadUserId();
       if (config.enableSessionReplay) {
         this.initializeSessionReplay();
       }
       if (config.enableHeatmaps) {
-        this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "", pageAlreadyClicked);
-        this.heatmapRecorder.initialize();
+        this.heatmapCollector = new HeatmapCollector(config, this.customUserId || "", this.pageCapture);
+        this.heatmapCollector.initialize();
       }
     }
     serializeFeatureFlagValue(value) {
@@ -1628,13 +1763,13 @@
     }
     async initializeSessionReplay() {
       try {
-        this.sessionReplayRecorder = new SessionReplayRecorder(
+        this.sessionRecorder = new SessionRecorder(
           this.config,
           this.customUserId || "",
           (batch) => this.sendSessionReplayBatch(batch),
-          this.pageAlreadyClicked
+          this.pageCapture
         );
-        await this.sessionReplayRecorder.initialize();
+        await this.sessionRecorder.initialize();
       } catch (error) {
         console.error("Failed to initialize session replay:", error);
       }
@@ -1904,10 +2039,10 @@
         console.warn("Could not persist user ID to localStorage");
       }
       void this.sendIdentifyEvent(this.customUserId, traits, true).then(() => this.refreshFeatureFlags());
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.updateUserId(this.customUserId);
+      if (this.sessionRecorder) {
+        this.sessionRecorder.updateUserId(this.customUserId);
       }
-      this.heatmapRecorder?.updateUserId(this.customUserId);
+      this.heatmapCollector?.updateUserId(this.customUserId);
     }
     setTraits(traits) {
       if (!traits || typeof traits !== "object") {
@@ -1952,10 +2087,10 @@
         localStorage.removeItem(`${this.config.namespace}-user-id`);
       } catch (e2) {
       }
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.updateUserId("");
+      if (this.sessionRecorder) {
+        this.sessionRecorder.updateUserId("");
       }
-      this.heatmapRecorder?.updateUserId("");
+      this.heatmapCollector?.updateUserId("");
       void this.refreshFeatureFlags();
     }
     getUserId() {
@@ -1963,38 +2098,39 @@
     }
     // Session Replay methods
     startSessionReplay() {
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.startRecording();
+      if (this.sessionRecorder) {
+        this.sessionRecorder.startRecording();
       } else {
         console.warn("Session replay not initialized");
       }
     }
     stopSessionReplay() {
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.stopRecording();
+      if (this.sessionRecorder) {
+        this.sessionRecorder.stopRecording();
       }
     }
     isSessionReplayActive() {
-      return this.sessionReplayRecorder?.isActive() ?? false;
+      return this.sessionRecorder?.isActive() ?? false;
     }
     // Handle page changes for SPA
     onPageChange() {
       void this.refreshFeatureFlags();
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.onPageChange();
+      if (this.sessionRecorder) {
+        this.sessionRecorder.onPageChange();
       }
-      this.heatmapRecorder?.onPageChange();
+      this.heatmapCollector?.onPageChange();
     }
     flushForExit() {
-      this.heatmapRecorder?.flushForExit();
-      this.sessionReplayRecorder?.onPageChange();
+      this.heatmapCollector?.flushForExit();
+      this.sessionRecorder?.onPageChange();
     }
     // Cleanup
     cleanup() {
-      if (this.sessionReplayRecorder) {
-        this.sessionReplayRecorder.cleanup();
+      if (this.sessionRecorder) {
+        this.sessionRecorder.cleanup();
       }
-      this.heatmapRecorder?.cleanup();
+      this.heatmapCollector?.cleanup();
+      this.pageCapture.cleanup();
     }
   };
 

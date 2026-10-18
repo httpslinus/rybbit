@@ -78,7 +78,7 @@ describe("automatic navigation tracking", () => {
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     delete (window as Partial<Window>).rybbit;
     delete window.__RYBBIT_OPTOUT__;
-    delete window.rybbitHeatmapSnapshot;
+    delete window.rybbitPageCapture;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -250,8 +250,8 @@ describe("automatic navigation tracking", () => {
     });
 
     it("collects heatmaps without initializing replay or loading replay.js", async () => {
-      const { SessionReplayRecorder } = await import("./sessionReplay.js");
-      const initializeReplay = vi.spyOn(SessionReplayRecorder.prototype, "initialize");
+      const { SessionRecorder } = await import("./sessionRecorder.js");
+      const initializeReplay = vi.spyOn(SessionRecorder.prototype, "initialize");
       await start();
       await flushHeatmaps();
 
@@ -271,7 +271,7 @@ describe("automatic navigation tracking", () => {
           })
       );
       const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-      window.rybbitHeatmapSnapshot = { capture };
+      window.rybbitPageCapture = { capture };
       vi.mocked(fetch).mockImplementation(async (url, init) => {
         if (!String(url).includes("/heatmaps/record/")) return { ok: true } as Response;
         const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
@@ -346,8 +346,8 @@ describe("automatic navigation tracking", () => {
     it.each(["localStorage", "window"])("honors %s opt-out before initializing heatmaps", async optOut => {
       if (optOut === "localStorage") localStorage.setItem("disable-rybbit", "1");
       else window.__RYBBIT_OPTOUT__ = true;
-      const { HeatmapRecorder } = await import("./heatmaps.js");
-      const initializeHeatmaps = vi.spyOn(HeatmapRecorder.prototype, "initialize");
+      const { HeatmapCollector } = await import("./heatmapCollector.js");
+      const initializeHeatmaps = vi.spyOn(HeatmapCollector.prototype, "initialize");
 
       await start();
       window.rybbit.pageview();

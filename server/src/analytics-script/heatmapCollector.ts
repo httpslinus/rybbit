@@ -1,14 +1,8 @@
-import type {
-  HeatmapBatch,
-  HeatmapEvent,
-  HeatmapGeometry,
-  HeatmapSnapshotNode,
-  HeatmapSnapshotRequest,
-} from "@rybbit/shared";
+import type { HeatmapBatch, HeatmapEvent, HeatmapGeometry, HeatmapSnapshotRequest } from "@rybbit/shared";
 import { HEATMAP_MAX_SNAPSHOT_BYTES, HEATMAP_WIDTH_BUCKETS, heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
 import type { ScriptConfig } from "./types.js";
 import { reserveKeepalive } from "./keepalive.js";
-import { SnapshotInteractionGuard } from "./snapshotContext.js";
+import { PageCapture } from "./pageCapture.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
 
 const SAMPLE_TTL_MS = 30 * 60_000;
@@ -56,41 +50,6 @@ type ScrollGeometry = {
   extents: { element: Element; width: number; height: number }[];
 };
 let exitBytes = 0;
-let snapshotBundleLoading: Promise<void> | undefined;
-
-declare global {
-  interface Window {
-    rybbitHeatmapSnapshot?: { capture: (config: ScriptConfig) => HeatmapSnapshotNode | null };
-  }
-}
-
-function loadSnapshotBundle(analyticsHost: string): Promise<void> {
-  if (window.rybbitHeatmapSnapshot) return Promise.resolve();
-  if (snapshotBundleLoading) return snapshotBundleLoading;
-  snapshotBundleLoading = new Promise<void>((resolve, reject) => {
-    const script = document.createElement("script");
-    const timer = window.setTimeout(() => {
-      script.remove();
-      reject(new Error("Heatmap snapshot bundle timed out"));
-    }, REQUEST_TIMEOUT_MS);
-    script.src = `${analyticsHost}/heatmap-snapshot.js`;
-    script.async = true;
-    script.onload = () => {
-      window.clearTimeout(timer);
-      if (window.rybbitHeatmapSnapshot) resolve();
-      else reject(new Error("Heatmap snapshot bundle did not initialize"));
-    };
-    script.onerror = () => {
-      window.clearTimeout(timer);
-      script.remove();
-      reject(new Error("Failed to load heatmap snapshot bundle"));
-    };
-    document.head.appendChild(script);
-  }).finally(() => {
-    snapshotBundleLoading = undefined;
-  });
-  return snapshotBundleLoading;
-}
 
 function randomId(): string {
   try {
@@ -161,7 +120,7 @@ function compatible(a: HeatmapGeometry, b: HeatmapGeometry): boolean {
 }
 
 /** Compact interactions, with a lazy static background only when the server nominates this visit. */
-export class HeatmapRecorder {
+export class HeatmapCollector {
   private active = false;
   private monitoring = false;
   private page: Page | null = null;
@@ -191,16 +150,18 @@ export class HeatmapRecorder {
   private routeTimer?: number;
   private suspended = false;
   private snapshotInFlight = false;
-  private readonly snapshotInteraction: SnapshotInteractionGuard;
+  private readonly pageCapture: PageCapture;
+  private readonly ownsPageCapture: boolean;
   private handledSnapshotRequests = new Set<string>();
 
   constructor(
     private config: ScriptConfig,
     userId = "",
-    pageAlreadyClicked = false
+    pageCapture?: PageCapture
   ) {
     this.userId = userId;
-    this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
+    this.pageCapture = pageCapture ?? new PageCapture(config);
+    this.ownsPageCapture = !pageCapture;
     this.samplingKey = sampleKey(config);
     this.batchPrefix = scopeId(this.samplingKey);
   }
@@ -216,7 +177,7 @@ export class HeatmapRecorder {
     // Unsampled sessions renew their decision on activity, without measuring or
     // observing the document. Page loads must not change an active session's draw.
     if (!this.active) return;
-    this.snapshotInteraction.initialize();
+    this.pageCapture.initialize();
     this.resetPage();
     document.addEventListener("visibilitychange", this.onVisibilityChange);
     window.addEventListener("resize", this.onResize, { passive: true });
@@ -716,7 +677,7 @@ export class HeatmapRecorder {
     if (!this.active || !this.monitoring || this.suspended) return null;
     this.ensurePage();
     // Never capture the prior route's DOM while an asynchronous SPA render is settling.
-    if (this.transition || !this.snapshotInteraction.canCapture()) return null;
+    if (this.transition || !this.pageCapture.canCapture()) return null;
     const geometry = this.geometry();
     if (
       !geometry ||
@@ -758,12 +719,17 @@ export class HeatmapRecorder {
       this.handledSnapshotRequests.add(requestId);
       this.snapshotInFlight = true;
       try {
-        await loadSnapshotBundle(this.config.analyticsHost);
+        const capture = await this.pageCapture.capture(() => Boolean(this.snapshotGeometry(request)));
         const geometry = this.snapshotGeometry(request);
-        if (!geometry) return;
-        const node = window.rybbitHeatmapSnapshot?.capture(this.config);
-        if (!node) return;
-        const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node });
+        if (
+          !capture ||
+          !geometry ||
+          Object.entries(capture.context).some(
+            ([key, value]) => geometry[key as keyof typeof capture.context] !== value
+          )
+        )
+          return;
+        const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node: capture.node });
         if (new TextEncoder().encode(payload).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) return;
         const controller = new AbortController();
         const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -825,7 +791,7 @@ export class HeatmapRecorder {
 
   onPageChange(): void {
     if (!this.monitoring) return;
-    this.snapshotInteraction.onPageChange();
+    this.pageCapture.onPageChange();
     if (!this.active) {
       this.touchSample();
       return;
@@ -894,7 +860,7 @@ export class HeatmapRecorder {
     }
     this.active = false;
     this.monitoring = false;
-    this.snapshotInteraction.cleanup();
+    if (this.ownsPageCapture) this.pageCapture.cleanup();
     this.persistSample();
     if (this.batchTimer !== undefined) window.clearInterval(this.batchTimer);
     if (this.scrollTimer !== undefined) window.clearTimeout(this.scrollTimer);

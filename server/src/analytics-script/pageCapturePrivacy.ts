@@ -1,6 +1,6 @@
 import type { ScriptConfig } from "./types.js";
 
-export function replaySlimDOMOptions(config: ScriptConfig) {
+export function pageCaptureSlimDOMOptions(config: ScriptConfig) {
   return (
     config.sessionReplaySlimDOMOptions ?? {
       script: false,
@@ -17,7 +17,7 @@ export function replaySlimDOMOptions(config: ScriptConfig) {
   );
 }
 
-export function replayPrivacyOptions(config: ScriptConfig) {
+export function pageCapturePrivacyOptions(config: ScriptConfig) {
   return {
     blockClass: config.sessionReplayBlockClass ?? "rr-block",
     blockSelector: config.sessionReplayBlockSelector ?? null,

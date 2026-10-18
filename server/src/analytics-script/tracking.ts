@@ -10,8 +10,9 @@ import {
   FormSubmitProperties,
   InputChangeProperties,
 } from "./types.js";
-import { SessionReplayRecorder } from "./sessionReplay.js";
-import { HeatmapRecorder } from "./heatmaps.js";
+import { SessionRecorder } from "./sessionRecorder.js";
+import { HeatmapCollector } from "./heatmapCollector.js";
+import { PageCapture } from "./pageCapture.js";
 import { reserveKeepalive } from "./keepalive.js";
 import { getBotScore, getBotSignalMask } from "./botSignals.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
@@ -21,17 +22,17 @@ const FEATURE_FLAG_REQUEST_TIMEOUT_MS = 2000;
 export class Tracker {
   private config: ScriptConfig;
   private customUserId: string | null = null;
-  private sessionReplayRecorder?: SessionReplayRecorder;
-  private heatmapRecorder?: HeatmapRecorder;
+  private sessionRecorder?: SessionRecorder;
+  private heatmapCollector?: HeatmapCollector;
+  private readonly pageCapture: PageCapture;
   private errorDedupeCache: Map<string, number> = new Map();
   private errorDedupeLastCleanup = 0;
   private exposedFeatureFlags = new Set<string>();
   private lastPageviewUrl: string;
-  constructor(
-    config: ScriptConfig,
-    private pageAlreadyClicked = false
-  ) {
+  constructor(config: ScriptConfig, pageAlreadyClicked = false) {
     this.config = config;
+    this.pageCapture = new PageCapture(config, pageAlreadyClicked);
+    if (config.enableSessionReplay || config.enableHeatmaps) this.pageCapture.initialize();
     this.lastPageviewUrl = this.getPageviewUrl();
     this.loadUserId();
 
@@ -39,8 +40,8 @@ export class Tracker {
       this.initializeSessionReplay();
     }
     if (config.enableHeatmaps) {
-      this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "", pageAlreadyClicked);
-      this.heatmapRecorder.initialize();
+      this.heatmapCollector = new HeatmapCollector(config, this.customUserId || "", this.pageCapture);
+      this.heatmapCollector.initialize();
     }
   }
 
@@ -131,13 +132,13 @@ export class Tracker {
 
   private async initializeSessionReplay(): Promise<void> {
     try {
-      this.sessionReplayRecorder = new SessionReplayRecorder(
+      this.sessionRecorder = new SessionRecorder(
         this.config,
         this.customUserId || "",
         batch => this.sendSessionReplayBatch(batch),
-        this.pageAlreadyClicked
+        this.pageCapture
       );
-      await this.sessionReplayRecorder.initialize();
+      await this.sessionRecorder.initialize();
     } catch (error) {
       console.error("Failed to initialize session replay:", error);
     }
@@ -479,10 +480,10 @@ export class Tracker {
     void this.sendIdentifyEvent(this.customUserId, traits, true).then(() => this.refreshFeatureFlags());
 
     // Update session replay recorder with new user ID
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.updateUserId(this.customUserId);
+    if (this.sessionRecorder) {
+      this.sessionRecorder.updateUserId(this.customUserId);
     }
-    this.heatmapRecorder?.updateUserId(this.customUserId);
+    this.heatmapCollector?.updateUserId(this.customUserId);
   }
 
   setTraits(traits: Record<string, unknown>): void {
@@ -538,10 +539,10 @@ export class Tracker {
       // localStorage not available
     }
 
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.updateUserId("");
+    if (this.sessionRecorder) {
+      this.sessionRecorder.updateUserId("");
     }
-    this.heatmapRecorder?.updateUserId("");
+    this.heatmapCollector?.updateUserId("");
 
     void this.refreshFeatureFlags();
   }
@@ -552,44 +553,45 @@ export class Tracker {
 
   // Session Replay methods
   startSessionReplay(): void {
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.startRecording();
+    if (this.sessionRecorder) {
+      this.sessionRecorder.startRecording();
     } else {
       console.warn("Session replay not initialized");
     }
   }
 
   stopSessionReplay(): void {
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.stopRecording();
+    if (this.sessionRecorder) {
+      this.sessionRecorder.stopRecording();
     }
   }
 
   isSessionReplayActive(): boolean {
-    return this.sessionReplayRecorder?.isActive() ?? false;
+    return this.sessionRecorder?.isActive() ?? false;
   }
 
   // Handle page changes for SPA
   onPageChange(): void {
     void this.refreshFeatureFlags();
 
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.onPageChange();
+    if (this.sessionRecorder) {
+      this.sessionRecorder.onPageChange();
     }
-    this.heatmapRecorder?.onPageChange();
+    this.heatmapCollector?.onPageChange();
   }
 
   flushForExit(): void {
-    this.heatmapRecorder?.flushForExit();
+    this.heatmapCollector?.flushForExit();
     // Flush replay without stopping capture if navigation is canceled.
-    this.sessionReplayRecorder?.onPageChange();
+    this.sessionRecorder?.onPageChange();
   }
 
   // Cleanup
   cleanup(): void {
-    if (this.sessionReplayRecorder) {
-      this.sessionReplayRecorder.cleanup();
+    if (this.sessionRecorder) {
+      this.sessionRecorder.cleanup();
     }
-    this.heatmapRecorder?.cleanup();
+    this.heatmapCollector?.cleanup();
+    this.pageCapture.cleanup();
   }
 }
