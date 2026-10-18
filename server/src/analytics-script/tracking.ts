@@ -26,7 +26,10 @@ export class Tracker {
   private errorDedupeLastCleanup = 0;
   private exposedFeatureFlags = new Set<string>();
   private lastPageviewUrl: string;
-  constructor(config: ScriptConfig) {
+  constructor(
+    config: ScriptConfig,
+    private pageAlreadyClicked = false
+  ) {
     this.config = config;
     this.lastPageviewUrl = this.getPageviewUrl();
     this.loadUserId();
@@ -35,7 +38,7 @@ export class Tracker {
       this.initializeSessionReplay();
     }
     if (config.enableHeatmaps) {
-      this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "");
+      this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "", pageAlreadyClicked);
       this.heatmapRecorder.initialize();
     }
   }
@@ -127,8 +130,11 @@ export class Tracker {
 
   private async initializeSessionReplay(): Promise<void> {
     try {
-      this.sessionReplayRecorder = new SessionReplayRecorder(this.config, this.customUserId || "", batch =>
-        this.sendSessionReplayBatch(batch)
+      this.sessionReplayRecorder = new SessionReplayRecorder(
+        this.config,
+        this.customUserId || "",
+        batch => this.sendSessionReplayBatch(batch),
+        this.pageAlreadyClicked
       );
       await this.sessionReplayRecorder.initialize();
     } catch (error) {

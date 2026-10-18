@@ -1,6 +1,6 @@
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch } from "./types.js";
 import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
-import { captureSnapshotContext } from "./snapshotContext.js";
+import { captureSnapshotContext, SnapshotInteractionGuard } from "./snapshotContext.js";
 
 const SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
 
@@ -59,14 +59,21 @@ declare global {
 export class SessionReplayRecorder {
   private config: ScriptConfig;
   private isRecording: boolean = false;
+  private readonly snapshotInteraction: SnapshotInteractionGuard;
   private stopRecordingFn?: () => void;
   private userId: string;
   private eventBuffer: SessionReplayEvent[] = [];
   private batchTimer?: number;
   private sendBatch: (batch: SessionReplayBatch) => Promise<void>;
 
-  constructor(config: ScriptConfig, userId: string, sendBatch: (batch: SessionReplayBatch) => Promise<void>) {
+  constructor(
+    config: ScriptConfig,
+    userId: string,
+    sendBatch: (batch: SessionReplayBatch) => Promise<void>,
+    pageAlreadyClicked = false
+  ) {
     this.config = config;
+    this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
     this.userId = userId;
     this.sendBatch = sendBatch;
   }
@@ -81,6 +88,8 @@ export class SessionReplayRecorder {
     if (sampleRate !== undefined && !shouldSampleSession(sampleRate)) {
       return;
     }
+
+    this.snapshotInteraction.initialize();
 
     // Load rrweb if not already loaded
     if (!window.rrweb) {
@@ -111,6 +120,7 @@ export class SessionReplayRecorder {
       return;
     }
 
+    this.snapshotInteraction.initialize();
     try {
       // Default sampling configuration (can be overridden via config)
       const defaultSampling = {
@@ -134,10 +144,13 @@ export class SessionReplayRecorder {
 
       const recordingOptions: any = {
         emit: (event: any) => {
-          const snapshotContext = event.type === 2 ? captureSnapshotContext(this.config) : null;
+          const heatmapEligible = event.type === 2 && this.snapshotInteraction.canCapture();
+          const snapshotContext = heatmapEligible ? captureSnapshotContext(this.config) : null;
           this.addEvent({
             type: event.type,
-            data: event.data,
+            // Keep replay recording intact, but prevent ineligible DOM from
+            // being reused through the legacy heatmap fallback as well.
+            data: event.type === 2 ? { ...event.data, heatmapEligible } : event.data,
             timestamp: event.timestamp || Date.now(),
             ...(snapshotContext ? { snapshotContext } : {}),
           });
@@ -255,6 +268,7 @@ export class SessionReplayRecorder {
 
   // Handle page navigation for SPAs
   public onPageChange(): void {
+    this.snapshotInteraction.onPageChange();
     if (this.isRecording) {
       // Flush current events before page change
       this.flushEvents();
@@ -264,5 +278,6 @@ export class SessionReplayRecorder {
   // Cleanup on page unload
   public cleanup(): void {
     this.stopRecording();
+    this.snapshotInteraction.cleanup();
   }
 }

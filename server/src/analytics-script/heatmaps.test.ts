@@ -12,6 +12,7 @@ describe("HeatmapRecorder", () => {
   let location: { href: string };
   let originalLocation: PropertyDescriptor | undefined;
   let listeners: ReturnType<typeof vi.spyOn>;
+  let windowListeners: ReturnType<typeof vi.spyOn>;
   let recorders: HeatmapRecorder[];
   let resize: () => void;
   let disconnect: ReturnType<typeof vi.fn>;
@@ -44,14 +45,18 @@ describe("HeatmapRecorder", () => {
 
   function click(overrides: Partial<MouseEvent> = {}) {
     const handler = last(listeners.mock.calls.filter(([name]) => name === "click"))?.[1] as EventListener | undefined;
-    handler?.({
+    const event = {
       isTrusted: true,
       button: 0,
       clientX: 100,
       clientY: 120,
       target: document.body,
       ...overrides,
-    } as MouseEvent);
+    } as MouseEvent;
+    for (const [, listener] of windowListeners.mock.calls.filter(([name]) => name === "click")) {
+      (listener as EventListener)(event);
+    }
+    handler?.(event);
   }
 
   function batches(): HeatmapBatch[] {
@@ -98,6 +103,7 @@ describe("HeatmapRecorder", () => {
     delete window.rybbitHeatmapSnapshot;
     document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
     listeners = vi.spyOn(document, "addEventListener");
+    windowListeners = vi.spyOn(window, "addEventListener");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
     recorders = [];
     disconnect = vi.fn();
@@ -883,7 +889,6 @@ describe("HeatmapRecorder", () => {
     window.rybbitHeatmapSnapshot = { capture };
     nominateSnapshot();
     const recorder = start({ sessionReplayMaskTextSelectors: [".private"] });
-    click();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
     expect(capture).toHaveBeenCalledOnce();
@@ -908,12 +913,67 @@ describe("HeatmapRecorder", () => {
     expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
   });
 
-  it.each(["navigation", "skip", "return", "resize", "identity", "cleanup", "pagehide"])(
+  it.each(["click", "invalid click", "identity", "query", "resume"])(
+    "keeps clicked pages ineligible for backgrounds after %s while recording interactions",
+    async change => {
+      const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+      window.rybbitHeatmapSnapshot = { capture };
+      nominateSnapshot();
+      const recorder = start();
+      click(change === "invalid click" ? { clientX: -1 } : {});
+      if (change === "identity") recorder.updateUserId("new-user");
+      else if (change === "query") {
+        location.href = "https://example.com/page?query=changed";
+        recorder.onPageChange();
+      } else if (change === "resume") {
+        window.dispatchEvent(new Event("pagehide"));
+        window.dispatchEvent(new Event("pageshow"));
+      }
+      await recorder.flush();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(capture).not.toHaveBeenCalled();
+      expect(snapshotUploads()).toHaveLength(0);
+      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+      expect(events().some(event => event.type === "scroll")).toBe(true);
+      expect(events().filter(event => event.type === "click")).toHaveLength(change === "invalid click" ? 0 : 1);
+    }
+  );
+
+  it("allows backgrounds after synthetic clicks and scrolling", async () => {
+    const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitHeatmapSnapshot = { capture };
+    nominateSnapshot();
+    const recorder = start();
+    click({ isTrusted: false });
+    scroll(0, 500);
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(capture).toHaveBeenCalledOnce();
+    expect(snapshotUploads()).toHaveLength(1);
+  });
+
+  it("allows a fresh SPA page to supply a background after the previous page was clicked", async () => {
+    const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitHeatmapSnapshot = { capture };
+    const recorder = start();
+    click();
+    await recorder.flush();
+    location.href = "https://example.com/next";
+    size(375, 500, 3000);
+    recorder.onPageChange();
+    await vi.advanceTimersByTimeAsync(100);
+    nominateSnapshot();
+    await recorder.flush();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(capture).toHaveBeenCalledOnce();
+    expect(JSON.parse(snapshotUploads()[0][1]!.body as string)).toMatchObject({ pathname: "/next" });
+  });
+
+  it.each(["click", "navigation", "skip", "return", "resize", "identity", "cleanup", "pagehide"])(
     "discards nominated backgrounds after %s during lazy bundle loading",
     async race => {
       nominateSnapshot();
       const recorder = start({ skipPatterns: ["/private/**"] });
-      click();
       await recorder.flush();
       await vi.advanceTimersByTimeAsync(0);
       const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
@@ -925,7 +985,8 @@ describe("HeatmapRecorder", () => {
           location.href = "https://example.com/page";
           recorder.onPageChange();
         }
-      } else if (race === "resize") size(1024);
+      } else if (race === "click") click();
+      else if (race === "resize") size(1024);
       else if (race === "identity") recorder.updateUserId("new-user");
       else if (race === "cleanup") recorder.cleanup();
       else window.dispatchEvent(new Event("pagehide"));
@@ -948,7 +1009,6 @@ describe("HeatmapRecorder", () => {
         })
     );
     const recorder = start();
-    click();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
     expect(snapshotUploads()).toHaveLength(1);
@@ -972,7 +1032,6 @@ describe("HeatmapRecorder", () => {
     };
     nominateSnapshot();
     const recorder = start();
-    click();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
     expect(snapshotUploads()).toHaveLength(0);
@@ -984,50 +1043,53 @@ describe("HeatmapRecorder", () => {
     window.rybbitHeatmapSnapshot = { capture: vi.fn(() => ({ type: 0, id: 1, childNodes: [] })) };
     nominateSnapshot();
     start();
-    click();
     window.dispatchEvent(new Event("pagehide"));
     await vi.advanceTimersByTimeAsync(0);
     expect(window.rybbitHeatmapSnapshot.capture).not.toHaveBeenCalled();
     expect(snapshotUploads()).toHaveLength(0);
   });
 
-  it("does not load a capture bundle after navigation while a nomination response is still parsing", async () => {
-    let resolveBody!: (body: unknown) => void;
-    let request: HeatmapSnapshotRequest;
-    vi.mocked(fetch).mockImplementationOnce(async (_url, init) => {
-      const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
-      request = {
-        key: "snapshot-key",
-        token: "lease-token",
-        pageVisitId: event.pageVisitId,
-        hostname: event.hostname,
-        pathname: event.pathname,
-        bucket: heatmapWidthBucket(event.viewportWidth),
-      };
-      return {
-        ok: true,
-        status: 200,
-        json: () =>
-          new Promise(resolve => {
-            resolveBody = resolve;
-          }),
-      } as Response;
-    });
-    const recorder = start();
-    click();
-    await recorder.flush();
-    location.href = "https://example.com/next";
-    recorder.onPageChange();
-    resolveBody({ snapshotRequest: request! });
-    await vi.advanceTimersByTimeAsync(0);
-    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
-    expect(snapshotUploads()).toHaveLength(0);
-  });
+  it.each(["navigation", "click"])(
+    "does not load a capture bundle after %s while a nomination response is still parsing",
+    async race => {
+      let resolveBody!: (body: unknown) => void;
+      let request: HeatmapSnapshotRequest;
+      vi.mocked(fetch).mockImplementationOnce(async (_url, init) => {
+        const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
+        request = {
+          key: "snapshot-key",
+          token: "lease-token",
+          pageVisitId: event.pageVisitId,
+          hostname: event.hostname,
+          pathname: event.pathname,
+          bucket: heatmapWidthBucket(event.viewportWidth),
+        };
+        return {
+          ok: true,
+          status: 200,
+          json: () =>
+            new Promise(resolve => {
+              resolveBody = resolve;
+            }),
+        } as Response;
+      });
+      const recorder = start();
+      await recorder.flush();
+      if (race === "click") click();
+      else {
+        location.href = "https://example.com/next";
+        recorder.onPageChange();
+      }
+      resolveBody({ snapshotRequest: request! });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+      expect(snapshotUploads()).toHaveLength(0);
+    }
+  );
 
   it("does not retry interactions or reload the bundle when its capture script fails", async () => {
     nominateSnapshot();
     const recorder = start();
-    click();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
     const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
@@ -1060,10 +1122,9 @@ describe("HeatmapRecorder", () => {
       } as Response;
     });
     const recorder = start();
-    click();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
-    click();
+    scroll(0, 500);
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
     expect(batches()).toHaveLength(2);

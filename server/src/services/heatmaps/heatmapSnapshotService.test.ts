@@ -74,7 +74,7 @@ const request = {
 };
 let service: HeatmapSnapshotService;
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   service = new HeatmapSnapshotService();
   mocks.query.mockResolvedValue([]);
   mocks.insert.mockResolvedValue(undefined);
@@ -112,6 +112,53 @@ describe("replay-first heatmap snapshots", () => {
     );
     expect(mocks.markReplay).toHaveBeenCalledWith(42, context, 375, now);
   });
+  it("does not index a replay snapshot marked ineligible after a click", async () => {
+    await service.indexReplay(
+      42,
+      [{ type: 2, timestamp: now, data: { node, heatmapEligible: false }, snapshotContext: context }],
+      attribution,
+      null
+    );
+    expect(mocks.set).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+  });
+
+  it.each(["inline", "r2"])(
+    "rejects ineligible %s replay snapshots when reading an indexed background",
+    async storage => {
+      const data = { node, heatmapEligible: false };
+      const key = storage === "r2" ? "42/session/batch.json.zst" : "";
+      mocks.query
+        .mockResolvedValueOnce([
+          row({ event_data_key: key, source_hash: createHash("sha256").update(JSON.stringify(data)).digest("hex") }),
+        ])
+        .mockResolvedValueOnce([{ event_data: JSON.stringify(data) }]);
+      mocks.getBatch.mockResolvedValue([{}, data]);
+      expect(await getSnapshot()).toBeNull();
+    }
+  );
+
+  it.each(["inline", "r2"])("rejects ineligible %s replay snapshots in the legacy fallback", async storage => {
+    const data = { node, heatmapEligible: false };
+    const meta = { href: "https://example.com/page", width: 375, height: 800 };
+    mocks.query
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          session_id: "session",
+          timestamp: now,
+          sequence: 1,
+          event_data_key: storage === "r2" ? "42/session/batch.json.zst" : "",
+          batch_index: 1,
+          source_hash: "hash",
+          meta: JSON.stringify(meta),
+        },
+      ])
+      .mockResolvedValueOnce([{ data: JSON.stringify(data) }]);
+    mocks.getBatch.mockResolvedValue([meta, data]);
+    expect(await getSnapshot()).toBeNull();
+  });
+
   it("skips additional daily replay DOM validation and releases invalid winners", async () => {
     mocks.set.mockResolvedValueOnce(null).mockResolvedValueOnce("OK");
     await service.indexReplay(

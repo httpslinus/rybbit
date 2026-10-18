@@ -2,6 +2,51 @@ import type { HeatmapSnapshotContext } from "@rybbit/shared";
 import type { ScriptConfig } from "./types.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
 
+/** Tracks clicks before either snapshot library finishes loading. */
+export class SnapshotInteractionGuard {
+  private href = "";
+  private pageKey = "";
+  private clicked = false;
+
+  constructor(
+    private config: ScriptConfig,
+    pageAlreadyClicked = false
+  ) {
+    this.onPageChange();
+    this.clicked = pageAlreadyClicked;
+  }
+
+  initialize(): void {
+    this.onPageChange();
+    window.addEventListener("click", this.onClick, { capture: true, passive: true });
+  }
+
+  onPageChange(): void {
+    if (this.href === window.location.href) return;
+    this.href = window.location.href;
+    const url = new URL(window.location.href);
+    const key = `${url.hostname}\0${getTrackedPathname(url, this.config.trackUrlFragments).split("?")[0]}`;
+    if (key === this.pageKey) return;
+    this.pageKey = key;
+    this.clicked = false;
+  }
+
+  canCapture(): boolean {
+    this.onPageChange();
+    return !this.clicked;
+  }
+
+  private onClick = (event: MouseEvent): void => {
+    if (!event.isTrusted || event.button !== 0) return;
+    this.onPageChange();
+    this.clicked = true;
+  };
+
+  cleanup(): void {
+    window.removeEventListener("click", this.onClick, true);
+  }
+}
+
 /** Capture page attribution together with the DOM, rather than at batch upload time. */
 export function captureSnapshotContext(config: ScriptConfig): HeatmapSnapshotContext | null {
   const url = new URL(window.location.href);

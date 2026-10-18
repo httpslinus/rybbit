@@ -137,7 +137,7 @@ export class HeatmapSnapshotService {
   ): Promise<void> {
     const rows = [];
     for (const [sequence, event] of events.entries()) {
-      if (String(event.type) !== "2" || !event.snapshotContext) continue;
+      if (String(event.type) !== "2" || !event.snapshotContext || event.data?.heatmapEligible === false) continue;
       const context = event.snapshotContext;
       const row = snapshotRow(siteId, context, event.timestamp, attribution);
       let won = false;
@@ -294,9 +294,10 @@ export class HeatmapSnapshotService {
       const data = batch[row.batch_index];
       if (row.source_hash && createHash("sha256").update(JSON.stringify(data)).digest("hex") !== row.source_hash)
         return null;
-      return data?.node ?? null;
+      return data?.heatmapEligible === false ? null : (data?.node ?? null);
     }
-    return JSON.parse(source[0].event_data)?.node ?? null;
+    const data = JSON.parse(source[0].event_data);
+    return data?.heatmapEligible === false ? null : (data?.node ?? null);
   }
 
   private async getLegacyReplaySnapshot(
@@ -370,6 +371,7 @@ export class HeatmapSnapshotService {
           if (!values[0]) continue;
           data = JSON.parse(values[0].data);
         }
+        if (data?.heatmapEligible === false) continue;
         const scale = meta.width / bucket;
         return {
           ...page,

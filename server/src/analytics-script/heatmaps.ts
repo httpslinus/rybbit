@@ -8,6 +8,7 @@ import type {
 import { HEATMAP_MAX_SNAPSHOT_BYTES, HEATMAP_WIDTH_BUCKETS, heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
 import type { ScriptConfig } from "./types.js";
 import { reserveKeepalive } from "./keepalive.js";
+import { SnapshotInteractionGuard } from "./snapshotContext.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
 
 const SAMPLE_TTL_MS = 30 * 60_000;
@@ -190,13 +191,16 @@ export class HeatmapRecorder {
   private routeTimer?: number;
   private suspended = false;
   private snapshotInFlight = false;
+  private readonly snapshotInteraction: SnapshotInteractionGuard;
   private handledSnapshotRequests = new Set<string>();
 
   constructor(
     private config: ScriptConfig,
-    userId = ""
+    userId = "",
+    pageAlreadyClicked = false
   ) {
     this.userId = userId;
+    this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
     this.samplingKey = sampleKey(config);
     this.batchPrefix = scopeId(this.samplingKey);
   }
@@ -212,6 +216,7 @@ export class HeatmapRecorder {
     // Unsampled sessions renew their decision on activity, without measuring or
     // observing the document. Page loads must not change an active session's draw.
     if (!this.active) return;
+    this.snapshotInteraction.initialize();
     this.resetPage();
     document.addEventListener("visibilitychange", this.onVisibilityChange);
     window.addEventListener("resize", this.onResize, { passive: true });
@@ -711,7 +716,7 @@ export class HeatmapRecorder {
     if (!this.active || !this.monitoring || this.suspended) return null;
     this.ensurePage();
     // Never capture the prior route's DOM while an asynchronous SPA render is settling.
-    if (this.transition) return null;
+    if (this.transition || !this.snapshotInteraction.canCapture()) return null;
     const geometry = this.geometry();
     if (
       !geometry ||
@@ -820,6 +825,7 @@ export class HeatmapRecorder {
 
   onPageChange(): void {
     if (!this.monitoring) return;
+    this.snapshotInteraction.onPageChange();
     if (!this.active) {
       this.touchSample();
       return;
@@ -888,6 +894,7 @@ export class HeatmapRecorder {
     }
     this.active = false;
     this.monitoring = false;
+    this.snapshotInteraction.cleanup();
     this.persistSample();
     if (this.batchTimer !== undefined) window.clearInterval(this.batchTimer);
     if (this.scrollTimer !== undefined) window.clearTimeout(this.scrollTimer);

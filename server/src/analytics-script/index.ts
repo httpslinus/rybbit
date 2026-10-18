@@ -89,13 +89,20 @@ declare global {
   };
 
   // Parse configuration (now async to fetch from API)
-  const config = await parseScriptConfig(scriptTag);
+  let pageAlreadyClicked = false;
+  const onEarlyClick = (event: MouseEvent) => {
+    if (event.isTrusted && event.button === 0) pageAlreadyClicked = true;
+  };
+  window.addEventListener("click", onEarlyClick, { capture: true, passive: true });
+  const config = await parseScriptConfig(scriptTag).finally(() => {
+    window.removeEventListener("click", onEarlyClick, true);
+  });
   if (!config) {
     return;
   }
 
   // Initialize tracker
-  const tracker = new Tracker(config);
+  const tracker = new Tracker(config, pageAlreadyClicked);
 
   // Initialize web vitals if enabled
   if (config.enableWebVitals) {

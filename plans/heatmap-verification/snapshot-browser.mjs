@@ -24,13 +24,15 @@ const serverErrors = [];
 let snapshotAssetRequests = 0;
 let origin;
 let grant;
+let nominatedPathname = "/fixture-next";
 let cspBlocked = false;
 
 function fixture() {
   return `<!doctype html><html><head>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>html,body,h1{margin:0;font:16px sans-serif}main{height:2000px}
-  #target{position:fixed;top:20px;left:20px;width:150px;height:40px;background:rgb(23, 101, 211)}
+  #target{position:fixed;top:20px;left:20px;width:150px;height:40px;background:rgb(23, 101, 211);z-index:2}
+  #menu{position:fixed;inset:0;background:white;z-index:1}
   .fixture-style-marker{color:rgb(121, 23, 77)}</style></head><body>
   <main><h1 class="fixture-style-marker">Public initial route</h1>
     <div class="rr-block">fixture-blocked-private-content</div>
@@ -41,7 +43,8 @@ function fixture() {
     <input type="email" value="fixture-private-email@example.test">
     <textarea>fixture-private-textarea-value</textarea>
     <!-- fixture-private-comment-content -->
-  </main><button id="target">Capture interaction</button>
+  </main><div id="menu" hidden>Fullscreen mobile menu</div>
+  <button id="target" onclick="document.querySelector('#menu').hidden = false">Open menu</button>
   <script src="${origin}/api/script.js?siteId=browser-snapshot-fixture"
     data-replay-mask-text-selectors='["[data-sensitive]"]'></script>
   </body></html>`;
@@ -74,9 +77,8 @@ const server = createServer(async (request, response) => {
       assert.ok(body.events.length > 0, "Tracker submitted an empty interaction batch");
       assert.ok(body.events.every(event => event.documentHeight >= event.viewportHeight));
       batches.push(body);
-      const clicks = body.events.filter(event => event.type === "click");
-      if (clicks.length && !grant) {
-        const latest = clicks[clicks.length - 1];
+      const latest = body.events.findLast(event => event.pathname === nominatedPathname);
+      if (latest && !grant) {
         grant = {
           key: "loopback-background-key", token: "loopback-background-token",
           pageVisitId: latest.pageVisitId, hostname: latest.hostname,
@@ -152,7 +154,7 @@ try {
     document.querySelector("main").style.height = "2200px";
   });
   await delay(250);
-  await page.click("#target");
+  await page.evaluate(() => window.scrollTo(0, 200));
   await poll(() => snapshots.length === 1, "nominated static DOM background upload");
   const uploaded = snapshots[0];
   const captured = uploaded.body;
@@ -183,6 +185,22 @@ try {
   assert.equal(snapshots.length, 1, "A repeated grant uploaded a duplicate DOM background");
   assert.equal(snapshotAssetRequests, 1, "A repeated grant fetched another capture library");
   assert.ok(batches.every(batch => !Object.hasOwn(batch, "node")), "Ordinary batches include duplicate DOM snapshots");
+  // A real trusted tap opens a full viewport menu before nomination. The DOM
+  // must remain ineligible while the click itself is still delivered.
+  grant = undefined;
+  nominatedPathname = "/fixture-clicked";
+  const batchesBeforeClick = batches.length;
+  await page.goto(`${origin}/fixture-clicked`, { waitUntil: "networkidle0" });
+  await page.evaluate(() => new Promise(resolve => window.rybbit.onReady(() => resolve(true))));
+  await page.click("#target");
+  assert.equal(await page.$eval("#menu", menu => menu.hidden), false);
+  await poll(() => batches.slice(batchesBeforeClick).some(batch =>
+    batch.events.some(event => event.type === "click" && event.pathname === "/fixture-clicked")),
+    "mobile menu click delivery");
+  assert.equal(grant.pathname, "/fixture-clicked", "Clicked page did not receive a matching nomination");
+  await delay(300);
+  assert.equal(snapshots.length, 1, "Clicked mobile page uploaded its fullscreen menu as a background");
+  assert.equal(snapshotAssetRequests, 1, "Clicked mobile page loaded the snapshot library");
   assert.deepEqual(runtimeErrors, []);
   assert.deepEqual(serverErrors, []);
   console.log(JSON.stringify({
@@ -192,7 +210,7 @@ try {
     viewport: { width: captured.viewportWidth, height: captured.viewportHeight },
     document: { width: captured.documentWidth, height: captured.documentHeight },
     privacyMaskingVerified: true, blockedContentOmitted: true, stylesCaptured: true,
-    repeatedGrantDeduplicated: true, ordinaryBatchesRemainCompact: true,
+    repeatedGrantDeduplicated: true, clickedMobileMenuExcluded: true, ordinaryBatchesRemainCompact: true,
     runtimeErrors: runtimeErrors.length,
   }, null, 2));
 } finally {

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { HeatmapBatch } from "@rybbit/shared";
+import { heatmapWidthBucket } from "@rybbit/shared/dist/heatmaps.js";
 import type { ScriptConfig } from "./types.js";
 
 const mocks = vi.hoisted(() => ({ parseScriptConfig: vi.fn() }));
@@ -77,6 +78,7 @@ describe("automatic navigation tracking", () => {
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     delete (window as Partial<Window>).rybbit;
     delete window.__RYBBIT_OPTOUT__;
+    delete window.rybbitHeatmapSnapshot;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -258,6 +260,43 @@ describe("automatic navigation tracking", () => {
       expect(window.rybbit.isSessionReplayActive()).toBe(false);
       expect(document.querySelector('script[src*="replay.js"]')).toBeNull();
       expect(vi.mocked(fetch).mock.calls.some(([url]) => String(url).includes("replay"))).toBe(false);
+    });
+
+    it("remembers menu clicks made while tracking configuration is still loading", async () => {
+      let resolveConfig!: (config: ScriptConfig) => void;
+      mocks.parseScriptConfig.mockImplementationOnce(
+        () =>
+          new Promise(resolve => {
+            resolveConfig = resolve;
+          })
+      );
+      const capture = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+      window.rybbitHeatmapSnapshot = { capture };
+      vi.mocked(fetch).mockImplementation(async (url, init) => {
+        if (!String(url).includes("/heatmaps/record/")) return { ok: true } as Response;
+        const event = (JSON.parse(init!.body as string) as HeatmapBatch).events[0];
+        return {
+          ok: true,
+          json: async () => ({
+            snapshotRequest: {
+              key: "key",
+              token: "token",
+              pageVisitId: event.pageVisitId,
+              hostname: event.hostname,
+              pathname: event.pathname,
+              bucket: heatmapWidthBucket(event.viewportWidth),
+            },
+          }),
+        } as Response;
+      });
+      await import("./index.js");
+      const earlyClick = windowListeners.mock.calls.find(([name]) => name === "click")![1] as EventListener;
+      earlyClick({ isTrusted: true, button: 0 } as MouseEvent);
+      resolveConfig(config);
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(heatmapBatches()).toHaveLength(1);
+      expect(capture).not.toHaveBeenCalled();
+      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
     });
 
     it("keeps recording after canceled beforeunload and BFCache restoration without duplicate listeners", async () => {

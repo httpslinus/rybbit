@@ -325,6 +325,41 @@
   }
 
   // snapshotContext.ts
+  var SnapshotInteractionGuard = class {
+    constructor(config, pageAlreadyClicked = false) {
+      this.config = config;
+      this.href = "";
+      this.pageKey = "";
+      this.clicked = false;
+      this.onClick = (event) => {
+        if (!event.isTrusted || event.button !== 0) return;
+        this.onPageChange();
+        this.clicked = true;
+      };
+      this.onPageChange();
+      this.clicked = pageAlreadyClicked;
+    }
+    initialize() {
+      this.onPageChange();
+      window.addEventListener("click", this.onClick, { capture: true, passive: true });
+    }
+    onPageChange() {
+      if (this.href === window.location.href) return;
+      this.href = window.location.href;
+      const url = new URL(window.location.href);
+      const key = `${url.hostname}\0${getTrackedPathname(url, this.config.trackUrlFragments).split("?")[0]}`;
+      if (key === this.pageKey) return;
+      this.pageKey = key;
+      this.clicked = false;
+    }
+    canCapture() {
+      this.onPageChange();
+      return !this.clicked;
+    }
+    cleanup() {
+      window.removeEventListener("click", this.onClick, true);
+    }
+  };
   function captureSnapshotContext(config) {
     const url = new URL(window.location.href);
     const page = getTrackedPage(url, config);
@@ -371,10 +406,11 @@
     }
   }
   var SessionReplayRecorder = class {
-    constructor(config, userId, sendBatch) {
+    constructor(config, userId, sendBatch, pageAlreadyClicked = false) {
       this.isRecording = false;
       this.eventBuffer = [];
       this.config = config;
+      this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
       this.userId = userId;
       this.sendBatch = sendBatch;
     }
@@ -386,6 +422,7 @@
       if (sampleRate !== void 0 && !shouldSampleSession(sampleRate)) {
         return;
       }
+      this.snapshotInteraction.initialize();
       if (!window.rrweb) {
         await this.loadRrweb();
       }
@@ -409,6 +446,7 @@
       if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
         return;
       }
+      this.snapshotInteraction.initialize();
       try {
         const defaultSampling = {
           // Aggressive sampling to reduce data volume
@@ -435,10 +473,13 @@
         };
         const recordingOptions = {
           emit: (event) => {
-            const snapshotContext = event.type === 2 ? captureSnapshotContext(this.config) : null;
+            const heatmapEligible = event.type === 2 && this.snapshotInteraction.canCapture();
+            const snapshotContext = heatmapEligible ? captureSnapshotContext(this.config) : null;
             this.addEvent({
               type: event.type,
-              data: event.data,
+              // Keep replay recording intact, but prevent ineligible DOM from
+              // being reused through the legacy heatmap fallback as well.
+              data: event.type === 2 ? { ...event.data, heatmapEligible } : event.data,
               timestamp: event.timestamp || Date.now(),
               ...snapshotContext ? { snapshotContext } : {}
             });
@@ -533,6 +574,7 @@
     }
     // Handle page navigation for SPAs
     onPageChange() {
+      this.snapshotInteraction.onPageChange();
       if (this.isRecording) {
         this.flushEvents();
       }
@@ -540,6 +582,7 @@
     // Cleanup on page unload
     cleanup() {
       this.stopRecording();
+      this.snapshotInteraction.cleanup();
     }
   };
 
@@ -662,7 +705,7 @@
     return a2.pageVisitId === b2.pageVisitId && a2.viewportWidth === b2.viewportWidth && a2.viewportHeight === b2.viewportHeight && a2.documentWidth === b2.documentWidth && a2.documentHeight === b2.documentHeight;
   }
   var HeatmapRecorder = class {
-    constructor(config, userId = "") {
+    constructor(config, userId = "", pageAlreadyClicked = false) {
       this.config = config;
       this.active = false;
       this.monitoring = false;
@@ -776,6 +819,7 @@
       };
       this.onPageShow = () => this.onResume();
       this.userId = userId;
+      this.snapshotInteraction = new SnapshotInteractionGuard(config, pageAlreadyClicked);
       this.samplingKey = sampleKey(config);
       this.batchPrefix = scopeId(this.samplingKey);
     }
@@ -788,6 +832,7 @@
       document.addEventListener("click", this.onClick, { capture: true, passive: true });
       window.addEventListener("scroll", this.onScroll, { passive: true });
       if (!this.active) return;
+      this.snapshotInteraction.initialize();
       this.resetPage();
       document.addEventListener("visibilitychange", this.onVisibilityChange);
       window.addEventListener("resize", this.onResize, { passive: true });
@@ -1114,7 +1159,7 @@
     snapshotGeometry(request) {
       if (!this.active || !this.monitoring || this.suspended) return null;
       this.ensurePage();
-      if (this.transition) return null;
+      if (this.transition || !this.snapshotInteraction.canCapture()) return null;
       const geometry = this.geometry();
       if (!geometry || geometry.pageVisitId !== request.pageVisitId || geometry.hostname !== request.hostname || geometry.pathname !== request.pathname || heatmapWidthBucket(geometry.viewportWidth) !== request.bucket)
         return null;
@@ -1196,6 +1241,7 @@
     }
     onPageChange() {
       if (!this.monitoring) return;
+      this.snapshotInteraction.onPageChange();
       if (!this.active) {
         this.touchSample();
         return;
@@ -1251,6 +1297,7 @@
       }
       this.active = false;
       this.monitoring = false;
+      this.snapshotInteraction.cleanup();
       this.persistSample();
       if (this.batchTimer !== void 0) window.clearInterval(this.batchTimer);
       if (this.scrollTimer !== void 0) window.clearTimeout(this.scrollTimer);
@@ -1474,7 +1521,8 @@
   // tracking.ts
   var FEATURE_FLAG_REQUEST_TIMEOUT_MS2 = 2e3;
   var Tracker = class {
-    constructor(config) {
+    constructor(config, pageAlreadyClicked = false) {
+      this.pageAlreadyClicked = pageAlreadyClicked;
       this.customUserId = null;
       this.errorDedupeCache = /* @__PURE__ */ new Map();
       this.errorDedupeLastCleanup = 0;
@@ -1486,7 +1534,7 @@
         this.initializeSessionReplay();
       }
       if (config.enableHeatmaps) {
-        this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "");
+        this.heatmapRecorder = new HeatmapRecorder(config, this.customUserId || "", pageAlreadyClicked);
         this.heatmapRecorder.initialize();
       }
     }
@@ -1566,7 +1614,8 @@
         this.sessionReplayRecorder = new SessionReplayRecorder(
           this.config,
           this.customUserId || "",
-          (batch) => this.sendSessionReplayBatch(batch)
+          (batch) => this.sendSessionReplayBatch(batch),
+          this.pageAlreadyClicked
         );
         await this.sessionReplayRecorder.initialize();
       } catch (error) {
@@ -2476,11 +2525,18 @@
       stopSessionReplay: queueMethod("stopSessionReplay"),
       isSessionReplayActive: () => false
     };
-    const config = await parseScriptConfig(scriptTag);
+    let pageAlreadyClicked = false;
+    const onEarlyClick = (event) => {
+      if (event.isTrusted && event.button === 0) pageAlreadyClicked = true;
+    };
+    window.addEventListener("click", onEarlyClick, { capture: true, passive: true });
+    const config = await parseScriptConfig(scriptTag).finally(() => {
+      window.removeEventListener("click", onEarlyClick, true);
+    });
     if (!config) {
       return;
     }
-    const tracker = new Tracker(config);
+    const tracker = new Tracker(config, pageAlreadyClicked);
     if (config.enableWebVitals) {
       const webVitalsCollector = new WebVitalsCollector((vitals) => {
         tracker.trackWebVitals(vitals);
