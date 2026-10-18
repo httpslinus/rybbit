@@ -37,18 +37,21 @@ Changes added on top of [upstream Rybbit](https://github.com/rybbit-io/rybbit):
 
 - **Self-hosted dashboards:** Performance (Web Vitals), Pages and Bots.
 - **Heatmaps:** click and scroll maps, page grouping, historical cohorts and masked page backgrounds. Work independently of session replay.
-- **Smaller recording downloads:** recording-only rrweb with shared page capture and a standalone fallback.
+- **Smaller tracker downloads:** an 11 kB core, deferred heatmap and recording modules, and shared page capture with a standalone fallback.
 - **Coolify deployment:** application configuration using persistent databases. See [deployment notes](ops/DEPLOYMENT.md).
 
 ## Tracker sizes
 
-Minified assets, gzip, decimal kB. Compared on 18 October 2026 with upstream [`1a8f1ff9`](https://github.com/rybbit-io/rybbit/commit/1a8f1ff9ca8beca1c2207866d659d34be3cdcae8), which is included in this fork.
+Gzip, decimal kB. Upstream `master` at [`1a8f1ff9`](https://github.com/rybbit-io/rybbit/commit/1a8f1ff9ca8beca1c2207866d659d34be3cdcae8), verified 18 October 2026.
 
-| Download                             |      Upstream |   This fork |
-| ------------------------------------ | ------------: | ----------: |
-| Core tracker                         |       11.1 kB |     17.0 kB |
-| Session recording module             |       82.1 kB |     22.1 kB |
-| **Core + session recording**         |   **93.1 kB** | **39.0 kB** |
-| Standalone page capture for heatmaps | Not available |      7.6 kB |
+| Download                        | Upstream Rybbit |   This fork |
+| ------------------------------- | --------------: | ----------: |
+| Core tracker                    |         11.1 kB | **10.7 kB** |
+| Session recording module        |         82.1 kB |     23.5 kB |
+| Heatmap module                  |   Not available |      7.1 kB |
+| Standalone page capture         |   Not available |      7.6 kB |
+| **Core + recording**            |     **93.1 kB** | **34.2 kB** |
+| Core + heatmaps + recording     |   Not available | **41.3 kB** |
+| All modules, including fallback |   Not available | **48.9 kB** |
 
-The fork's core includes heatmap collection. The standalone capture loads only when a background is needed and recording cannot supply it. [Tracker details](server/src/analytics-script/README.md).
+Heatmaps and recording load independently when enabled. Active recording supplies heatmap backgrounds without a second DOM upload; standalone capture loads only when needed. [Implementation and measurements](server/src/analytics-script/README.md).

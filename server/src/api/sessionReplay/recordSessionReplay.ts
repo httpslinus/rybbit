@@ -70,7 +70,7 @@ export async function recordSessionReplay(
 
     if (!sessionReplay) {
       request.log.info({ siteId }, "Skipping session replay event because replay is not enabled");
-      return reply.status(200).send({ success: true, message: "Session replay not enabled" });
+      return reply.status(200).send({ success: true, recorded: false, message: "Session replay not enabled" });
     }
 
     if (!siteId) {
@@ -91,7 +91,9 @@ export async function recordSessionReplay(
     // before a downgrade from Pro) or the monthly replay quota may be exhausted
     if (usageService.isSiteWithoutReplay(Number(siteId))) {
       request.log.info({ siteId }, "Skipping session replay event because replay is unavailable for plan or quota");
-      return reply.status(200).send({ success: true, message: "Session replay not available for plan or quota" });
+      return reply
+        .status(200)
+        .send({ success: true, recorded: false, message: "Session replay not available for plan or quota" });
     }
 
     const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
@@ -116,6 +118,7 @@ export async function recordSessionReplay(
       );
       return reply.status(200).send({
         success: true,
+        recorded: false,
         message: `Session replay not recorded - ${exclusionDecision.label} excluded`,
       });
     }
@@ -134,10 +137,15 @@ export async function recordSessionReplay(
     if (capped) {
       // Tells the tracking script to stop recording, so a capped session stops
       // sending batches instead of having each one refused.
-      return reply.send({ success: true, stopRecording: true, message: "Session replay size limit reached" });
+      return reply.send({
+        success: true,
+        recorded: false,
+        stopRecording: true,
+        message: "Session replay size limit reached",
+      });
     }
 
-    return reply.send({ success: true });
+    return reply.send({ success: true, recorded: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return reply.status(400).send({ error: error.errors });

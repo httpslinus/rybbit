@@ -12,7 +12,7 @@ Heatmaps show where sampled visitors click and how far they see down a page. The
 
 Collection is off by default. The initial sample rate is **15%**, and accepts finite values from **0% to 100%**. A rate of 0 collects nothing; 100 selects every eligible session. Settings apply when the tracking script next loads. Turning collection off leaves retained samples available to read.
 
-The sampling decision is scoped to your analytics host and site. Activity keeps it stable; a page load after 30 minutes of inactivity makes a new decision. The script uses session storage with a memory fallback when storage is unavailable. Heatmap sampling is separate from replay sampling, and heatmaps alone do not load the replay recorder. When a page background needs a new capture, the script loads a separate snapshot-only module.
+The sampling decision is scoped to your analytics host and site. Activity keeps it stable; a page load after 30 minutes of inactivity makes a new decision. The script uses session storage with a memory fallback when storage is unavailable. Heatmap sampling is separate from replay sampling. The core loads `heatmaps.js` only when heatmaps are enabled; heatmaps alone do not load the session recorder. When a page background needs a new capture, an active recorder can supply a checkpoint. Otherwise, `page-capture.js` loads for one static capture.
 
 ## Clicks and scroll reach
 
@@ -55,7 +55,7 @@ Viewers can read cohorts. Members can create cohorts and edit or delete their ow
 
 ## Page backgrounds
 
-**Page background** reconstructs a stored DOM snapshot from a sampled visitor. Rybbit reuses full snapshots from retained session replays whenever the page and viewport width can be attributed reliably, including SPA navigation. Backgrounds must match the selected hostname, path, width bucket and report dates. The capture time appears beside the background switch.
+**Page background** reconstructs a stored DOM snapshot from a sampled visitor. Rybbit reuses full snapshots from retained session replays whenever the page and viewport width can be attributed reliably, including SPA navigation. A requested recording checkpoint is uploaded once through the replay stream, and the background references that stored event. Backgrounds must match the selected hostname, path, width bucket and report dates. The capture time appears beside the background switch.
 
 If no suitable replay snapshot is available, the backend nominates one sampled visitor to capture a standalone snapshot after a short replay grace period. Collection keeps at most one standalone background per page, width bucket and UTC day. It uses the same blocking, text masking and input masking settings as session replay, without starting a recording. New replay snapshots can replace standalone backgrounds.
 

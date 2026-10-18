@@ -96,6 +96,18 @@ const nextConfig = {
         destination: `${rybbitHost}/api/replay.js`,
       },
       {
+        source: '/analytics/recording.js',
+        destination: `${rybbitHost}/api/recording.js`,
+      },
+      {
+        source: '/analytics/heatmaps.js',
+        destination: `${rybbitHost}/api/heatmaps.js`,
+      },
+      {
+        source: '/analytics/page-capture.js',
+        destination: `${rybbitHost}/api/page-capture.js`,
+      },
+      {
         source: '/analytics/metrics.js',
         destination: `${rybbitHost}/api/metrics.js`,
       },
@@ -111,6 +123,14 @@ const nextConfig = {
       {
         source: '/analytics/session-replay/record/:siteId',
         destination: `${rybbitHost}/api/session-replay/record/:siteId`,
+      },
+      {
+        source: '/analytics/heatmaps/record/:siteId',
+        destination: `${rybbitHost}/api/heatmaps/record/:siteId`,
+      },
+      {
+        source: '/analytics/heatmaps/snapshot/:siteId',
+        destination: `${rybbitHost}/api/heatmaps/snapshot/:siteId`,
       },
       {
         source: '/analytics/site/tracking-config/:siteId',
@@ -191,6 +211,18 @@ const nextConfig = {
         destination: `${rybbitHost}/api/replay.js`,
       },
       {
+        source: '/analytics/recording.js',
+        destination: `${rybbitHost}/api/recording.js`,
+      },
+      {
+        source: '/analytics/heatmaps.js',
+        destination: `${rybbitHost}/api/heatmaps.js`,
+      },
+      {
+        source: '/analytics/page-capture.js',
+        destination: `${rybbitHost}/api/page-capture.js`,
+      },
+      {
         source: '/analytics/metrics.js',
         destination: `${rybbitHost}/api/metrics.js`,
       },
@@ -201,6 +233,14 @@ const nextConfig = {
       {
         source: '/analytics/session-replay/record/:siteId',
         destination: `${rybbitHost}/api/session-replay/record/:siteId`,
+      },
+      {
+        source: '/analytics/heatmaps/record/:siteId',
+        destination: `${rybbitHost}/api/heatmaps/record/:siteId`,
+      },
+      {
+        source: '/analytics/heatmaps/snapshot/:siteId',
+        destination: `${rybbitHost}/api/heatmaps/snapshot/:siteId`,
       },
       {
         source: '/analytics/site/tracking-config/:siteId',
@@ -429,8 +469,28 @@ Add the session replay endpoints to your rewrites:
   destination: `${rybbitHost}/api/replay.js`,
 },
 {
+  source: '/analytics/recording.js',
+  destination: `${rybbitHost}/api/recording.js`,
+},
+{
+  source: '/analytics/heatmaps.js',
+  destination: `${rybbitHost}/api/heatmaps.js`,
+},
+{
+  source: '/analytics/page-capture.js',
+  destination: `${rybbitHost}/api/page-capture.js`,
+},
+{
   source: '/analytics/session-replay/record/:siteId',
   destination: `${rybbitHost}/api/session-replay/record/:siteId`,
+},
+{
+  source: '/analytics/heatmaps/record/:siteId',
+  destination: `${rybbitHost}/api/heatmaps/record/:siteId`,
+},
+{
+  source: '/analytics/heatmaps/snapshot/:siteId',
+  destination: `${rybbitHost}/api/heatmaps/snapshot/:siteId`,
 },
 ```
 

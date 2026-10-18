@@ -79,6 +79,34 @@ yourdomain.com {
         rewrite * /api/replay.js
     }
 
+    # Deferred feature scripts
+    handle /analytics/recording.js {
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+        rewrite * /api/recording.js
+    }
+
+    handle /analytics/heatmaps.js {
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+        rewrite * /api/heatmaps.js
+    }
+
+    handle /analytics/page-capture.js {
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+        rewrite * /api/page-capture.js
+    }
+
     # Web Vitals metrics script
     handle /analytics/metrics.js {
         reverse_proxy https://app.rybbit.io {
@@ -120,6 +148,27 @@ yourdomain.com {
             header_up Content-Type {header.Content-Type}
         }
         uri replace /analytics/session-replay/record /api/session-replay/record
+    }
+
+    # Heatmap uploads
+    handle /analytics/heatmaps/record/* {
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up Content-Type {header.Content-Type}
+        }
+        uri replace /analytics/heatmaps/record /api/heatmaps/record
+    }
+
+    handle /analytics/heatmaps/snapshot/* {
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up Content-Type {header.Content-Type}
+        }
+        uri replace /analytics/heatmaps/snapshot /api/heatmaps/snapshot
     }
 
     # Site configuration
@@ -359,6 +408,31 @@ yourdomain.com {
             header_up X-Forwarded-For {remote_host}
         }
         uri replace /analytics/session-replay/record /api/session-replay/record
+    }
+
+    # Heatmap uploads
+    handle /analytics/heatmaps/record/* {
+        request_body {
+            max_size 10MB
+        }
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+        uri replace /analytics/heatmaps/record /api/heatmaps/record
+    }
+
+    handle /analytics/heatmaps/snapshot/* {
+        request_body {
+            max_size 10MB
+        }
+        reverse_proxy https://app.rybbit.io {
+            header_up Host app.rybbit.io
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+        }
+        uri replace /analytics/heatmaps/snapshot /api/heatmaps/snapshot
     }
 }
 ```

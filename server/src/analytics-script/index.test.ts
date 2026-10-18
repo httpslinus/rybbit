@@ -15,8 +15,12 @@ describe("automatic navigation tracking", () => {
   let windowListeners: ReturnType<typeof vi.spyOn>;
   let documentListeners: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetModules();
+    const { HeatmapCollector } = await import("./heatmapCollector.js");
+    window.rybbitModules = {
+      heatmaps: { create: (config, userId, runtime) => new HeatmapCollector(config, userId, undefined, runtime) },
+    };
     vi.useFakeTimers();
     originalLocation = Object.getOwnPropertyDescriptor(window, "location");
     location = { href: "https://example.com/checkout/" };
@@ -79,6 +83,7 @@ describe("automatic navigation tracking", () => {
     delete (window as Partial<Window>).rybbit;
     delete window.__RYBBIT_OPTOUT__;
     delete window.rybbitPageCapture;
+    delete window.rybbitModules;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
     vi.useRealTimers();
@@ -296,7 +301,7 @@ describe("automatic navigation tracking", () => {
       await vi.advanceTimersByTimeAsync(5000);
       expect(heatmapBatches()).toHaveLength(1);
       expect(capture).not.toHaveBeenCalled();
-      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+      expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
     });
 
     it("keeps recording after canceled beforeunload and BFCache restoration without duplicate listeners", async () => {

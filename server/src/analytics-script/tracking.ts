@@ -3,16 +3,13 @@ import {
   ScriptConfig,
   TrackingPayload,
   WebVitalsData,
-  SessionReplayBatch,
-  SessionReplayBatchResult,
   ButtonClickProperties,
   CopyProperties,
   FormSubmitProperties,
   InputChangeProperties,
 } from "./types.js";
-import { SessionRecorder } from "./sessionRecorder.js";
-import { HeatmapCollector } from "./heatmapCollector.js";
-import { PageCapture } from "./pageCapture.js";
+import { FeatureLoader, sampleRecording } from "./featureLoader.js";
+import type { FeatureRuntime } from "./featureTypes.js";
 import { reserveKeepalive } from "./keepalive.js";
 import { getBotScore, getBotSignalMask } from "./botSignals.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
@@ -22,27 +19,30 @@ const FEATURE_FLAG_REQUEST_TIMEOUT_MS = 2000;
 export class Tracker {
   private config: ScriptConfig;
   private customUserId: string | null = null;
-  private sessionRecorder?: SessionRecorder;
-  private heatmapCollector?: HeatmapCollector;
-  private readonly pageCapture: PageCapture;
+  private sessionRecorder?: FeatureLoader;
+  private heatmapCollector?: FeatureLoader;
   private errorDedupeCache: Map<string, number> = new Map();
   private errorDedupeLastCleanup = 0;
   private exposedFeatureFlags = new Set<string>();
   private lastPageviewUrl: string;
   constructor(config: ScriptConfig, pageAlreadyClicked = false) {
     this.config = config;
-    this.pageCapture = new PageCapture(config, pageAlreadyClicked);
-    if (config.enableSessionReplay || config.enableHeatmaps) this.pageCapture.initialize();
     this.lastPageviewUrl = this.getPageviewUrl();
     this.loadUserId();
 
+    const runtime: FeatureRuntime = { capture: {}, reserveKeepalive, pageAlreadyClicked };
     if (config.enableSessionReplay) {
-      this.initializeSessionReplay();
+      this.sessionRecorder = new FeatureLoader("recording", config, this.customUserId || "", runtime);
+      if (sampleRecording(config.sessionReplaySampleRate)) this.loadFeature(this.sessionRecorder);
     }
-    if (config.enableHeatmaps) {
-      this.heatmapCollector = new HeatmapCollector(config, this.customUserId || "", this.pageCapture);
-      this.heatmapCollector.initialize();
+    if (config.enableHeatmaps && (config.heatmapSampleRate ?? 15) > 0) {
+      this.heatmapCollector = new FeatureLoader("heatmaps", config, this.customUserId || "", runtime);
+      this.loadFeature(this.heatmapCollector);
     }
+  }
+
+  private loadFeature(feature: FeatureLoader): void {
+    void feature.initialize().catch(error => console.error("Failed to load analytics feature:", error));
   }
 
   private serializeFeatureFlagValue(value: unknown): string {
@@ -127,45 +127,6 @@ export class Tracker {
       }
     } catch (e) {
       // localStorage not available
-    }
-  }
-
-  private async initializeSessionReplay(): Promise<void> {
-    try {
-      this.sessionRecorder = new SessionRecorder(
-        this.config,
-        this.customUserId || "",
-        batch => this.sendSessionReplayBatch(batch),
-        this.pageCapture
-      );
-      await this.sessionRecorder.initialize();
-    } catch (error) {
-      console.error("Failed to initialize session replay:", error);
-    }
-  }
-
-  private async sendSessionReplayBatch(batch: SessionReplayBatch): Promise<SessionReplayBatchResult | void> {
-    let response: Response;
-    try {
-      response = await fetch(`${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(batch),
-        mode: "cors",
-        keepalive: false, // Disable keepalive for large session replay requests
-      });
-    } catch (error) {
-      console.error("Failed to send session replay batch:", error);
-      throw error;
-    }
-
-    // Some skip responses are plain text; only a JSON body can carry a stop signal.
-    try {
-      return (await response.json()) as SessionReplayBatchResult;
-    } catch {
-      return;
     }
   }
 
@@ -583,7 +544,7 @@ export class Tracker {
   flushForExit(): void {
     this.heatmapCollector?.flushForExit();
     // Flush replay without stopping capture if navigation is canceled.
-    this.sessionRecorder?.onPageChange();
+    this.sessionRecorder?.flushForExit();
   }
 
   // Cleanup
@@ -592,6 +553,5 @@ export class Tracker {
       this.sessionRecorder.cleanup();
     }
     this.heatmapCollector?.cleanup();
-    this.pageCapture.cleanup();
   }
 }

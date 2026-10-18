@@ -64,6 +64,16 @@ describe("request lifecycle logging", () => {
     ]);
   });
 
+  it.each(["/api/recording.js", "/api/heatmaps.js", "/api/page-capture.js"])(
+    "logs successful feature asset %s at debug",
+    async route => {
+      const { app, events } = createApp();
+      app.get(route, () => "script");
+      await app.inject({ method: "GET", url: route });
+      expect(requestEvents(events)).toEqual([expect.objectContaining({ level: 20, route, statusCode: 200 })]);
+    }
+  );
+
   it("logs handled response failures from their status code", async () => {
     const { app, events } = createApp();
     app.get("/unavailable", (_request, reply) => reply.status(503).send({ error: "unavailable" }));

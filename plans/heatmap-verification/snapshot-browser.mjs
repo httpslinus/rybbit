@@ -9,9 +9,10 @@ import { createRequire } from "node:module";
 // or database is contacted, and captured DOM is never printed or saved.
 const require = createRequire(new URL("../../server/package.json", import.meta.url));
 const puppeteer = require("puppeteer");
-const [trackerScript, snapshotScript] = await Promise.all([
+const [trackerScript, snapshotScript, heatmapsScript] = await Promise.all([
   readFile(new URL("../../server/public/script.js", import.meta.url)),
-  readFile(new URL("../../server/public/heatmap-snapshot.js", import.meta.url)),
+  readFile(new URL("../../server/public/page-capture.js", import.meta.url)),
+  readFile(new URL("../../server/public/heatmaps.js", import.meta.url)),
 ]);
 const buckets = [320, 375, 425, 768, 1024, 1440, 1920];
 const bucketFor = width => buckets.reduce((nearest, bucket) =>
@@ -59,10 +60,10 @@ async function jsonBody(request) {
 const server = createServer(async (request, response) => {
   try {
     const path = new URL(request.url, "http://127.0.0.1").pathname;
-    if (path === "/api/script.js" || path === "/api/heatmap-snapshot.js") {
-      if (path.endsWith("heatmap-snapshot.js")) snapshotAssetRequests++;
+    if (["/api/script.js", "/api/page-capture.js", "/api/heatmaps.js"].includes(path)) {
+      if (path.endsWith("page-capture.js")) snapshotAssetRequests++;
       response.writeHead(200, { "Content-Type": "text/javascript" });
-      return response.end(path.endsWith("heatmap-snapshot.js") ? snapshotScript : trackerScript);
+      return response.end(path.endsWith("page-capture.js") ? snapshotScript : path.endsWith("heatmaps.js") ? heatmapsScript : trackerScript);
     }
     if (path.startsWith("/api/site/tracking-config/")) {
       response.writeHead(200, { "Content-Type": "application/json" });

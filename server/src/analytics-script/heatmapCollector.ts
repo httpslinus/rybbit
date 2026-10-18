@@ -4,6 +4,7 @@ import type { ScriptConfig } from "./types.js";
 import { reserveKeepalive } from "./keepalive.js";
 import { PageCapture } from "./pageCapture.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
+import type { FeatureRuntime } from "./featureTypes.js";
 
 const SAMPLE_TTL_MS = 30 * 60_000;
 const FLUSH_INTERVAL_MS = 5000;
@@ -152,16 +153,19 @@ export class HeatmapCollector {
   private snapshotInFlight = false;
   private readonly pageCapture: PageCapture;
   private readonly ownsPageCapture: boolean;
+  private readonly reserveKeepalive: typeof reserveKeepalive;
   private handledSnapshotRequests = new Set<string>();
 
   constructor(
     private config: ScriptConfig,
     userId = "",
-    pageCapture?: PageCapture
+    pageCapture?: PageCapture,
+    runtime?: FeatureRuntime
   ) {
     this.userId = userId;
-    this.pageCapture = pageCapture ?? new PageCapture(config);
+    this.pageCapture = pageCapture ?? new PageCapture(config, runtime?.pageAlreadyClicked, runtime?.capture);
     this.ownsPageCapture = !pageCapture;
+    this.reserveKeepalive = runtime?.reserveKeepalive ?? reserveKeepalive;
     this.samplingKey = sampleKey(config);
     this.batchPrefix = scopeId(this.samplingKey);
   }
@@ -729,6 +733,9 @@ export class HeatmapCollector {
           )
         )
           return;
+        // A recording checkpoint is indexed by the replay ingest service.
+        // Only standalone captures upload a separate DOM tree.
+        if (capture.source === "replay") return;
         const payload = JSON.stringify({ key: request.key, token: request.token, ...geometry, node: capture.node });
         if (new TextEncoder().encode(payload).byteLength > HEATMAP_MAX_SNAPSHOT_BYTES) return;
         const controller = new AbortController();
@@ -767,7 +774,7 @@ export class HeatmapCollector {
     // now, even if an ordinary fetch is pending. Same IDs make duplicates safe.
     for (const chunk of [...this.chunks].reverse()) {
       if (chunk.exitSending || exitBytes + chunk.bytes > HEATMAP_MAX_BATCH_BYTES) continue;
-      const release = reserveKeepalive(chunk.body);
+      const release = this.reserveKeepalive(chunk.body);
       if (!release) continue;
       exitBytes += chunk.bytes;
       chunk.exitSending = true;

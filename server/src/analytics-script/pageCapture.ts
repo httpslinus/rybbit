@@ -2,10 +2,13 @@ import type { HeatmapSnapshotContext, HeatmapSnapshotNode } from "@rybbit/shared
 import { sanitizeHeatmapSnapshot } from "@rybbit/shared/dist/heatmapSnapshot.js";
 import { capturePageContext, PageCaptureGuard } from "./pageCaptureContext.js";
 import type { ScriptConfig } from "./types.js";
+import type { PageCaptureBridge } from "./featureTypes.js";
 
 type StandaloneCapture = { capture: (config: ScriptConfig) => HeatmapSnapshotNode | null };
-export type CapturedPage = { node: HeatmapSnapshotNode; context: HeatmapSnapshotContext };
-type RecorderCapture = () => unknown;
+export type CapturedPage = { context: HeatmapSnapshotContext } & (
+  | { source: "replay" }
+  | { source: "standalone"; node: HeatmapSnapshotNode }
+);
 
 declare global {
   interface Window {
@@ -27,8 +30,8 @@ function loadStandaloneCapture(analyticsHost: string): Promise<void> {
       script.remove();
       reject(new Error("Page capture timed out"));
     }, 10_000);
-    // Preserve the public URL for existing proxies and cached tracker versions.
-    script.src = `${analyticsHost}/heatmap-snapshot.js`;
+    // The server also serves this asset under the legacy heatmap-snapshot URL.
+    script.src = `${analyticsHost}/page-capture.js`;
     script.async = true;
     script.onload = () => {
       window.clearTimeout(timer);
@@ -51,11 +54,12 @@ function loadStandaloneCapture(analyticsHost: string): Promise<void> {
 export class PageCapture {
   private readonly guard: PageCaptureGuard;
   private initialized = false;
-  private recorderCapture?: RecorderCapture;
+  private contextProvider = () => (this.canCapture() ? capturePageContext(this.config) : null);
 
   constructor(
     private readonly config: ScriptConfig,
-    pageAlreadyClicked = false
+    pageAlreadyClicked = false,
+    private readonly bridge: PageCaptureBridge = {}
   ) {
     this.guard = new PageCaptureGuard(config, pageAlreadyClicked);
   }
@@ -64,6 +68,7 @@ export class PageCapture {
     if (this.initialized) return;
     this.initialized = true;
     this.guard.initialize();
+    this.bridge.context = this.contextProvider;
   }
 
   canCapture(): boolean {
@@ -74,22 +79,14 @@ export class PageCapture {
     this.guard.onPageChange();
   }
 
-  registerRecorder(capture: RecorderCapture): () => void {
-    this.recorderCapture = capture;
-    return () => {
-      if (this.recorderCapture === capture) this.recorderCapture = undefined;
-    };
-  }
-
   async capture(isCurrent: () => boolean): Promise<CapturedPage | null> {
     const eligible = () => this.canCapture() && isCurrent();
     if (!eligible()) return null;
-    if (this.recorderCapture) {
+    if (this.bridge.capture) {
       try {
         const context = capturePageContext(this.config);
-        const node = this.recorderCapture();
-        // Sanitize a copy: the recorder must retain its original tree and IDs.
-        if (context && node && eligible()) return { context, node: sanitizeHeatmapSnapshot(node) };
+        const recorded = await this.bridge.capture();
+        if (context && recorded && eligible()) return { context, source: "replay" };
       } catch {
         // A failed or unavailable recorder must not prevent standalone capture.
       }
@@ -100,12 +97,12 @@ export class PageCapture {
     const context = capturePageContext(this.config);
     if (!context) return null;
     const node = standaloneCapture()?.capture(this.config);
-    return node && eligible() ? { context, node } : null;
+    return node && eligible() ? { context, source: "standalone", node: sanitizeHeatmapSnapshot(node) } : null;
   }
 
   cleanup(): void {
     this.initialized = false;
-    this.recorderCapture = undefined;
+    if (this.bridge.context === this.contextProvider) delete this.bridge.context;
     this.guard.cleanup();
   }
 }

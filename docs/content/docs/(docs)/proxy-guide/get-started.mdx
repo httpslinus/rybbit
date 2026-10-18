@@ -45,11 +45,17 @@ This minimal setup enables basic pageview and event tracking, but won't support 
 | Endpoint | Method | Purpose | Cache |
 |----------|--------|---------|-------|
 | `/api/script.js` | GET | Main tracking script (minified) | 1 hour |
-| `/api/replay.js` | GET | Session replay recording script | 1 day |
+| `/api/recording.js` | GET | Session recording controller and library | 1 day |
+| `/api/heatmaps.js` | GET | Heatmap click and scroll collection | 1 hour |
+| `/api/page-capture.js` | GET | Standalone page capture, loaded only when needed | 1 hour |
+| `/api/replay.js` | GET | Recording library for cached older trackers | 1 day |
+| `/api/heatmap-snapshot.js` | GET | Page capture alias for cached older trackers | 1 hour |
 | `/api/metrics.js` | GET | Web Vitals metrics script | 1 day |
 | `/api/track` | POST | Event tracking endpoint | No cache |
 | `/api/identify` | POST | User identification endpoint | No cache |
 | `/api/session-replay/record/:siteId` | POST | Session replay data upload | No cache |
+| `/api/heatmaps/record/:siteId` | POST | Heatmap interaction upload | No cache |
+| `/api/heatmaps/snapshot/:siteId` | POST | Standalone heatmap background upload | No cache |
 | `/api/site/tracking-config/:siteId` | GET | Site configuration | 5 minutes |
 
 This setup supports all Rybbit features including session replay, Web Vitals, and custom events.
@@ -58,7 +64,7 @@ This setup supports all Rybbit features including session replay, Web Vitals, an
 </Tabs>
 
 <Callout type="info">
-The session replay and metrics scripts (`/api/replay.js` and `/api/metrics.js`) are loaded dynamically by the main script when those features are enabled in your site settings. You don't need to include them in your HTML.
+The tracker loads `/api/recording.js` only for enabled session recording and `/api/heatmaps.js` only for enabled heatmaps. `/api/page-capture.js` loads only when a nominated heatmap background cannot use recording. Forward these paths through first-party proxies; include only `script.js` in your HTML.
 </Callout>
 
 ## Implementation Steps

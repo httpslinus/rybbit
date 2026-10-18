@@ -4,6 +4,10 @@ const HIGH_VOLUME_SUCCESS_ROUTES = new Set([
   "/api/identify",
   "/api/metrics.js",
   "/api/replay.js",
+  "/api/recording.js",
+  "/api/heatmaps.js",
+  "/api/page-capture.js",
+  "/api/heatmap-snapshot.js",
   "/api/script.js",
   "/api/track",
 ]);
@@ -17,7 +21,11 @@ function requestPath(request: FastifyRequest): string {
 }
 
 function isHighVolumeSuccessRoute(route: string): boolean {
-  return HIGH_VOLUME_SUCCESS_ROUTES.has(route) || route.endsWith("/session-replay/record/:siteId") || route.endsWith("/heatmaps/record/:siteId");
+  return (
+    HIGH_VOLUME_SUCCESS_ROUTES.has(route) ||
+    route.endsWith("/session-replay/record/:siteId") ||
+    route.endsWith("/heatmaps/record/:siteId")
+  );
 }
 
 function responseTimeMs(reply: FastifyReply): number {

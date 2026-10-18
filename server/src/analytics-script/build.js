@@ -56,8 +56,11 @@ try {
   await buildScript("./index.ts", "script.js");
   // Build only the recorder. Shipping rrweb's full UMD bundle also sends the
   // playback engine and its CSS parser to every recorded visitor.
-  await buildScript("./sessionRecorderBundle.ts", "rrweb.min.js");
-  await buildScript("./standalonePageCapture.ts", "heatmap-snapshot.js", true, [pageCaptureBuildPlugin()]);
+  await buildScript("./sessionRecorderBundle.ts", "recording.js");
+  await buildScript("./heatmapBundle.ts", "heatmaps.js");
+  await buildScript("./standalonePageCapture.ts", "page-capture.js", true, [pageCaptureBuildPlugin()]);
+  // Existing cached trackers still request the recording library on its own.
+  await buildScript("./sessionRecorderLibrary.ts", "rrweb.min.js");
 } catch (error) {
   console.error("Build failed:", error);
   process.exitCode = 1;

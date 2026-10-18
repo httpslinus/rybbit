@@ -167,6 +167,8 @@ export interface SessionReplayEvent {
 
 /** What the server answers to a replay batch, as far as the recorder cares. */
 export interface SessionReplayBatchResult {
+  /** False when the server acknowledged but discarded this recording batch. */
+  recorded?: boolean;
   /** The session hit its replay size cap; stop recording for this page. */
   stopRecording?: boolean;
 }

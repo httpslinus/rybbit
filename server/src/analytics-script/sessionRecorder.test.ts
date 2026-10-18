@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionRecorder } from "./sessionRecorder.js";
 import { PageCapture } from "./pageCapture.js";
+import type { PageCaptureBridge } from "./featureTypes.js";
 import type { ScriptConfig } from "./types.js";
 
 const config: ScriptConfig = {
@@ -76,6 +77,8 @@ describe("SessionRecorder identity", () => {
 });
 
 describe("SessionRecorder snapshot attribution", () => {
+  let capture: PageCapture;
+  let bridge: PageCaptureBridge;
   let originalLocation: PropertyDescriptor | undefined;
   let location: { href: string };
   let emit: (event: unknown) => void;
@@ -108,16 +111,25 @@ describe("SessionRecorder snapshot attribution", () => {
       }),
     };
     sendBatch = vi.fn().mockResolvedValue(undefined);
+    bridge = {};
+    capture = new PageCapture(
+      { ...config, skipPatterns: ["/private/**"], maskPatterns: ["/user/*/profile"] },
+      false,
+      bridge
+    );
+    capture.initialize();
     recorder = new SessionRecorder(
       { ...config, skipPatterns: ["/private/**"], maskPatterns: ["/user/*/profile"] },
       "",
-      sendBatch
+      sendBatch,
+      bridge
     );
     await recorder.initialize();
   });
 
   afterEach(() => {
     recorder.cleanup();
+    capture.cleanup();
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     delete window.rrweb;
     document.querySelectorAll('script[src$="/replay.js"]').forEach(script => script.remove());
@@ -197,48 +209,16 @@ describe("SessionRecorder snapshot attribution", () => {
 
   it("inherits clicks observed before the recorder was created", async () => {
     recorder.cleanup();
-    const capture = new PageCapture(config, true);
-    recorder = new SessionRecorder(config, "", sendBatch, capture);
+    capture.cleanup();
+    capture = new PageCapture(config, true, bridge);
+    capture.initialize();
+    recorder = new SessionRecorder(config, "", sendBatch, bridge);
     await recorder.initialize();
     emit({ type: 2, data: { node: {} }, timestamp: 1 });
     recorder.stopRecording();
     capture.cleanup();
     expect(sendBatch.mock.calls[0][0].events[0]).toMatchObject({ data: { heatmapEligible: false } });
     expect(sendBatch.mock.calls[0][0].events[0]).not.toHaveProperty("snapshotContext");
-  });
-
-  it("tracks clicks while the replay library is still loading", async () => {
-    recorder.cleanup();
-    delete window.rrweb;
-    listeners.mockClear();
-    recorder = new SessionRecorder(config, "", sendBatch);
-    const initializing = recorder.initialize();
-    click();
-    window.rrweb = {
-      record: vi.fn(options => {
-        emit = options.emit;
-        return vi.fn();
-      }),
-    };
-    document.querySelector('script[src$="/replay.js"]')!.dispatchEvent(new Event("load"));
-    await initializing;
-    emit({ type: 2, data: { node: {} }, timestamp: 1 });
-    recorder.stopRecording();
-    expect(sendBatch.mock.calls[0][0].events[0]).toMatchObject({ data: { heatmapEligible: false } });
-    expect(sendBatch.mock.calls[0][0].events[0]).not.toHaveProperty("snapshotContext");
-  });
-
-  it("does not restart recording when its script finishes loading after cleanup", async () => {
-    recorder.cleanup();
-    delete window.rrweb;
-    recorder = new SessionRecorder(config, "", sendBatch);
-    const initializing = recorder.initialize();
-    recorder.cleanup();
-    window.rrweb = { record: vi.fn(() => vi.fn()) };
-    document.querySelector('script[src$="/replay.js"]')!.dispatchEvent(new Event("load"));
-    await initializing;
-    expect(window.rrweb.record).not.toHaveBeenCalled();
-    expect(recorder.isActive()).toBe(false);
   });
 
   it("leaves invalid viewport geometry unindexed", () => {
@@ -292,6 +272,7 @@ describe("SessionRecorder size cap", () => {
 describe("SessionRecorder shared page capture", () => {
   let recorder: SessionRecorder;
   let capture: PageCapture;
+  let bridge: PageCaptureBridge;
   let emit: (event: unknown) => void;
   let sendBatch: ReturnType<typeof vi.fn>;
   let takeFullSnapshot: ReturnType<typeof vi.fn>;
@@ -323,9 +304,11 @@ describe("SessionRecorder shared page capture", () => {
         { takeFullSnapshot }
       ),
     };
-    capture = new PageCapture(config);
+    bridge = {};
+    capture = new PageCapture(config, false, bridge);
+    capture.initialize();
     sendBatch = vi.fn().mockResolvedValue(undefined);
-    recorder = new SessionRecorder(config, "visitor", sendBatch, capture);
+    recorder = new SessionRecorder(config, "visitor", sendBatch, bridge);
     await recorder.initialize();
   });
 
@@ -339,10 +322,11 @@ describe("SessionRecorder shared page capture", () => {
   it("uses the public snapshot API and leaves the complete replay event untouched", async () => {
     const captured = await capture.capture(() => true);
     expect(takeFullSnapshot).toHaveBeenCalledOnce();
-    expect(captured?.node.childNodes).toEqual([{ type: 2, id: 2, tagName: "button", attributes: {}, childNodes: [] }]);
-    expect(captured?.node).not.toBe(node);
+    expect(captured?.source).toBe("replay");
+    expect(captured).not.toHaveProperty("node");
+    expect(sendBatch).toHaveBeenCalledOnce();
     expect(recorder.isActive()).toBe(true);
-    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+    expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
 
     recorder.onPageChange();
     expect(sendBatch.mock.calls[0][0].events[0].data.node).toBe(node);
@@ -350,43 +334,74 @@ describe("SessionRecorder shared page capture", () => {
     expect(node.childNodes[1].tagName).toBe("script");
   });
 
-  it.each(["stopped", "capped", "unsampled", "disabled", "older recorder", "capture failure", "missing snapshot"])(
-    "keeps standalone capture available with %s recording",
-    async reason => {
-      if (reason === "stopped") recorder.stopRecording();
-      else if (reason === "capped") {
-        sendBatch.mockResolvedValue({ stopRecording: true });
-        emit({ type: 3, data: {}, timestamp: Date.now() });
-        recorder.onPageChange();
-        await vi.waitFor(() => expect(recorder.isActive()).toBe(false));
-      } else if (reason === "unsampled" || reason === "disabled") {
-        recorder.cleanup();
-        recorder = new SessionRecorder(
-          { ...config, enableSessionReplay: reason !== "disabled", sessionReplaySampleRate: 0 },
-          "visitor",
-          sendBatch,
-          capture
-        );
-        await recorder.initialize();
-      } else if (reason === "older recorder") delete window.rrweb!.record.takeFullSnapshot;
-      else if (reason === "capture failure") {
-        takeFullSnapshot.mockImplementation(() => {
-          throw new Error("Snapshot failed");
-        });
-      } else takeFullSnapshot.mockImplementation(() => undefined);
+  it.each([
+    "stopped",
+    "capped",
+    "unsampled",
+    "disabled",
+    "older recorder",
+    "capture failure",
+    "missing snapshot",
+    "upload failure",
+    "not recorded",
+  ])("keeps standalone capture available with %s recording", async reason => {
+    if (reason === "stopped") recorder.stopRecording();
+    else if (reason === "capped") {
+      sendBatch.mockResolvedValue({ stopRecording: true });
+      emit({ type: 3, data: {}, timestamp: Date.now() });
+      recorder.onPageChange();
+      await vi.waitFor(() => expect(recorder.isActive()).toBe(false));
+    } else if (reason === "unsampled" || reason === "disabled") {
+      recorder.cleanup();
+      recorder = new SessionRecorder(
+        { ...config, enableSessionReplay: reason !== "disabled", sessionReplaySampleRate: 0 },
+        "visitor",
+        sendBatch,
+        bridge
+      );
+      if (reason !== "unsampled") await recorder.initialize();
+    } else if (reason === "older recorder") delete window.rrweb!.record.takeFullSnapshot;
+    else if (reason === "capture failure") {
+      takeFullSnapshot.mockImplementation(() => {
+        throw new Error("Snapshot failed");
+      });
+    } else if (reason === "upload failure") sendBatch.mockRejectedValue(new Error("Upload failed"));
+    else if (reason === "not recorded") sendBatch.mockResolvedValue({ recorded: false });
+    else takeFullSnapshot.mockImplementation(() => undefined);
 
-      const fallback = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
-      window.rybbitPageCapture = { capture: fallback };
-      expect((await capture.capture(() => true))?.node.type).toBe(0);
-      expect(fallback).toHaveBeenCalledOnce();
-    }
-  );
+    const fallback = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitPageCapture = { capture: fallback };
+    expect(await capture.capture(() => true)).toMatchObject({ source: "standalone", node: { type: 0 } });
+    expect(fallback).toHaveBeenCalledOnce();
+  });
+
+  it("waits for the checkpoint upload even when its event fills the recording batch", async () => {
+    recorder.cleanup();
+    recorder = new SessionRecorder({ ...config, sessionReplayBatchSize: 1 }, "visitor", sendBatch, bridge);
+    await recorder.initialize();
+    let rejectUpload!: (error: Error) => void;
+    sendBatch.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectUpload = reject;
+        })
+    );
+    const fallback = vi.fn(() => ({ type: 0, id: 1, childNodes: [] }));
+    window.rybbitPageCapture = { capture: fallback };
+    const capturing = capture.capture(() => true);
+    expect(sendBatch).toHaveBeenCalledOnce();
+    expect(fallback).not.toHaveBeenCalled();
+    rejectUpload(new Error("offline"));
+    expect(await capturing).toMatchObject({ source: "standalone" });
+    expect(fallback).toHaveBeenCalledOnce();
+    sendBatch.mockResolvedValue(undefined);
+  });
 
   it("can resume supplying captures after a manual stop without restarting the shared guard", async () => {
     recorder.stopRecording();
     expect(capture.canCapture()).toBe(true);
     recorder.startRecording();
-    expect((await capture.capture(() => true))?.node.type).toBe(0);
+    expect((await capture.capture(() => true))?.source).toBe("replay");
     expect(takeFullSnapshot).toHaveBeenCalledOnce();
   });
 });

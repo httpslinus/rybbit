@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Tracker } from "./tracking.js";
 import { HeatmapCollector } from "./heatmapCollector.js";
+import { FeatureLoader } from "./featureLoader.js";
 import { ScriptConfig } from "./types.js";
 import { resetBotScoreCacheForTests } from "./botSignals.js";
 import { reserveKeepalive } from "./keepalive.js";
@@ -16,6 +17,9 @@ describe("Tracker", () => {
 
   beforeEach(() => {
     resetBotScoreCacheForTests();
+    window.rybbitModules = {
+      heatmaps: { create: (config, userId, runtime) => new HeatmapCollector(config, userId, undefined, runtime) },
+    };
 
     // Reset fetch mock
     vi.mocked(global.fetch).mockReset();
@@ -125,6 +129,7 @@ describe("Tracker", () => {
 
   afterEach(() => {
     tracker.cleanup();
+    delete window.rybbitModules;
     vi.clearAllMocks();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -591,36 +596,20 @@ describe("Tracker", () => {
     });
   });
 
-  describe("shared capture lifecycle", () => {
-    afterEach(() => {
-      delete window.rrweb;
+  describe("deferred feature loading", () => {
+    it("loads heatmaps independently without fetching recording", () => {
+      const initialize = vi.spyOn(HeatmapCollector.prototype, "initialize").mockImplementation(() => {});
+      tracker = new Tracker({ ...config, enableSessionReplay: false, enableHeatmaps: true });
+      expect(initialize).toHaveBeenCalledOnce();
+      expect(document.querySelector('script[src*="recording.js"]')).toBeNull();
     });
 
-    it("shares one click guard between recording and heatmap collection", () => {
-      window.rrweb = { record: vi.fn(() => vi.fn()) };
-      const listeners = vi.spyOn(window, "addEventListener");
-      tracker = new Tracker({ ...config, enableSessionReplay: true, enableHeatmaps: true, heatmapSampleRate: 100 });
-      expect(listeners.mock.calls.filter(([name]) => name === "click")).toHaveLength(1);
-    });
-
-    it("remembers clicks before manually starting a sampled-out recording", () => {
-      let emit: (event: unknown) => void;
-      window.rrweb = {
-        record: vi.fn(options => {
-          emit = options.emit;
-          return vi.fn();
-        }),
-      };
-      const listeners = vi.spyOn(window, "addEventListener");
+    it("keeps zero-rate replay out of the page until manually started", () => {
+      const initialize = vi.spyOn(FeatureLoader.prototype, "initialize").mockResolvedValue();
       tracker = new Tracker({ ...config, enableSessionReplay: true, sessionReplaySampleRate: 0 });
-      expect(window.rrweb.record).not.toHaveBeenCalled();
-      const listener = listeners.mock.calls.find(([name]) => name === "click")![1] as EventListener;
-      listener({ isTrusted: true, button: 0 } as MouseEvent);
+      expect(initialize).not.toHaveBeenCalled();
       tracker.startSessionReplay();
-      emit!({ type: 2, data: { node: {} }, timestamp: Date.now() });
-      tracker.stopSessionReplay();
-      const request = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/session-replay/record/"));
-      expect(JSON.parse(request![1]!.body as string).events[0].data.heatmapEligible).toBe(false);
+      expect(initialize).toHaveBeenCalledOnce();
     });
   });
 

@@ -7,7 +7,7 @@ import puppeteer from "puppeteer";
 
 // Compare the shipped standalone capture with an ordinary build of the same
 // entry against rrweb's complete published package. No captured DOM is saved.
-const candidate = await readFile(new URL("../../public/heatmap-snapshot.js", import.meta.url), "utf8");
+const candidate = await readFile(new URL("../../public/page-capture.js", import.meta.url), "utf8");
 assert.doesNotMatch(candidate, /\bpostcss\b/, "Page capture includes replay-only CSS processing");
 const baselineBuild = await build({
   entryPoints: [fileURLToPath(new URL("./standalonePageCapture.ts", import.meta.url))],

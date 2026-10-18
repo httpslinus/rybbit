@@ -1,37 +1,7 @@
 import type { record } from "@rrweb/record";
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch, SessionReplayBatchResult } from "./types.js";
 import { pageCapturePrivacyOptions, pageCaptureSlimDOMOptions } from "./pageCapturePrivacy.js";
-import { capturePageContext } from "./pageCaptureContext.js";
-import { PageCapture } from "./pageCapture.js";
-
-const SAMPLE_STORAGE_KEY = "rybbit-replay-sampled";
-
-/**
- * Determines if this session should have replay enabled based on sample rate.
- * Uses sessionStorage to persist the decision for the entire browser session.
- */
-function shouldSampleSession(sampleRate: number): boolean {
-  // 100% = always record, 0% = never record
-  if (sampleRate >= 100) return true;
-  if (sampleRate <= 0) return false;
-
-  // Check if we already made a decision for this session
-  try {
-    const existingDecision = sessionStorage.getItem(SAMPLE_STORAGE_KEY);
-    if (existingDecision !== null) {
-      return existingDecision === "1";
-    }
-
-    // Make new sampling decision
-    const sampled = Math.random() * 100 < sampleRate;
-    sessionStorage.setItem(SAMPLE_STORAGE_KEY, sampled ? "1" : "0");
-
-    return sampled;
-  } catch {
-    // sessionStorage not available, default to sampling
-    return Math.random() * 100 < sampleRate;
-  }
-}
+import type { PageCaptureBridge } from "./featureTypes.js";
 
 declare global {
   interface Window {
@@ -47,9 +17,6 @@ export class SessionRecorder {
   private config: ScriptConfig;
   private isRecording: boolean = false;
   private disposed = false;
-  private readonly pageCapture: PageCapture;
-  private readonly ownsPageCapture: boolean;
-  private unregisterCapture?: () => void;
   private pendingCapture?: { node?: unknown };
   // Set once the server reports the session is over its size cap; recording
   // stays off for the rest of this page.
@@ -58,17 +25,15 @@ export class SessionRecorder {
   private userId: string;
   private eventBuffer: SessionReplayEvent[] = [];
   private batchTimer?: number;
-  private sendBatch: (batch: SessionReplayBatch) => Promise<SessionReplayBatchResult | void>;
+  private sendBatch: (batch: SessionReplayBatch, exit?: boolean) => Promise<SessionReplayBatchResult | void>;
 
   constructor(
     config: ScriptConfig,
     userId: string,
-    sendBatch: (batch: SessionReplayBatch) => Promise<SessionReplayBatchResult | void>,
-    pageCapture?: PageCapture
+    sendBatch: (batch: SessionReplayBatch, exit?: boolean) => Promise<SessionReplayBatchResult | void>,
+    private bridge: PageCaptureBridge = {}
   ) {
     this.config = config;
-    this.pageCapture = pageCapture ?? new PageCapture(config);
-    this.ownsPageCapture = !pageCapture;
     this.userId = userId;
     this.sendBatch = sendBatch;
   }
@@ -78,36 +43,7 @@ export class SessionRecorder {
       return;
     }
 
-    // Check sample rate if specified
-    const sampleRate = this.config.sessionReplaySampleRate;
-    if (sampleRate !== undefined && !shouldSampleSession(sampleRate)) {
-      return;
-    }
-
-    this.pageCapture.initialize();
-
-    // Load rrweb if not already loaded
-    if (!window.rrweb) {
-      await this.loadRrweb();
-    }
-
-    if (!this.disposed && window.rrweb) {
-      this.startRecording();
-    }
-  }
-
-  private async loadRrweb(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      // Load from same origin to avoid CDN blocking
-      script.src = `${this.config.analyticsHost}/replay.js`;
-      script.async = false;
-      script.onload = () => {
-        resolve();
-      };
-      script.onerror = () => reject(new Error("Failed to load rrweb"));
-      document.head.appendChild(script);
-    });
+    this.startRecording();
   }
 
   public startRecording(): void {
@@ -115,7 +51,6 @@ export class SessionRecorder {
       return;
     }
 
-    this.pageCapture.initialize();
     try {
       // Default sampling configuration (can be overridden via config)
       const defaultSampling = {
@@ -139,8 +74,8 @@ export class SessionRecorder {
 
       const recordingOptions: any = {
         emit: (event: any) => {
-          const heatmapEligible = event.type === 2 && this.pageCapture.canCapture();
-          const snapshotContext = heatmapEligible ? capturePageContext(this.config) : null;
+          const snapshotContext = event.type === 2 ? this.bridge.context?.() : null;
+          const heatmapEligible = Boolean(snapshotContext);
           if (this.pendingCapture && heatmapEligible && snapshotContext) this.pendingCapture.node = event.data?.node;
           this.addEvent({
             type: event.type,
@@ -167,7 +102,7 @@ export class SessionRecorder {
       if (!this.stopRecordingFn) return;
 
       this.isRecording = true;
-      this.unregisterCapture = this.pageCapture.registerRecorder(() => this.capturePage());
+      this.bridge.capture = this.capturePage;
       this.setupBatchTimer();
     } catch (error) {
       // Recording failed silently
@@ -184,8 +119,7 @@ export class SessionRecorder {
     }
 
     this.isRecording = false;
-    this.unregisterCapture?.();
-    this.unregisterCapture = undefined;
+    if (this.bridge.capture === this.capturePage) delete this.bridge.capture;
     this.clearBatchTimer();
 
     // Send any remaining events
@@ -198,26 +132,27 @@ export class SessionRecorder {
     return this.isRecording;
   }
 
-  private capturePage(): unknown {
+  private capturePage = async (): Promise<boolean> => {
     const takeFullSnapshot = window.rrweb?.record.takeFullSnapshot;
-    if (!this.isRecording || !takeFullSnapshot || !this.pageCapture.canCapture()) return null;
+    if (!this.isRecording || !takeFullSnapshot || !this.bridge.context?.()) return false;
     const pending: { node?: unknown } = {};
     this.pendingCapture = pending;
     try {
-      // Use rrweb's public API so its mirror and mutation observers stay intact.
-      // This fresh checkpoint also remains in the normal replay event stream.
+      // Keep a fresh checkpoint in the recording stream. The server indexes its
+      // existing DOM rather than accepting a second upload through heatmaps.
       takeFullSnapshot();
-      return pending.node ?? null;
+      if (!pending.node) return false;
     } finally {
       this.pendingCapture = undefined;
     }
-  }
+    return this.flushEvents();
+  };
 
   private addEvent(event: SessionReplayEvent): void {
     this.eventBuffer.push(event);
 
     // Auto-flush if buffer is full
-    if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
+    if (!this.pendingCapture && this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
       this.flushEvents();
     }
   }
@@ -238,9 +173,9 @@ export class SessionRecorder {
     }
   }
 
-  private async flushEvents(): Promise<void> {
+  private async flushEvents(exit = false): Promise<boolean> {
     if (this.eventBuffer.length === 0) {
-      return;
+      return true;
     }
 
     const events = [...this.eventBuffer];
@@ -258,13 +193,16 @@ export class SessionRecorder {
     };
 
     try {
-      const result = await this.sendBatch(batch);
+      const result = await this.sendBatch(batch, exit);
       if (result?.stopRecording) {
         this.stopForSizeCap();
+        return false;
       }
+      return result?.recorded !== false;
     } catch (error) {
       // Re-queue the events for retry since this batch failed
-      this.eventBuffer.unshift(...events);
+      if (!this.capped) this.eventBuffer.unshift(...events);
+      return false;
     }
   }
 
@@ -276,8 +214,7 @@ export class SessionRecorder {
       this.stopRecordingFn = undefined;
     }
     this.isRecording = false;
-    this.unregisterCapture?.();
-    this.unregisterCapture = undefined;
+    if (this.bridge.capture === this.capturePage) delete this.bridge.capture;
     this.clearBatchTimer();
     this.eventBuffer = [];
   }
@@ -300,17 +237,21 @@ export class SessionRecorder {
 
   // Handle page navigation for SPAs
   public onPageChange(): void {
-    this.pageCapture.onPageChange();
     if (this.isRecording) {
       // Flush current events before page change
       this.flushEvents();
     }
   }
 
+  public flushForExit(): void {
+    if (!this.eventBuffer.length) return;
+    const bytes = new TextEncoder().encode(JSON.stringify(this.eventBuffer)).byteLength;
+    void this.flushEvents(bytes <= 48 * 1024);
+  }
+
   // Cleanup on page unload
   public cleanup(): void {
     this.disposed = true;
     this.stopRecording();
-    if (this.ownsPageCapture) this.pageCapture.cleanup();
   }
 }

@@ -101,7 +101,7 @@ describe("HeatmapCollector", () => {
     Object.defineProperty(window, "location", { value: location, configurable: true });
     document.body.innerHTML = '<button data-private="secret">Private text</button><input value="private input">';
     delete window.rybbitPageCapture;
-    document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
+    document.querySelectorAll('script[src*="page-capture.js"]').forEach(script => script.remove());
     listeners = vi.spyOn(document, "addEventListener");
     windowListeners = vi.spyOn(window, "addEventListener");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200 }));
@@ -155,7 +155,7 @@ describe("HeatmapCollector", () => {
     for (const recorder of recorders) recorder.cleanup();
     for (const recorder of recorders) await recorder.flush();
     delete window.rybbitPageCapture;
-    document.querySelectorAll('script[src*="heatmap-snapshot.js"]').forEach(script => script.remove());
+    document.querySelectorAll('script[src*="page-capture.js"]').forEach(script => script.remove());
     if (originalLocation) Object.defineProperty(window, "location", originalLocation);
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -910,7 +910,7 @@ describe("HeatmapCollector", () => {
       node: { type: 0, id: 1, childNodes: [] },
     });
     expect(batches()[0]).not.toHaveProperty("node");
-    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+    expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
   });
 
   it.each(["click", "invalid click", "identity", "query", "resume"])(
@@ -933,7 +933,7 @@ describe("HeatmapCollector", () => {
       await vi.advanceTimersByTimeAsync(0);
       expect(capture).not.toHaveBeenCalled();
       expect(snapshotUploads()).toHaveLength(0);
-      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+      expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
       expect(events().some(event => event.type === "scroll")).toBe(true);
       expect(events().filter(event => event.type === "click")).toHaveLength(change === "invalid click" ? 0 : 1);
     }
@@ -976,8 +976,8 @@ describe("HeatmapCollector", () => {
       const recorder = start({ skipPatterns: ["/private/**"] });
       await recorder.flush();
       await vi.advanceTimersByTimeAsync(0);
-      const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
-      expect(script?.src).toBe("https://analytics.example.com/heatmap-snapshot.js");
+      const script = document.querySelector<HTMLScriptElement>('script[src*="page-capture.js"]');
+      expect(script?.src).toBe("https://analytics.example.com/page-capture.js");
       if (race === "navigation" || race === "skip" || race === "return") {
         location.href = race === "skip" ? "https://example.com/private/account" : "https://example.com/next";
         recorder.onPageChange();
@@ -1082,7 +1082,7 @@ describe("HeatmapCollector", () => {
       }
       resolveBody({ snapshotRequest: request! });
       await vi.advanceTimersByTimeAsync(0);
-      expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+      expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
       expect(snapshotUploads()).toHaveLength(0);
     }
   );
@@ -1092,10 +1092,10 @@ describe("HeatmapCollector", () => {
     const recorder = start();
     await recorder.flush();
     await vi.advanceTimersByTimeAsync(0);
-    const script = document.querySelector<HTMLScriptElement>('script[src*="heatmap-snapshot.js"]');
+    const script = document.querySelector<HTMLScriptElement>('script[src*="page-capture.js"]');
     script!.dispatchEvent(new Event("error"));
     await vi.advanceTimersByTimeAsync(5000);
-    expect(document.querySelector('script[src*="heatmap-snapshot.js"]')).toBeNull();
+    expect(document.querySelector('script[src*="page-capture.js"]')).toBeNull();
     expect(snapshotUploads()).toHaveLength(0);
     expect(batches()).toHaveLength(1);
   });

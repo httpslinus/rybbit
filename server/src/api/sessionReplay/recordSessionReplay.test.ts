@@ -132,7 +132,7 @@ describe("recordSessionReplay exclusions", () => {
       origin: "https://example.com",
       referrer: "https://example.com/admin/users",
     });
-    expect(reply.sentPayload).toEqual({ success: true });
+    expect(reply.sentPayload).toEqual({ success: true, recorded: true });
   });
 
   it("tells the script to stop recording once the session is over its size cap", async () => {
@@ -143,9 +143,19 @@ describe("recordSessionReplay exclusions", () => {
 
     expect(reply.sentPayload).toEqual({
       success: true,
+      recorded: false,
       stopRecording: true,
       message: "Session replay size limit reached",
     });
+  });
+
+  it.each(["disabled", "unavailable"])("reports that %s recording batches were not stored", async reason => {
+    if (reason === "disabled") mocks.getConfig.mockResolvedValue({ ...baseConfig, sessionReplay: false });
+    else mocks.isSiteWithoutReplay.mockReturnValue(true);
+    const reply = createReply();
+    await recordSessionReplay(createRequest(), reply);
+    expect(reply.sentPayload).toMatchObject({ success: true, recorded: false });
+    expect(mocks.recordEvents).not.toHaveBeenCalled();
   });
 
   it("maps an IP Site Exclusion Decision to the replay skip response", async () => {
@@ -177,6 +187,7 @@ describe("recordSessionReplay exclusions", () => {
     expect(mocks.recordEvents).not.toHaveBeenCalled();
     expect(reply.sentPayload).toEqual({
       success: true,
+      recorded: false,
       message: "Session replay not recorded - IP excluded",
     });
   });
@@ -204,6 +215,7 @@ describe("recordSessionReplay exclusions", () => {
     expect(reply.status).toHaveBeenCalledWith(200);
     expect(reply.sentPayload).toEqual({
       success: true,
+      recorded: false,
       message: "Session replay not recorded - path excluded",
     });
   });
@@ -240,6 +252,7 @@ describe("recordSessionReplay exclusions", () => {
     expect(mocks.recordEvents).not.toHaveBeenCalled();
     expect(reply.sentPayload).toEqual({
       success: true,
+      recorded: false,
       message: "Session replay not recorded - hostname excluded",
     });
   });
@@ -266,6 +279,7 @@ describe("recordSessionReplay exclusions", () => {
     expect(mocks.recordEvents).not.toHaveBeenCalled();
     expect(reply.sentPayload).toEqual({
       success: true,
+      recorded: false,
       message: "Session replay not recorded - user agent excluded",
     });
   });

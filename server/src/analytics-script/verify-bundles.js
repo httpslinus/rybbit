@@ -9,14 +9,23 @@ import puppeteer from "puppeteer";
 const publicDir = new URL("../../public/", import.meta.url);
 const sizes = {};
 for (const [name, budget] of [
-  ["script.js", 18_000],
+  ["script.js", 11_000],
+  ["recording.js", 25_000],
+  ["heatmaps.js", 7_500],
   ["rrweb.min.js", 25_000],
-  ["heatmap-snapshot.js", 9_000],
+  ["page-capture.js", 9_000],
 ]) {
   const code = await readFile(new URL(name, publicDir));
   sizes[name] = { raw: code.length, gzip: gzipSync(code).length };
   assert.ok(sizes[name].gzip <= budget, `${name} exceeds its ${budget}-byte gzip budget`);
 }
+
+const core = await readFile(new URL("script.js", publicDir), "utf8");
+assert.doesNotMatch(
+  core,
+  /Snapshot exceeds size limit|rybbit-heatmaps:|checkoutEveryNms|heatmaps\/record\//,
+  "Feature implementation leaked into the core"
+);
 
 const browser = await puppeteer.launch({ headless: true });
 const runtimeErrors = [];
@@ -29,7 +38,7 @@ try {
     <div class="rr-block">blocked-secret</div><div class="rr-mask">masked-secret</div>
     <div data-private>selector-secret</div><input id="input" value="input-secret">
     <button id="button">Click</button><div id="dynamic"></div></body></html>`);
-  await page.addScriptTag({ path: fileURLToPath(new URL("rrweb.min.js", publicDir)) });
+  await page.addScriptTag({ path: fileURLToPath(new URL("recording.js", publicDir)) });
   await page.evaluate(() => {
     window.recorded = [];
     window.stopRecording = window.rrweb.record({
@@ -56,7 +65,7 @@ try {
   const privateContent = /blocked-secret|masked-secret|selector-secret|input-secret|changed-secret/;
   assert.equal(await page.evaluate(() => typeof window.rrweb.Replayer), "undefined");
 
-  await page.addScriptTag({ path: fileURLToPath(new URL("heatmap-snapshot.js", publicDir)) });
+  await page.addScriptTag({ path: fileURLToPath(new URL("page-capture.js", publicDir)) });
   assert.equal(
     await page.evaluate(() => window.rybbitPageCapture.capture === window.rybbitHeatmapSnapshot.capture),
     true,
