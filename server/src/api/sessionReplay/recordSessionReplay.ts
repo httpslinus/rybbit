@@ -124,12 +124,18 @@ export async function recordSessionReplay(
     const referrer = request.headers.referer || "";
 
     const sessionReplayService = new SessionReplayIngestService();
-    await sessionReplayService.recordEvents(siteId, body, {
+    const { capped } = await sessionReplayService.recordEvents(siteId, body, {
       userAgent,
       ipAddress: requestIP,
       origin,
       referrer,
     });
+
+    if (capped) {
+      // Tells the tracking script to stop recording, so a capped session stops
+      // sending batches instead of having each one refused.
+      return reply.send({ success: true, stopRecording: true, message: "Session replay size limit reached" });
+    }
 
     return reply.send({ success: true });
   } catch (error) {

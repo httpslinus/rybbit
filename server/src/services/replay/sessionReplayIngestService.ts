@@ -10,6 +10,7 @@ import { r2Storage } from "../storage/r2StorageService.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { heatmapSnapshotService } from "../heatmaps/heatmapSnapshotService.js";
 import { decideSiteExclusion } from "../sites/siteExclusionDecision.js";
+import { chargeReplaySessionBudget } from "./replaySessionBudget.js";
 
 const logger = createServiceLogger("session-replay-ingest");
 
@@ -21,6 +22,11 @@ type BatchStats = {
   compressedSizeBytes: number;
   screenWidth: number;
   screenHeight: number;
+};
+
+export type RecordEventsResult = {
+  /** The session is over its replay size cap; nothing from this batch was stored. */
+  capped: boolean;
 };
 
 export interface RequestMetadata {
@@ -39,7 +45,7 @@ export class SessionReplayIngestService {
     siteId: number,
     request: RecordSessionReplayRequest,
     requestMeta?: RequestMetadata
-  ): Promise<void> {
+  ): Promise<RecordEventsResult> {
     const { userId: clientUserId, events: rawEvents, metadata } = request;
 
     // Device clocks, not ours. Correct the whole batch onto server time before
@@ -72,6 +78,18 @@ export class SessionReplayIngestService {
       siteId,
     });
 
+    // Serialize once: the sizes gate the batch before anything is written, and
+    // the same strings are what ClickHouse stores.
+    const serializedEvents = events.map(event => JSON.stringify(event.data));
+    const batchBytes = serializedEvents.reduce((total, data) => total + data.length, 0);
+
+    // Checked before the R2 upload and both inserts, so a runaway session costs
+    // one Redis call per batch once it's capped.
+    const budget = await chargeReplaySessionBudget(siteId, sessionId, batchBytes);
+    if (!budget.accepted) {
+      return { capped: true };
+    }
+
     // Check if R2 storage is enabled for cloud deployments
     let r2BatchKey: string | null = null;
     let eventDataArray: any[] = [];
@@ -91,7 +109,7 @@ export class SessionReplayIngestService {
 
     // Prepare events for batch insert
     const eventsToInsert = events.map((event, index) => {
-      const serializedData = JSON.stringify(event.data);
+      const serializedData = serializedEvents[index];
 
       if (r2BatchKey) {
         // R2 storage: store metadata only in ClickHouse
@@ -184,6 +202,8 @@ export class SessionReplayIngestService {
 
       await this.updateSessionMetadata(siteId, sessionId, userId, identifiedUserId, metadata, batchStats, requestMeta);
     }
+
+    return { capped: false };
   }
 
   private async updateSessionMetadata(

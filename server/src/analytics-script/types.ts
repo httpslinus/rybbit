@@ -165,6 +165,12 @@ export interface SessionReplayEvent {
   snapshotContext?: HeatmapSnapshotContext;
 }
 
+/** What the server answers to a replay batch, as far as the recorder cares. */
+export interface SessionReplayBatchResult {
+  /** The session hit its replay size cap; stop recording for this page. */
+  stopRecording?: boolean;
+}
+
 export interface SessionReplayBatch {
   userId: string;
   events: SessionReplayEvent[];

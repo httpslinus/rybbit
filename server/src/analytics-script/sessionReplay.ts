@@ -1,4 +1,4 @@
-import { ScriptConfig, SessionReplayEvent, SessionReplayBatch } from "./types.js";
+import { ScriptConfig, SessionReplayEvent, SessionReplayBatch, SessionReplayBatchResult } from "./types.js";
 import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
 import { captureSnapshotContext, SnapshotInteractionGuard } from "./snapshotContext.js";
 
@@ -60,16 +60,19 @@ export class SessionReplayRecorder {
   private config: ScriptConfig;
   private isRecording: boolean = false;
   private readonly snapshotInteraction: SnapshotInteractionGuard;
+  // Set once the server reports the session is over its size cap; recording
+  // stays off for the rest of this page.
+  private capped: boolean = false;
   private stopRecordingFn?: () => void;
   private userId: string;
   private eventBuffer: SessionReplayEvent[] = [];
   private batchTimer?: number;
-  private sendBatch: (batch: SessionReplayBatch) => Promise<void>;
+  private sendBatch: (batch: SessionReplayBatch) => Promise<SessionReplayBatchResult | void>;
 
   constructor(
     config: ScriptConfig,
     userId: string,
-    sendBatch: (batch: SessionReplayBatch) => Promise<void>,
+    sendBatch: (batch: SessionReplayBatch) => Promise<SessionReplayBatchResult | void>,
     pageAlreadyClicked = false
   ) {
     this.config = config;
@@ -116,7 +119,7 @@ export class SessionReplayRecorder {
   }
 
   public startRecording(): void {
-    if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+    if (this.capped || this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
       return;
     }
 
@@ -243,11 +246,26 @@ export class SessionReplayRecorder {
     };
 
     try {
-      await this.sendBatch(batch);
+      const result = await this.sendBatch(batch);
+      if (result?.stopRecording) {
+        this.stopForSizeCap();
+      }
     } catch (error) {
       // Re-queue the events for retry since this batch failed
       this.eventBuffer.unshift(...events);
     }
+  }
+
+  // Unlike stopRecording, drops what's buffered: the server refuses it anyway.
+  private stopForSizeCap(): void {
+    this.capped = true;
+    if (this.stopRecordingFn) {
+      this.stopRecordingFn();
+      this.stopRecordingFn = undefined;
+    }
+    this.isRecording = false;
+    this.clearBatchTimer();
+    this.eventBuffer = [];
   }
 
   // Update user ID when it changes

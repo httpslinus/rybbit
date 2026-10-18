@@ -117,7 +117,7 @@ describe("recordSessionReplay exclusions", () => {
     mocks.decideSiteExclusion.mockResolvedValue({ excluded: false });
     mocks.isSiteOverLimit.mockReturnValue(false);
     mocks.isSiteWithoutReplay.mockReturnValue(false);
-    mocks.recordEvents.mockResolvedValue(undefined);
+    mocks.recordEvents.mockResolvedValue({ capped: false });
   });
 
   it("records the replay when the Site Exclusion Decision accepts the request", async () => {
@@ -133,6 +133,19 @@ describe("recordSessionReplay exclusions", () => {
       referrer: "https://example.com/admin/users",
     });
     expect(reply.sentPayload).toEqual({ success: true });
+  });
+
+  it("tells the script to stop recording once the session is over its size cap", async () => {
+    mocks.recordEvents.mockResolvedValue({ capped: true });
+
+    const reply = createReply();
+    await recordSessionReplay(createRequest(), reply);
+
+    expect(reply.sentPayload).toEqual({
+      success: true,
+      stopRecording: true,
+      message: "Session replay size limit reached",
+    });
   });
 
   it("maps an IP Site Exclusion Decision to the replay skip response", async () => {

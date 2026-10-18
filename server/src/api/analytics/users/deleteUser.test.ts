@@ -5,7 +5,8 @@ vi.mock("../../../services/heatmaps/heatmapSnapshotErasure.js", () => ({
   clearHeatmapSnapshotMarkers: vi.fn(async () => undefined),
 }));
 import { createClient } from "@clickhouse/client";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import Fastify from "fastify";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 type DeleteCommand = { query: string; query_params: { siteId: number; userId: string; deviceIds: string[] } };
 
@@ -171,6 +172,45 @@ describe("deleteUser heatmap erasure", () => {
     expect(res.statusCode).toBe(500);
     expect(mocks.command).not.toHaveBeenCalled();
     expect(mocks.deleteWhere).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteUser identity guards", () => {
+  let app: ReturnType<typeof Fastify>;
+
+  beforeEach(async () => {
+    app = Fastify();
+    app.delete("/sites/:siteId/users/:userId", deleteUser);
+    await app.ready();
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+
+  it("refuses an empty user id without touching ClickHouse or heatmap attributions", async () => {
+    const response = await app.inject({ method: "DELETE", url: "/sites/1/users/" });
+    expect(response.statusCode).toBe(400);
+    expect(mocks.command).not.toHaveBeenCalled();
+    expect(mocks.clearAttributions).not.toHaveBeenCalled();
+  });
+
+  it("still erases a whitespace identity, which identify() accepts", async () => {
+    const response = await app.inject({ method: "DELETE", url: "/sites/1/users/%20%20" });
+    expect(response.statusCode).toBe(200);
+    expect(mocks.command).toHaveBeenCalledTimes(5);
+  });
+
+  it("deletes only the user's rows and never matches the empty id", async () => {
+    mocks.aliases = [{ anonymousId: "device-1" }, { anonymousId: "" }];
+    const response = await app.inject({ method: "DELETE", url: "/sites/1/users/user-42" });
+
+    expect(response.statusCode).toBe(200);
+    expect(mocks.command).toHaveBeenCalledTimes(5);
+    for (const [call] of mocks.command.mock.calls as [DeleteCommand][]) {
+      expect(call.query).toContain("{userId:String} != ''");
+      expect(call.query_params).toEqual({ siteId: 1, userId: "user-42", deviceIds: ["user-42", "device-1"] });
+    }
   });
 });
 

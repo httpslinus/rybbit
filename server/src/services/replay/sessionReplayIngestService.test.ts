@@ -5,6 +5,9 @@ const mocks = vi.hoisted(() => ({
   generateUserId: vi.fn(),
   insert: vi.fn(),
   updateSession: vi.fn(),
+  chargeReplaySessionBudget: vi.fn(),
+  storeBatch: vi.fn(),
+  r2Enabled: false,
 }));
 
 vi.mock("../../db/clickhouse/clickhouse.js", () => ({
@@ -27,8 +30,13 @@ vi.mock("../userId/userIdService.js", () => ({
 
 vi.mock("../storage/r2StorageService.js", () => ({
   r2Storage: {
-    isEnabled: () => false,
+    isEnabled: () => mocks.r2Enabled,
+    storeBatch: mocks.storeBatch,
   },
+}));
+
+vi.mock("./replaySessionBudget.js", () => ({
+  chargeReplaySessionBudget: mocks.chargeReplaySessionBudget,
 }));
 
 vi.mock("../../lib/siteConfig.js", () => ({
@@ -61,6 +69,8 @@ describe("SessionReplayIngestService identity", () => {
       })
     );
     mocks.insert.mockResolvedValue(undefined);
+    mocks.chargeReplaySessionBudget.mockResolvedValue({ accepted: true, usedBytes: 0 });
+    mocks.r2Enabled = false;
   });
 
   it("separates identified replay users behind a shared proxy", async () => {
@@ -99,5 +109,57 @@ describe("SessionReplayIngestService identity", () => {
       identifiedUserId: "",
       siteId: 42,
     });
+  });
+});
+
+describe("SessionReplayIngestService size cap", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.generateUserId.mockResolvedValue("fingerprint");
+    mocks.updateSession.mockResolvedValue({ sessionId: "session-1" });
+    mocks.insert.mockResolvedValue(undefined);
+    mocks.storeBatch.mockResolvedValue("r2-key");
+    mocks.r2Enabled = true;
+  });
+
+  it("charges the serialized size of the batch against its session", async () => {
+    mocks.chargeReplaySessionBudget.mockResolvedValue({ accepted: true, usedBytes: 100 });
+    const service = new SessionReplayIngestService();
+    const request: RecordSessionReplayRequest = {
+      userId: "",
+      events: [
+        { type: 2, data: { a: 1 }, timestamp: 1_700_000_000_000 },
+        { type: 3, data: { bb: "xy" }, timestamp: 1_700_000_000_100 },
+      ],
+    };
+
+    const result = await service.recordEvents(42, request, requestMeta);
+
+    const expectedBytes = JSON.stringify({ a: 1 }).length + JSON.stringify({ bb: "xy" }).length;
+    expect(mocks.chargeReplaySessionBudget).toHaveBeenCalledWith(42, "session-1", expectedBytes);
+    expect(result).toEqual({ capped: false });
+    expect(mocks.storeBatch).toHaveBeenCalledOnce();
+    expect(
+      mocks.insert.mock.calls[0][0].values.map((row: { event_size_bytes: number }) => row.event_size_bytes)
+    ).toEqual([JSON.stringify({ a: 1 }).length, JSON.stringify({ bb: "xy" }).length]);
+  });
+
+  it("stores nothing once the session is over its cap", async () => {
+    mocks.chargeReplaySessionBudget.mockResolvedValue({ accepted: false, usedBytes: 60_000_000 });
+    const service = new SessionReplayIngestService();
+
+    const result = await service.recordEvents(
+      42,
+      {
+        userId: "",
+        events: [{ type: 2, data: { a: 1 }, timestamp: 1_700_000_000_000 }],
+        metadata: { pageUrl: "https://example.com/" },
+      },
+      requestMeta
+    );
+
+    expect(result).toEqual({ capped: true });
+    expect(mocks.storeBatch).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
   });
 });
