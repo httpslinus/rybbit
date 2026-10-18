@@ -24,6 +24,7 @@
     "start:cluster": "node dist/cluster.js",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:analytics-bundles": "pnpm run build:analytics && node src/analytics-script/verify-bundles.js",
     "test:watch": "vitest --watch",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
@@ -89,6 +90,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",
+    "@rrweb/record": "2.1.7",
     "@types/ioredis-mock": "^8.2.7",
     "@types/jsdom": "^21.1.7",
     "@types/luxon": "3.7.1",

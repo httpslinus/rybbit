@@ -489,6 +489,9 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.5.4
         version: 0.5.4
+      '@rrweb/record':
+        specifier: 2.1.7
+        version: 2.1.7
       '@types/ioredis-mock':
         specifier: ^8.2.7
         version: 8.2.7(ioredis@5.8.2)
@@ -3287,14 +3290,23 @@ packages:
   '@rrweb/packer@2.0.0-alpha.20':
     resolution: {integrity: sha512-GsByg2olGZ2n3To6keFG604QAboipuXZvjYxO2wITSwARBf/sZdy6cbUEjF0RS+QnuTM5GaVXeQapNMLmpKbrA==}
 
+  '@rrweb/record@2.1.7':
+    resolution: {integrity: sha512-lIAbWdH8JwRuujURxTBtgrlsPvyBUGXUa9aB5hK8s5DdHgagyLFkIaAWhtthuOwT3o4o4+w38yUVPLc3W2oOrw==}
+
   '@rrweb/replay@2.0.0-alpha.20':
     resolution: {integrity: sha512-VodsLb+C2bYNNVbb0U14tKLa9ctzUxYIlt9VnxPATWvfyXHLTku8BhRWptuW/iIjVjmG49LBoR1ilxw/HMiJ1w==}
 
   '@rrweb/types@2.0.0-alpha.20':
     resolution: {integrity: sha512-RbnDgKxA/odwB1R4gF7eUUj+rdSrq6ROQJsnMw7MIsGzlbSYvJeZN8YY4XqU0G6sKJvXI6bSzk7w/G94jNwzhw==}
 
+  '@rrweb/types@2.1.7':
+    resolution: {integrity: sha512-fNua4du3xvMlC5iK8lYU1CEg+9wsA7FXUzahVBBVGBKqVPSifROLVh3mfV90hhsfAcs4jAvLbl23v28hXrxZWg==}
+
   '@rrweb/utils@2.0.0-alpha.20':
     resolution: {integrity: sha512-MTQOmhPRe39C0fYaCnnVYOufQsyGzwNXpUStKiyFSfGLUJrzuwhbRoUAKR5w6W2j5XuA0bIz3ZDIBztkquOhLw==}
+
+  '@rrweb/utils@2.1.7':
+    resolution: {integrity: sha512-ZQpnuthKb8U2BvSDtiX6z8XkEPUUbCXhcrOY5yqqtPP2O5RP8YgPlo8HkU/tFStMd/Wn8cfy9DmkhialwUUvrA==}
 
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
@@ -7188,6 +7200,9 @@ packages:
   rrdom@2.0.0-alpha.20:
     resolution: {integrity: sha512-hoqjS4662LtBp82qEz9GrqU36UpEmCvTA2Hns3qdF7cklLFFy3G+0Th8hLytJENleHHWxsB5nWJ3eXz5mSRxdQ==}
 
+  rrdom@2.1.7:
+    resolution: {integrity: sha512-jm7IN2aaG6891OqFAYw/b8dw5FLiMeCTrU4HIUr40I6tTaUX2Rrhba5vjjMRARQClBFDA04vvf9HFD9WnZFpFg==}
+
   rrweb-cssom@0.8.0:
     resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
 
@@ -7197,8 +7212,14 @@ packages:
   rrweb-snapshot@2.0.0-alpha.20:
     resolution: {integrity: sha512-YTNf9YVeaGRo/jxY3FKBge2c/Ojd/KTHmuWloUSB+oyPXuY73ZeeG873qMMmhIpqEn7hn7aBF1eWEQmP7wjf8A==}
 
+  rrweb-snapshot@2.1.7:
+    resolution: {integrity: sha512-exIZ4dxX498CZszs4ji0KKn8lhX9sBPBdD431t0RQOqCTStAHrmdWKK2s8tWSL32iRS+AOafbMuf6TOIZxW6ug==}
+
   rrweb@2.0.0-alpha.20:
     resolution: {integrity: sha512-CZKDlm+j1VA50Ko3gnMbpvguCAleljsTNXPnVk9aeNP8o6T6kolRbISHyDZpqZ4G+bdDLlQOignPP3jEsXs8Gg==}
+
+  rrweb@2.1.7:
+    resolution: {integrity: sha512-UZzK43vVmbtBt5WyEVO/CO8q9hKi38LRZDQS5C+X+FYgpVLK4vhWyUzzi1K0iXzHFb3MOVaTak5TAsdK5K6V6Q==}
 
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
@@ -10921,6 +10942,12 @@ snapshots:
       '@rrweb/types': 2.0.0-alpha.20
       fflate: 0.4.8
 
+  '@rrweb/record@2.1.7':
+    dependencies:
+      '@rrweb/types': 2.1.7
+      '@rrweb/utils': 2.1.7
+      rrweb: 2.1.7
+
   '@rrweb/replay@2.0.0-alpha.20':
     dependencies:
       '@rrweb/types': 2.0.0-alpha.20
@@ -10928,7 +10955,11 @@ snapshots:
 
   '@rrweb/types@2.0.0-alpha.20': {}
 
+  '@rrweb/types@2.1.7': {}
+
   '@rrweb/utils@2.0.0-alpha.20': {}
+
+  '@rrweb/utils@2.1.7': {}
 
   '@rtsao/scc@1.1.0': {}
 
@@ -15224,6 +15255,10 @@ snapshots:
     dependencies:
       rrweb-snapshot: 2.0.0-alpha.20
 
+  rrdom@2.1.7:
+    dependencies:
+      rrweb-snapshot: 2.1.7
+
   rrweb-cssom@0.8.0: {}
 
   rrweb-player@2.0.0-alpha.20:
@@ -15233,6 +15268,10 @@ snapshots:
       '@tsconfig/svelte': 1.0.13
 
   rrweb-snapshot@2.0.0-alpha.20:
+    dependencies:
+      postcss: 8.5.20
+
+  rrweb-snapshot@2.1.7:
     dependencies:
       postcss: 8.5.20
 
@@ -15246,6 +15285,17 @@ snapshots:
       mitt: 3.0.1
       rrdom: 2.0.0-alpha.20
       rrweb-snapshot: 2.0.0-alpha.20
+
+  rrweb@2.1.7:
+    dependencies:
+      '@rrweb/types': 2.1.7
+      '@rrweb/utils': 2.1.7
+      '@types/css-font-loading-module': 0.0.7
+      '@xstate/fsm': 1.6.5
+      base64-arraybuffer: 1.0.2
+      mitt: 3.0.1
+      rrdom: 2.1.7
+      rrweb-snapshot: 2.1.7
 
   run-parallel@1.2.0:
     dependencies:

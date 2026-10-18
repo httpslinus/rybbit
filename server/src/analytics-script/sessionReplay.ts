@@ -1,3 +1,4 @@
+import type { record } from "@rrweb/record";
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch, SessionReplayBatchResult } from "./types.js";
 import { replayPrivacyOptions, replaySlimDOMOptions } from "./replayPrivacy.js";
 import { captureSnapshotContext, SnapshotInteractionGuard } from "./snapshotContext.js";
@@ -31,27 +32,12 @@ function shouldSampleSession(sampleRate: number): boolean {
   }
 }
 
-// rrweb types (simplified for our use case)
 declare global {
   interface Window {
     rrweb?: {
-      record: (options: {
-        emit: (event: any) => void;
-        checkoutEveryNms?: number;
-        checkoutEveryNth?: number;
-        blockClass?: string | RegExp;
-        blockSelector?: string;
-        ignoreClass?: string | RegExp;
-        ignoreSelector?: string;
-        maskTextClass?: string | RegExp;
-        maskTextSelector?: string;
-        maskAllInputs?: boolean;
-        maskInputOptions?: Record<string, boolean>;
-        slimDOMOptions?: Record<string, boolean> | boolean;
-        sampling?: Record<string, any>;
-        recordCanvas?: boolean;
-        collectFonts?: boolean;
-      }) => () => void;
+      record: (
+        options: NonNullable<Parameters<typeof record>[0]> & { emit: (event: any) => void }
+      ) => ReturnType<typeof record>;
     };
   }
 }
