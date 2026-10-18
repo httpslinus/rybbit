@@ -56,7 +56,7 @@ export function normalizeCorsOrigin(value: string | undefined): string | null {
   }
 }
 
-// Trusted origins are static config (BASE_URL / NODE_ENV); cache per env object so
+// Trusted origins are static config; cache per env object so
 // the URL parse + Set build runs once instead of on every request.
 const trustedOriginsCache = new WeakMap<NodeJS.ProcessEnv, string[]>();
 
@@ -71,6 +71,13 @@ export function getTrustedCorsOrigins(env: NodeJS.ProcessEnv = process.env): str
 
   if (baseUrlOrigin) {
     origins.add(baseUrlOrigin);
+  }
+
+  for (const value of (env.TRUSTED_ORIGINS || "").split(",")) {
+    const origin = normalizeCorsOrigin(value);
+    if (origin) {
+      origins.add(origin);
+    }
   }
 
   if (env.NODE_ENV !== "production") {

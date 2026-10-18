@@ -28,6 +28,44 @@ async function buildCorsTestApp(env: NodeJS.ProcessEnv) {
 }
 
 describe("CORS policy", () => {
+  it("allows configured dashboard aliases for management and credentialed public requests", async () => {
+    const app = await buildCorsTestApp({
+      NODE_ENV: "production",
+      BASE_URL: "https://data.linus.systems",
+      TRUSTED_ORIGINS: "https://data.nullzwei.com",
+    });
+
+    try {
+      for (const origin of ["https://data.linus.systems", "https://data.nullzwei.com"]) {
+        const preflight = await app.inject({
+          method: "OPTIONS",
+          url: "/api/mcp",
+          headers: { origin, "access-control-request-method": "POST" },
+        });
+        expect(preflight.statusCode).toBe(204);
+        expect(preflight.headers["access-control-allow-origin"]).toBe(origin);
+        expect(preflight.headers["access-control-allow-credentials"]).toBe("true");
+
+        const management = await app.inject({ method: "POST", url: "/api/mcp", headers: { origin } });
+        expect(management.statusCode).toBe(200);
+        expect(management.headers["access-control-allow-origin"]).toBe(origin);
+
+        const publicRequest = await app.inject({ method: "GET", url: "/api/sites/1/sessions", headers: { origin } });
+        expect(publicRequest.headers["access-control-allow-credentials"]).toBe("true");
+      }
+
+      const untrusted = await app.inject({
+        method: "POST",
+        url: "/api/mcp",
+        headers: { origin: "https://data.nullzwei.com.attacker.example" },
+      });
+      expect(untrusted.statusCode).toBe(403);
+      expect(untrusted.headers["access-control-allow-origin"]).toBeUndefined();
+    } finally {
+      await app.close();
+    }
+  });
+
   it("permits credential-less heatmap recording but keeps reports restricted", async () => {
     const app = await buildCorsTestApp({ NODE_ENV: "production", BASE_URL: "https://rybbit.example.com" });
     try {
@@ -248,6 +286,14 @@ describe("CORS policy", () => {
 });
 
 describe("trusted CORS origins", () => {
+  it("normalizes and deduplicates explicit aliases while ignoring invalid origins", () => {
+    expect(getTrustedCorsOrigins({
+      NODE_ENV: "production",
+      BASE_URL: "https://data.linus.systems",
+      TRUSTED_ORIGINS: ' https://data.nullzwei.com/path, "https://data.linus.systems/", https://second.example:8443, *, javascript:alert(1), null, ',
+    })).toEqual(["https://data.linus.systems", "https://data.nullzwei.com", "https://second.example:8443"]);
+  });
+
   it("normalizes quoted URLs to origins", () => {
     expect(normalizeCorsOrigin('"https://rybbit.example.com/path"')).toBe("https://rybbit.example.com");
     expect(normalizeCorsOrigin("javascript:alert(1)")).toBeNull();
