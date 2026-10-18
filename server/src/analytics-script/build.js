@@ -1,7 +1,6 @@
 import { build } from "esbuild";
 import { mkdir, writeFile } from "fs/promises";
 import { dirname, resolve } from "path";
-import { minify } from "terser";
 import { fileURLToPath } from "url";
 import { gzipSync } from "zlib";
 import { pageCaptureBuildPlugin } from "./pageCaptureBuildPlugin.js";
@@ -37,15 +36,7 @@ async function buildScript(entry, name, minified = true, plugins = []) {
     plugins,
     write: false,
   });
-  let code = result.outputFiles[0].text;
-  if (minified) {
-    // Keep esbuild's tree-shaking and use Terser's extra compression passes.
-    // Avoid unsafe transforms or property mangling: these scripts share public
-    // browser APIs and must also work on sites with patched DOM prototypes.
-    const result = await minify(code, { ecma: 2020, compress: { passes: 3 }, mangle: true });
-    if (!result.code) throw new Error(`Empty bundle: ${name}`);
-    code = result.code + "\n";
-  }
+  const code = result.outputFiles[0].text;
   await writeFile(resolve(publicDir, name), code);
   console.log(`Built ${name}: ${Buffer.byteLength(code)} bytes (${gzipSync(code).length} gzip)`);
 }

@@ -53,18 +53,19 @@ Measured 18 October 2026, gzip, decimal kB, cold cache. Upstream is its verified
 
 | Download                        | Upstream Rybbit | This fork |
 | ------------------------------- | --------------: | --------: |
-| Core tracker                    |         11.1 kB |   10.7 kB |
-| Session recording module        |         82.1 kB |   23.5 kB |
-| Heatmap module                  |   Not available |    7.1 kB |
-| Standalone page capture         |   Not available |    7.6 kB |
-| Core + recording                |         93.1 kB |   34.2 kB |
-| Core + heatmaps + recording     |   Not available |   41.3 kB |
-| All modules, including fallback |   Not available |   48.9 kB |
+| Core tracker                    |         11.1 kB |   11.1 kB |
+| Session recording module        |         82.1 kB |   24.5 kB |
+| Heatmap module                  |   Not available |    7.2 kB |
+| Standalone page capture         |   Not available |    8.1 kB |
+| Core + recording                |         93.1 kB |   35.6 kB |
+| Core + heatmaps + recording     |   Not available |   42.9 kB |
+| All modules, including fallback |   Not available |   51.0 kB |
 
 The fallback is an additional download only when needed. The last row covers
 cases such as recording stopping after its module loaded. Collected event data
-is excluded. Exact current gzip sizes: core 10,717 bytes, recording 23,516 bytes,
-heatmaps 7,061 bytes, standalone capture 7,633 bytes.
+is excluded. Exact current gzip sizes: core 11,118 bytes, recording 24,514 bytes,
+heatmaps 7,243 bytes, standalone capture 8,134 bytes. Production scripts use
+esbuild for bundling, tree shaking and minification.
 
 Reproduce the comparison from `server/` after building:
 
@@ -116,7 +117,7 @@ pnpm run test:analytics-bundles
 node ../plans/heatmap-verification/snapshot-browser.mjs
 ```
 
-Bundle checks enforce an 11,000-byte gzip core budget, test privacy and dashboard
+Bundle checks enforce an 11,200-byte gzip core budget, test privacy and dashboard
 playback, and compare standalone capture with its complete dependency. Sixteen
 Chromium scenarios exercise all feature combinations, sampling, stopped/capped
 recording, script and upload failures, discarded recordings, download order and

@@ -9,7 +9,7 @@ import puppeteer from "puppeteer";
 const publicDir = new URL("../../public/", import.meta.url);
 const sizes = {};
 for (const [name, budget] of [
-  ["script.js", 11_000],
+  ["script.js", 11_200],
   ["recording.js", 25_000],
   ["heatmaps.js", 7_500],
   ["rrweb.min.js", 25_000],

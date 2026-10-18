@@ -37,7 +37,7 @@ Changes added on top of [upstream Rybbit](https://github.com/rybbit-io/rybbit):
 
 - **Self-hosted dashboards:** Performance (Web Vitals), Pages and Bots.
 - **Heatmaps:** click and scroll maps, page grouping, historical cohorts and masked page backgrounds. Work independently of session replay.
-- **Smaller tracker downloads:** an 11 kB core, deferred heatmap and recording modules, and shared page capture with a standalone fallback.
+- **Smaller tracker downloads:** an 11.1 kB core, deferred heatmap and recording modules, and shared page capture with a standalone fallback.
 - **Coolify deployment:** application configuration using persistent databases. See [deployment notes](ops/DEPLOYMENT.md).
 
 ## Tracker sizes
@@ -46,12 +46,12 @@ Gzip, decimal kB. Upstream `master` at [`1a8f1ff9`](https://github.com/rybbit-io
 
 | Download                        | Upstream Rybbit |   This fork |
 | ------------------------------- | --------------: | ----------: |
-| Core tracker                    |         11.1 kB | **10.7 kB** |
-| Session recording module        |         82.1 kB |     23.5 kB |
-| Heatmap module                  |   Not available |      7.1 kB |
-| Standalone page capture         |   Not available |      7.6 kB |
-| **Core + recording**            |     **93.1 kB** | **34.2 kB** |
-| Core + heatmaps + recording     |   Not available | **41.3 kB** |
-| All modules, including fallback |   Not available | **48.9 kB** |
+| Core tracker                    |         11.1 kB | **11.1 kB** |
+| Session recording module        |         82.1 kB |     24.5 kB |
+| Heatmap module                  |   Not available |      7.2 kB |
+| Standalone page capture         |   Not available |      8.1 kB |
+| **Core + recording**            |     **93.1 kB** | **35.6 kB** |
+| Core + heatmaps + recording     |   Not available | **42.9 kB** |
+| All modules, including fallback |   Not available | **51.0 kB** |
 
 Heatmaps and recording load independently when enabled. Active recording supplies heatmap backgrounds without a second DOM upload; standalone capture loads only when needed. [Implementation and measurements](server/src/analytics-script/README.md).
