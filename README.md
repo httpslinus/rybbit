@@ -31,6 +31,24 @@
 
 <hr>
 
-## Web Vitals
+## This fork
 
-This personal fork enables Web Vitals for self-hosted deployments, including the Performance dashboard and per-site tracking toggle. Enable Web Vitals in each site's tracking settings to collect LCP, CLS, INP, FCP, and TTFB from new visits.
+Changes added on top of [upstream Rybbit](https://github.com/rybbit-io/rybbit):
+
+- **Self-hosted dashboards:** Performance (Web Vitals), Pages and Bots.
+- **Heatmaps:** click and scroll maps, page grouping, historical cohorts and masked page backgrounds. Work independently of session replay.
+- **Smaller recording downloads:** recording-only rrweb with shared page capture and a standalone fallback.
+- **Coolify deployment:** application configuration using persistent databases. See [deployment notes](ops/DEPLOYMENT.md).
+
+## Tracker sizes
+
+Minified assets, gzip, decimal kB. Compared on 18 October 2026 with upstream [`1a8f1ff9`](https://github.com/rybbit-io/rybbit/commit/1a8f1ff9ca8beca1c2207866d659d34be3cdcae8), which is included in this fork.
+
+| Download                             |      Upstream |   This fork |
+| ------------------------------------ | ------------: | ----------: |
+| Core tracker                         |       11.1 kB |     17.0 kB |
+| Session recording module             |       82.1 kB |     22.1 kB |
+| **Core + session recording**         |   **93.1 kB** | **39.0 kB** |
+| Standalone page capture for heatmaps | Not available |      7.6 kB |
+
+The fork's core includes heatmap collection. The standalone capture loads only when a background is needed and recording cannot supply it. [Tracker details](server/src/analytics-script/README.md).
