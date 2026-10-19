@@ -44,12 +44,13 @@ services:
       context: .
       dockerfile: client/Dockerfile
       args:
-        NEXT_PUBLIC_BACKEND_URL: ${BASE_URL:-https://data.linus.systems}
+        # Use the opened dashboard domain so auth cookies stay first-party on aliases.
+        NEXT_PUBLIC_BACKEND_URL: ""
         NEXT_PUBLIC_DISABLE_SIGNUP: "true"
         NEXT_PUBLIC_CLOUD: "false"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_BACKEND_URL: ${BASE_URL:-https://data.linus.systems}
+      NEXT_PUBLIC_BACKEND_URL: ""
       NEXT_PUBLIC_DISABLE_SIGNUP: "true"
     depends_on:
       rybbit-api:
