@@ -29,7 +29,7 @@ FROM node:24.22.1-alpine
 WORKDIR /app
 
 # Install PostgreSQL client for migrations and Chromium for Puppeteer PDF generation
-RUN apk add --no-cache \
+RUN apk add --no-cache --upgrade 'brotli-libs>=1.2.1-r0' \
     postgresql-client \
     chromium \
     nss \
