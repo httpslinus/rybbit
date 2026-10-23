@@ -32,6 +32,7 @@ services:
       start_period: 120s
     networks:
       - storage
+      - clickhouse_private
     mem_limit: 2g
     restart: unless-stopped
     logging: &logging
@@ -86,3 +87,6 @@ networks:
   storage:
     external: true
     name: ngf5qoiio1rvzlp5cyg99spg
+  clickhouse_private:
+    external: true
+    name: rybbit-clickhouse-private
