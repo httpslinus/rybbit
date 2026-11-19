@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
 // Compare pinned upstream assets with the fork's current production build.
-const upstream = process.argv[2] ?? "1a8f1ff9ca8beca1c2207866d659d34be3cdcae8";
+const upstream = process.argv[2] ?? "ee11b4168cbce900731262964857928d340f3d06";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const publicDir = new URL("../../public/", import.meta.url);
 const at = (ref, name) => gzipSync(execFileSync("git", ["show", `${ref}:server/public/${name}`], { cwd: root })).length;

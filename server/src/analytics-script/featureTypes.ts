@@ -12,6 +12,7 @@ export interface FeatureRuntime {
   capture: PageCaptureBridge;
   reserveKeepalive: typeof reserveKeepalive;
   pageAlreadyClicked: boolean;
+  getBotSignalMask?: () => number;
 }
 
 export interface TrackerFeature {

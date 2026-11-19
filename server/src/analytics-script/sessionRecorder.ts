@@ -1,7 +1,9 @@
 import type { record } from "@rrweb/record";
 import { ScriptConfig, SessionReplayEvent, SessionReplayBatch, SessionReplayBatchResult } from "./types.js";
-import { pageCapturePrivacyOptions, pageCaptureSlimDOMOptions } from "./pageCapturePrivacy.js";
 import type { PageCaptureBridge } from "./featureTypes.js";
+import { pageCapturePrivacyOptions, pageCaptureSlimDOMOptions } from "./pageCapturePrivacy.js";
+
+const FULL_SNAPSHOT_REQUEST_INTERVAL_MS = 10_000;
 
 declare global {
   interface Window {
@@ -24,18 +26,28 @@ export class SessionRecorder {
   private stopRecordingFn?: () => void;
   private userId: string;
   private eventBuffer: SessionReplayEvent[] = [];
+  // Batches whose send failed, each kept as it was built so a retry after
+  // identify(), clearUserId() or a navigation still carries the identity and
+  // page it was recorded under.
+  private failedBatches: SessionReplayBatch[] = [];
   private batchTimer?: number;
+  private lastFullSnapshotRequestAt = -Infinity;
+  private deferredSnapshotTimer?: number;
   private sendBatch: (batch: SessionReplayBatch, exit?: boolean) => Promise<SessionReplayBatchResult | void>;
 
   constructor(
     config: ScriptConfig,
     userId: string,
     sendBatch: (batch: SessionReplayBatch, exit?: boolean) => Promise<SessionReplayBatchResult | void>,
-    private bridge: PageCaptureBridge = {}
+    private bridge: PageCaptureBridge = {},
+    private getBotSignalMask?: () => number
   ) {
     this.config = config;
     this.userId = userId;
     this.sendBatch = sendBatch;
+
+    document.addEventListener("visibilitychange", this.flushWhenHidden);
+    window.addEventListener("pagehide", this.flushForExit);
   }
 
   async initialize(): Promise<void> {
@@ -121,9 +133,13 @@ export class SessionRecorder {
     this.isRecording = false;
     if (this.bridge.capture === this.capturePage) delete this.bridge.capture;
     this.clearBatchTimer();
+    if (this.deferredSnapshotTimer !== undefined) {
+      clearTimeout(this.deferredSnapshotTimer);
+      this.deferredSnapshotTimer = undefined;
+    }
 
-    // Send any remaining events
-    if (this.eventBuffer.length > 0) {
+    // Send any remaining events, and retry failed batches while there's a chance
+    if (this.eventBuffer.length > 0 || this.failedBatches.length > 0) {
       this.flushEvents();
     }
   }
@@ -160,7 +176,7 @@ export class SessionRecorder {
   private setupBatchTimer(): void {
     this.clearBatchTimer();
     this.batchTimer = window.setInterval(() => {
-      if (this.eventBuffer.length > 0) {
+      if (this.eventBuffer.length > 0 || this.failedBatches.length > 0) {
         this.flushEvents();
       }
     }, this.config.sessionReplayBatchInterval);
@@ -174,36 +190,93 @@ export class SessionRecorder {
   }
 
   private async flushEvents(exit = false): Promise<boolean> {
-    if (this.eventBuffer.length === 0) {
-      return true;
-    }
-
-    const events = [...this.eventBuffer];
+    const batches = this.failedBatches;
+    this.failedBatches = [];
+    const events = this.eventBuffer;
     this.eventBuffer = [];
 
-    const batch: SessionReplayBatch = {
-      userId: this.userId,
-      events,
-      metadata: {
-        pageUrl: window.location.href,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        language: navigator.language,
-      },
-    };
+    if (events.length > 0) {
+      batches.push({
+        userId: this.userId,
+        events,
+        metadata: {
+          pageUrl: window.location.href,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          language: navigator.language,
+        },
+        _bsm: this.getBotSignalMask?.(),
+      });
+    }
 
+    const stored = await Promise.all(batches.map(batch => this.sendOrRequeue(batch, exit)));
+    // The fresh batch contains the checkpoint when a heatmap requests capture.
+    return events.length === 0 || stored[stored.length - 1] === true;
+  }
+
+
+  private async sendOrRequeue(batch: SessionReplayBatch, exit: boolean): Promise<boolean> {
     try {
       const result = await this.sendBatch(batch, exit);
       if (result?.stopRecording) {
         this.stopForSizeCap();
         return false;
+      } else if (result?.takeFullSnapshot) {
+        this.takeFullSnapshot();
+      } else if (this.deferredSnapshotTimer !== undefined && batch.events.some(event => event.type === 2)) {
+        // The server accepted a snapshot without asking for another.
+        clearTimeout(this.deferredSnapshotTimer);
+        this.deferredSnapshotTimer = undefined;
       }
       return result?.recorded !== false;
-    } catch (error) {
-      // Re-queue the events for retry since this batch failed
-      if (!this.capped) this.eventBuffer.unshift(...events);
+    } catch {
+      if (!this.capped) {
+        this.requeue(batch);
+      }
       return false;
     }
+  }
+
+  // A failure from the same identity and page as the last queued one joins it,
+  // so an outage retries one batch per flush rather than one per failed send.
+  private requeue(batch: SessionReplayBatch): void {
+    const last = this.failedBatches[this.failedBatches.length - 1];
+    if (last && last.userId === batch.userId && JSON.stringify(last.metadata) === JSON.stringify(batch.metadata)) {
+      last.events = last.events.concat(batch.events);
+      return;
+    }
+    this.failedBatches.push(batch);
+  }
+
+  // The server keeps the replay in its previous session until a batch opens
+  // the visitor's new one with a full snapshot, without which a replay can't
+  // be played. Events recorded before the snapshot go first, to the old one.
+  private takeFullSnapshot(): void {
+    if (!this.isRecording) {
+      return;
+    }
+    // A request inside the cooldown (e.g. identify() right after a rollover)
+    // runs when it ends rather than being dropped: the newer session needs
+    // its own snapshot too.
+    const wait = this.lastFullSnapshotRequestAt + FULL_SNAPSHOT_REQUEST_INTERVAL_MS - Date.now();
+    if (wait > 0) {
+      if (this.deferredSnapshotTimer === undefined) {
+        this.deferredSnapshotTimer = window.setTimeout(() => {
+          this.deferredSnapshotTimer = undefined;
+          this.takeFullSnapshot();
+        }, wait);
+      }
+      return;
+    }
+    this.lastFullSnapshotRequestAt = Date.now();
+
+    void this.flushEvents();
+    try {
+      window.rrweb?.record.takeFullSnapshot?.(true);
+    } catch {
+      // rrweb isn't recording after all; its next checkout brings the snapshot.
+    }
+    void this.flushEvents();
   }
 
   // Unlike stopRecording, drops what's buffered: the server refuses it anyway.
@@ -216,7 +289,12 @@ export class SessionRecorder {
     this.isRecording = false;
     if (this.bridge.capture === this.capturePage) delete this.bridge.capture;
     this.clearBatchTimer();
+    if (this.deferredSnapshotTimer !== undefined) {
+      clearTimeout(this.deferredSnapshotTimer);
+      this.deferredSnapshotTimer = undefined;
+    }
     this.eventBuffer = [];
+    this.failedBatches = [];
   }
 
   // Update user ID when it changes
@@ -226,8 +304,8 @@ export class SessionRecorder {
     }
 
     // Keep events captured under the previous identity in their original batch.
-    // flushEvents snapshots this.userId before its first await, so the identity
-    // can be changed immediately after starting the send.
+    // flushEvents builds the batch before its first await, so the identity can
+    // be changed immediately after starting the send.
     if (this.eventBuffer.length > 0) {
       void this.flushEvents();
     }
@@ -243,15 +321,20 @@ export class SessionRecorder {
     }
   }
 
-  public flushForExit(): void {
-    if (!this.eventBuffer.length) return;
-    const bytes = new TextEncoder().encode(JSON.stringify(this.eventBuffer)).byteLength;
-    void this.flushEvents(bytes <= 48 * 1024);
-  }
+  public flushForExit = (): void => {
+    if (!this.eventBuffer.length && !this.failedBatches.length) return;
+    void this.flushEvents(true);
+  };
+
+  private flushWhenHidden = (): void => {
+    if (document.visibilityState === "hidden") this.flushForExit();
+  };
 
   // Cleanup on page unload
   public cleanup(): void {
     this.disposed = true;
+    document.removeEventListener("visibilitychange", this.flushWhenHidden);
+    window.removeEventListener("pagehide", this.flushForExit);
     this.stopRecording();
   }
 }

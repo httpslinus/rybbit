@@ -7,15 +7,18 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import {
   adminMoveSite,
   collectTelemetry,
+  deleteAdminApiKey,
   deleteAdminOrganizationMember,
   getAdminOrganizationMember,
   getAdminOrganizationOptions,
+  getAdminApiKeys,
   getAdminOrganizations,
   getAdminSubscriptionPlans,
   getAdminServiceEventCount,
   getAdminSites,
   getClickhouseStats,
   getClickhouseQueryLog,
+  updateAdminApiKey,
   updateAdminOrganizationMember,
   updateAdminSubscriptionOverride,
 } from "./admin/index.js";
@@ -117,6 +120,7 @@ import {
   createExperiment,
   deleteExperiment,
   getExperimentResults,
+  getExperimentTimeseries,
   getExperiments,
   updateExperiment,
 } from "./experiments/index.js";
@@ -131,6 +135,7 @@ import {
 import { connectGSC, disconnectGSC, getGSCData, getGSCStatus, gscCallback, selectGSCProperty } from "./gsc/index.js";
 import { updateMemberSiteAccess } from "./memberAccess/index.js";
 import { listTeams, createTeam, updateTeam, deleteTeam } from "./teams/index.js";
+import { signDpa } from "./dpa/signDpa.js";
 import {
   deleteSessionReplay,
   getSessionReplayEvents,
@@ -174,6 +179,7 @@ import {
   getSubscription,
   handleWebhook,
   previewSubscriptionUpdate,
+  retryPayment,
   submitCancellationFeedback,
   updateSubscription,
 } from "./stripe/index.js";
@@ -187,9 +193,11 @@ import {
   getUserOrganizations,
   listOrganizationMembers,
   oneClickUnsubscribeMarketing,
+  oneClickUnsubscribeReports,
   unsubscribeMarketing,
   updateAccountSettings,
 } from "./user/index.js";
+import { exportEvents, getExportEventsCount } from "./analytics/exportEvents.js";
 import { createDashboardCache } from "./analytics/utils/dashboardCache.js";
 import { filterParamError } from "./analytics/utils/getFilterStatement.js";
 import { validateHttpTimeParams } from "./analytics/utils/query-validation.js";
@@ -215,6 +223,7 @@ import {
   type RouteScope,
 } from "../lib/auth-middleware.js";
 import { IS_CLOUD } from "../lib/const.js";
+import { keepRawJsonBody } from "../lib/rawBody.js";
 import { mcpRoutes } from "../mcp/index.js";
 
 // Reject requests whose shared time query params are present but invalid.
@@ -322,6 +331,12 @@ const publicSegmentsRead = publicSite("segments:read");
 // one query per card), and /generate spends OpenRouter credit. Cap per user.
 const customQueryRateLimit = { max: 60, timeWindow: "1 minute" };
 const generateQueryRateLimit = { max: 20, timeWindow: "1 minute" };
+// Each export streams up to EXPORT_MAX_ROWS rows; a few per minute covers a
+// script walking month by month.
+const exportRateLimit = { max: 10, timeWindow: "1 minute" };
+// The count scans the same range as the export; the settings tab asks once per
+// range change.
+const exportCountRateLimit = { max: 30, timeWindow: "1 minute" };
 // The inline goal form asks for a preview as the pattern is typed (debounced).
 const goalPreviewRateLimit = { max: 60, timeWindow: "1 minute" };
 const withRateLimit = <T extends { preHandler: unknown; config?: object }>(
@@ -422,9 +437,12 @@ async function analyticsRoutes(fastify: FastifyInstance) {
   fastify.post("/sites/:siteId/cohorts", site("cohorts:write"), createCohort);
   fastify.put("/sites/:siteId/cohorts/:cohortId", site("cohorts:write"), updateCohort);
   fastify.delete("/sites/:siteId/cohorts/:cohortId", site("cohorts:write"), deleteCohort);
+
+  // The card body carries caller-written SQL, so this is a custom query: a
+  // dashboards:read credential alone must not be able to read raw events.
   fastify.post(
     "/sites/:siteId/dashboards/run-card",
-    withRateLimit(site("dashboards:read"), customQueryRateLimit),
+    withRateLimit(site("sql:read"), customQueryRateLimit),
     runDashboardCardQuery
   );
   fastify.get("/sites/:siteId/feature-flags", site("flags:read"), getFeatureFlags);
@@ -438,6 +456,7 @@ async function analyticsRoutes(fastify: FastifyInstance) {
   fastify.put("/sites/:siteId/experiments/:experimentId", site("experiments:write"), updateExperiment);
   fastify.delete("/sites/:siteId/experiments/:experimentId", site("experiments:write"), deleteExperiment);
   fastify.get("/sites/:siteId/experiments/:experimentId/results", site("experiments:read"), getExperimentResults);
+  fastify.get("/sites/:siteId/experiments/:experimentId/timeseries", site("experiments:read"), getExperimentTimeseries);
   fastify.get("/sites/:siteId/events/names", cachedEventsRead, getEventNames);
   fastify.get("/sites/:siteId/events/names/stats", cachedEventsRead, getEventNameStats);
   fastify.get("/sites/:siteId/events/overview", cachedEventsRead, getEventsOverview);
@@ -465,6 +484,13 @@ async function analyticsRoutes(fastify: FastifyInstance) {
   fastify.get("/sites/:siteId/bots/by-dimension", publicAnalyticsRead, getBotDimension);
   fastify.get("/sites/:siteId/bots/ai-summary", publicAnalyticsRead, getBotAiSummary);
   fastify.get("/sites/:siteId/export/pdf", site("analytics:read"), generatePdfReport);
+  // Raw event export. Not open to public-site or private-link visitors.
+  fastify.get("/sites/:siteId/export/events", withRateLimit(site("events:read"), exportRateLimit), exportEvents);
+  fastify.get(
+    "/sites/:siteId/export/events/count",
+    withRateLimit(site("events:read"), exportCountRateLimit),
+    getExportEventsCount
+  );
 }
 
 async function sessionReplayRoutes(fastify: FastifyInstance) {
@@ -563,6 +589,17 @@ async function organizationsRoutes(fastify: FastifyInstance) {
 
   // Member site access management (admin/owner only)
   fastify.put("/organizations/:organizationId/members/:memberId/sites", org("members:manage"), updateMemberSiteAccess);
+
+  // Data Processing Agreement: a countersigned agreement with Rybbit Cloud, so self-hosted has none.
+  if (IS_CLOUD) {
+    const dpa = org("dpa:manage");
+    fastify.post(
+      "/organizations/:organizationId/dpa",
+      // Each signature launches a browser to print the PDF.
+      { ...dpa, bodyLimit: 16 * 1024, config: { ...dpa.config, rateLimit: { max: 10, timeWindow: "1 hour" } } },
+      signDpa
+    );
+  }
 }
 
 async function teamsRoutes(fastify: FastifyInstance) {
@@ -580,8 +617,19 @@ async function userRoutes(fastify: FastifyInstance) {
   fastify.get("/user/organizations", authenticated({ resource: "org", action: "read" }), getUserOrganizations);
   fastify.post("/user/account-settings", authenticated("deny-scoped"), updateAccountSettings);
   fastify.post("/user/unsubscribe-marketing", authenticated("deny-scoped"), unsubscribeMarketing);
-  fastify.get("/user/unsubscribe-marketing-oneclick", publicRoute, oneClickUnsubscribeMarketing); // Public - for link clicks
-  fastify.post("/user/unsubscribe-marketing-oneclick", publicRoute, oneClickUnsubscribeMarketing); // Public - for List-Unsubscribe header
+  await fastify.register(async oneClick => {
+    // Email clients send RFC 8058 one-click unsubscribes as an
+    // application/x-www-form-urlencoded POST ("List-Unsubscribe=One-Click").
+    // The handlers only read the query string, but without a parser Fastify
+    // answers 415 before they run.
+    oneClick.addContentTypeParser("application/x-www-form-urlencoded", { parseAs: "string" }, (_request, _body, done) =>
+      done(null, {})
+    );
+    oneClick.get("/user/unsubscribe-marketing-oneclick", publicRoute, oneClickUnsubscribeMarketing); // Public - for link clicks
+    oneClick.post("/user/unsubscribe-marketing-oneclick", publicRoute, oneClickUnsubscribeMarketing); // Public - for List-Unsubscribe header
+    oneClick.get("/user/unsubscribe-reports-oneclick", publicRoute, oneClickUnsubscribeReports); // Public - weekly report footer link
+    oneClick.post("/user/unsubscribe-reports-oneclick", publicRoute, oneClickUnsubscribeReports); // Public - weekly report List-Unsubscribe header
+  });
   fastify.post("/user/api-keys", authenticated("deny-scoped"), createUserApiKey);
   fastify.post("/organizations/:organizationId/api-keys", org("apikeys:manage"), createOrgApiKey);
   fastify.get("/organizations/:organizationId/api-usage", org("org:read"), getOrgApiUsage);
@@ -615,6 +663,9 @@ async function stripeAdminRoutes(fastify: FastifyInstance) {
   fastify.patch("/admin/organizations/:organizationId/members/:memberId", systemAdmin, updateAdminOrganizationMember);
   fastify.delete("/admin/organizations/:organizationId/members/:memberId", systemAdmin, deleteAdminOrganizationMember);
   fastify.get("/admin/service-event-count", systemAdmin, getAdminServiceEventCount);
+  fastify.get("/admin/api-keys", systemAdmin, getAdminApiKeys);
+  fastify.patch("/admin/api-keys/:keyId", systemAdmin, updateAdminApiKey);
+  fastify.delete("/admin/api-keys/:keyId", systemAdmin, deleteAdminApiKey);
   fastify.post(
     "/admin/telemetry",
     {
@@ -629,17 +680,26 @@ async function stripeAdminRoutes(fastify: FastifyInstance) {
     // Stripe Routes
     fastify.post("/stripe/create-checkout-session", authenticated("deny-scoped"), createCheckoutSession);
     fastify.post("/stripe/create-portal-session", authenticated("deny-scoped"), createPortalSession);
+    fastify.post("/stripe/retry-payment", authenticated("deny-scoped"), retryPayment);
     fastify.post("/stripe/preview-subscription-update", authenticated("deny-scoped"), previewSubscriptionUpdate);
     fastify.post("/stripe/update-subscription", authenticated("deny-scoped"), updateSubscription);
     fastify.get("/stripe/subscription", authenticated("deny-scoped"), getSubscription);
     fastify.get("/stripe/invoices", authenticated("deny-scoped"), getInvoices);
     fastify.post("/stripe/cancellation-feedback", authenticated("deny-scoped"), submitCancellationFeedback);
-    fastify.post("/stripe/webhook", { config: { rawBody: true, access: "public" as RouteAccess } }, handleWebhook); // Public - Stripe webhook
 
     // AppSumo Routes
     fastify.post("/as/activate", authenticated("deny-scoped"), activateAppSumoLicense);
-    fastify.post("/as/webhook", publicRoute, handleAppSumoWebhook); // Public - AppSumo webhook
+
+    await fastify.register(webhookRoutes);
   }
+}
+
+// Public webhooks. Both senders sign the raw request bytes, so this scope keeps
+// them on request.rawBody for the handlers' signature checks.
+async function webhookRoutes(fastify: FastifyInstance) {
+  keepRawJsonBody(fastify);
+  fastify.post("/stripe/webhook", publicRoute, handleWebhook);
+  fastify.post("/as/webhook", publicRoute, handleAppSumoWebhook);
 }
 
 // Main API routes plugin - registers all domain plugins

@@ -71,7 +71,9 @@ describe("getPaginationStatements", () => {
 });
 
 describe("runAnalyticsQuery", () => {
-  it("executes the spec and coerces numeric strings", async () => {
+  // Analytics queries used to run with no settings at all, so a runaway all-time
+  // query could hold a ClickHouse slot indefinitely; hence max_execution_time.
+  it("executes the spec with an execution-time cap and coerces numeric strings", async () => {
     mockQuery.mockResolvedValueOnce(resultSet([{ value: "Chrome", count: "42" }]));
 
     const rows = await runAnalyticsQuery<{ value: string; count: number }>({

@@ -225,6 +225,20 @@ function validateHeatmapSettings(input: Pick<CreateSiteInput, "heatmaps" | "heat
   }
 }
 
+function assertStandardFeaturesEntitled(
+  subscription: { status: string } | null,
+  requestedFeatures: ReadonlyArray<(typeof STANDARD_FEATURES)[number]>
+): void {
+  const hasActiveSubscription = subscription?.status === "active" || subscription?.status === "trialing";
+  if (requestedFeatures.length > 0 && !hasActiveSubscription) {
+    throw new SiteLifecycleError(
+      "standard_features_not_entitled",
+      403,
+      `The following features require an active subscription: ${requestedFeatures.join(", ")}`
+    );
+  }
+}
+
 function validateSiteId(siteId: number): void {
   if (!Number.isInteger(siteId) || siteId <= 0) {
     throw new SiteLifecycleError("invalid_site_id", 400, "Invalid site ID: must be a positive integer");
@@ -273,15 +287,10 @@ class SiteConfigurationLifecycle {
           throw new SiteLifecycleError("replay_not_entitled", 403, "Session replay requires a Pro subscription");
         }
 
-        const requestedStandardFeatures = STANDARD_FEATURES.filter(feature => input[feature]);
-        const hasActiveSubscription = subscription.status === "active" || subscription.status === "trialing";
-        if (requestedStandardFeatures.length > 0 && !hasActiveSubscription) {
-          throw new SiteLifecycleError(
-            "standard_features_not_entitled",
-            403,
-            `The following features require an active subscription: ${requestedStandardFeatures.join(", ")}`
-          );
-        }
+        assertStandardFeaturesEntitled(
+          subscription,
+          STANDARD_FEATURES.filter(feature => input[feature])
+        );
 
         const siteLimit = subscription.siteLimit ?? null;
         if (siteLimit !== null) {
@@ -489,11 +498,16 @@ class SiteConfigurationLifecycle {
     validateHeatmapSettings(input);
     validateMobileFeatures(nextSiteType, input);
 
-    if (IS_CLOUD && input.sessionReplay === true) {
+    // Same entitlements as creation. Standard features are checked only when this update turns
+    // one on, so turning them off, or saving other settings on a site that already has them
+    // (from before they needed a plan), keeps working.
+    const enabledStandardFeatures = STANDARD_FEATURES.filter(feature => input[feature] === true && !site[feature]);
+    if (IS_CLOUD && (input.sessionReplay === true || enabledStandardFeatures.length > 0)) {
       const subscription = site.organizationId ? await getSubscriptionInner(site.organizationId) : null;
-      if (!subscription?.includesReplay) {
+      if (input.sessionReplay === true && !subscription?.includesReplay) {
         throw new SiteLifecycleError("replay_not_entitled", 403, "Session replay requires a Pro plan");
       }
+      assertStandardFeaturesEntitled(subscription, enabledStandardFeatures);
     }
 
     if (input.excludedIPs) {
@@ -585,14 +599,25 @@ class SiteConfigurationLifecycle {
     await heatmapBatchClaims.clearAttributions(siteId);
     await heatmapSnapshotClaims.clear(siteId);
     await clearHeatmapSnapshotMarkers(siteId);
+    // A lightweight DELETE is a mutation, and mutations on a table run one at a
+    // time. The replay tables also take the identity backfill's UPDATE
+    // mutations, so a DELETE that waits for completion (the default,
+    // lightweight_deletes_sync=2) can sit behind them for an hour. In prod
+    // that ran past the client's 300s timeout, so the Postgres delete rolled
+    // back and the site couldn't be deleted. With 0 the server returns once
+    // the mutation is queued. ClickHouse keeps queued mutations across
+    // restarts, so the replay rows are still removed later.
+    const settings = { lightweight_deletes_sync: "0" };
     await Promise.all([
       clickhouse.command({
         query: "DELETE FROM session_replay_events WHERE site_id = {id:UInt32}",
         query_params: { id: siteId },
+        clickhouse_settings: settings,
       }),
       clickhouse.command({
         query: "DELETE FROM session_replay_metadata_v2 WHERE site_id = {id:UInt32}",
         query_params: { id: siteId },
+        clickhouse_settings: settings,
       }),
       clickhouse.command({
         query: "DELETE FROM heatmap_events WHERE site_id = {id:UInt32}",
@@ -609,8 +634,9 @@ class SiteConfigurationLifecycle {
     const site = await this.findSite(siteId);
     // Delete the Postgres rows first so a constraint failure can't leave the
     // Site in place with its replays already wiped. import_status is the one
-    // table whose foreign key to sites doesn't cascade. Replay cleanup runs
-    // inside the transaction, so a ClickHouse failure rolls the Site back.
+    // table whose foreign key to sites doesn't cascade. Replay cleanup is
+    // queued inside the transaction, so a failure to queue it rolls the Site
+    // back.
     await db.transaction(async tx => {
       await tx.delete(importStatus).where(eq(importStatus.siteId, siteId));
       await tx.delete(sites).where(eq(sites.siteId, siteId));

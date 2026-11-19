@@ -99,8 +99,12 @@ export type {
   ExperimentPayload,
   ExperimentResults,
   ExperimentStatus,
+  ExperimentTimeseries,
+  ExperimentTimeseriesPoint,
   ExperimentUpdatePayload,
   ExperimentVariantResult,
+  ExperimentWindow,
+  ExperimentWindowMode,
 } from "./experiments";
 
 // Funnels endpoints
@@ -215,8 +219,8 @@ export type {
 export type { TraitKey, TraitKeysResponse, TraitGroupStats, TraitValueGroup, TraitBreakdown } from "./userTraits";
 
 // Export endpoints
-export { exportPdfReport } from "./export";
-export type { ExportPdfParams } from "./export";
+export { eventExportUrl, exportPdfReport, fetchEventExportCount } from "./export";
+export type { EventExportCount, EventExportFormat, EventExportParams, ExportPdfParams } from "./export";
 
 export { fetchHeatmaps } from "./heatmaps";
 export type { HeatmapSelection, HeatmapParams } from "./heatmaps";

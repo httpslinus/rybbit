@@ -3,11 +3,14 @@ import { DateTime } from "luxon";
 import * as cron from "node-cron";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { db } from "../../db/postgres/postgres.js";
-import { goals, lifecycleEmailLog, member, sites, user } from "../../db/postgres/schema.js";
+import { goals, lifecycleEmailLog, member, organization, sites, user } from "../../db/postgres/schema.js";
 import { IS_CLOUD } from "../../lib/const.js";
 import { isContactUnsubscribed, sendLifecycleEmail } from "../../lib/email/email.js";
+import { formatDateTime } from "../../lib/email/format.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { signExpiringPayload } from "../../lib/signedToken.js";
+import { hasHadStripeSubscription } from "../../lib/subscriptionUtils.js";
+import { usageService } from "../usageService.js";
 import * as content from "./lifecycleContent.js";
 import { detectPlatform, platformForKey, type PlatformInfo } from "./platformDetect.js";
 
@@ -24,6 +27,12 @@ import { detectPlatform, platformForKey, type PlatformInfo } from "./platformDet
  * one message. Install and live emails have a 24-hour per-kind cooldown;
  * went-quiet emails have a seven-day per-user cooldown. An agency that adds
  * 13 domains gets one snippet email listing 13 snippets.
+ *
+ * Plan state comes from the usage service's blocked-site sets, the same ones
+ * ingestion enforces: a site that collects nothing until its organization
+ * starts a plan gets the "start your trial" emails instead of install help,
+ * and a site that is blocked never gets a went-quiet alert. Until the first
+ * usage check of the process finishes, those tracks wait.
  *
  * Concurrency: the cron runs on the cluster primary only, so a single
  * evaluator holds the "one email per user per run" invariant. If this ever
@@ -49,6 +58,7 @@ interface SiteStats {
 
 interface OwnedSite {
   siteId: number;
+  organizationId: string;
   domain: string;
   createdAt: DateTime;
   detectedPlatform: string | null;
@@ -73,6 +83,13 @@ interface BundleEntry {
   key: string;
   siteId: number | null;
 }
+
+/** "Desktop, Chrome on macOS" from whichever parts the event recorded. */
+const describeDevice = (deviceType?: string, browser?: string, os?: string): string | null => {
+  const client = [browser, os].filter(Boolean).join(" on ");
+  const parts = [deviceType, client].filter(Boolean);
+  return parts.length > 0 ? parts.join(", ") : null;
+};
 
 const countryName = (code: string | null): string | null => {
   if (!code) return null;
@@ -142,10 +159,10 @@ class LifecycleEmailService {
     return stats;
   }
 
-  private async fetchFirstPageview(siteId: number): Promise<{ country: string | null } | null> {
+  private async fetchFirstPageview(siteId: number): Promise<content.FirstPageview | null> {
     const result = await clickhouse.query({
       query: `
-        SELECT country FROM events
+        SELECT timestamp, country, pathname, device_type, browser, operating_system FROM events
         WHERE site_id = {siteId:Int32} AND type = 'pageview'
           AND timestamp > now() - INTERVAL 7 DAY
         ORDER BY timestamp ASC
@@ -154,9 +171,23 @@ class LifecycleEmailService {
       format: "JSONEachRow",
       query_params: { siteId },
     });
-    const rows = await result.json<{ country: string }>();
+    const rows = await result.json<{
+      timestamp?: string;
+      country?: string;
+      pathname?: string;
+      device_type?: string;
+      browser?: string;
+      operating_system?: string;
+    }>();
     if (rows.length === 0) return null;
-    return { country: rows[0].country || null };
+    const row = rows[0];
+    const receivedAt = row.timestamp ? parseTs(row.timestamp) : null;
+    return {
+      receivedAt: receivedAt?.isValid ? formatDateTime(receivedAt) : null,
+      country: countryName(row.country || null),
+      pathname: row.pathname || null,
+      device: describeDevice(row.device_type, row.browser, row.operating_system),
+    };
   }
 
   private async fetchFirstDaysStats(siteId: number): Promise<content.FirstDaysStats | null> {
@@ -199,30 +230,33 @@ class LifecycleEmailService {
     };
   }
 
-  private async fetchConvertingPath(siteId: number): Promise<string | null> {
+  private async fetchConvertingPath(siteId: number): Promise<content.ConvertingPath | null> {
     const cacheKey = `conv:${siteId}`;
     const retryAfter = this.negativeCache.get(cacheKey);
     if (retryAfter && retryAfter > Date.now()) return null;
 
     const result = await clickhouse.query({
       query: `
-        SELECT pathname, count() AS c
+        SELECT pathname, uniq(session_id) AS sessions
         FROM events
         WHERE site_id = {siteId:Int32}
           AND type = 'pageview'
           AND timestamp > now() - INTERVAL 14 DAY
           AND match(pathname, '(thank|success|checkout|confirmation|purchase|order-complete|welcome)')
         GROUP BY pathname
-        ORDER BY c DESC
+        ORDER BY sessions DESC
         LIMIT 1
       `,
       format: "JSONEachRow",
       query_params: { siteId },
     });
-    const rows = await result.json<{ pathname: string }>();
+    const rows = await result.json<{ pathname: string; sessions?: string | number }>();
     const path = rows[0]?.pathname || null;
-    if (!path) this.negativeCache.set(cacheKey, Date.now() + NEGATIVE_CACHE_TTL_MS);
-    return path;
+    if (!path) {
+      this.negativeCache.set(cacheKey, Date.now() + NEGATIVE_CACHE_TTL_MS);
+      return null;
+    }
+    return { pathname: path, sessions: Number(rows[0].sessions ?? 0) };
   }
 
   private async resolvePlatform(site: OwnedSite): Promise<PlatformInfo | null> {
@@ -234,6 +268,22 @@ class LifecycleEmailService {
       await db.update(sites).set({ detectedPlatform: detected.key }).where(eq(sites.siteId, site.siteId));
     }
     return detected;
+  }
+
+  /**
+   * Whether checkout would start these organizations on the free trial: none of them has had
+   * a subscription. Throws when Stripe can't say, so the email waits rather than promise a
+   * trial that isn't on offer.
+   */
+  private async trialOnOffer(organizationIds: string[]): Promise<boolean> {
+    const orgs = await db
+      .select({ stripeCustomerId: organization.stripeCustomerId })
+      .from(organization)
+      .where(inArray(organization.id, organizationIds));
+    for (const org of orgs) {
+      if (await hasHadStripeSubscription(org.stripeCustomerId, { throwOnError: true })) return false;
+    }
+    return true;
   }
 
   private checkInstallUrl(siteId: number, domain: string): string {
@@ -281,7 +331,7 @@ class LifecycleEmailService {
         await rollback();
         return false;
       }
-      const sent = await sendLifecycleEmail(email, message.subject, message.text, idempotencyKey);
+      const sent = await sendLifecycleEmail(email, message, idempotencyKey);
       if (!sent) {
         await rollback();
         return false;
@@ -369,6 +419,7 @@ class LifecycleEmailService {
       if (!s.organizationId || !s.createdAt) continue;
       const entry: OwnedSite = {
         siteId: s.siteId,
+        organizationId: s.organizationId,
         domain: s.domain,
         createdAt: parseTs(s.createdAt),
         detectedPlatform: s.detectedPlatform,
@@ -449,7 +500,7 @@ class LifecycleEmailService {
         async claimed => {
           const chosen = liveSites.filter(site => claimed.some(e => e.siteId === site.siteId));
           const first = chosen.length === 1 ? await this.fetchFirstPageview(chosen[0].siteId) : null;
-          return content.siteLive(chosen, countryName(first?.country ?? null), u.name);
+          return content.siteLive(chosen, first, u.name);
         }
       );
       if (sent) return;
@@ -468,13 +519,46 @@ class LifecycleEmailService {
       return;
     }
 
+    // Sites with no data yet split by whether they can collect any. Which is
+    // which isn't known until the usage service has evaluated plans, so both
+    // tracks wait for that rather than send install help to a blocked site.
+    const waitingSites = usageService.hasSiteBlocks()
+      ? userSites
+          .filter(site => !stats.get(site.siteId) && now.diff(site.createdAt, "days").days < COHORT_DAYS)
+          .sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis())
+      : [];
+
+    // --- State: site created, but its organization has no plan, so it collects
+    // nothing. Two emails per user ask for the plan; the site joins the
+    // install track on the run after one starts. A site whose owner already got
+    // the install track's last reminder is left alone ---
+    const noPlanSites = waitingSites.filter(
+      site => usageService.isSiteWithoutPlan(site.siteId) && !sentLog.has(`install_final:${site.siteId}`)
+    );
+    if (noPlanSites.length > 0) {
+      const firstSent = sentLog.get("no_plan_1");
+      const stage = !firstSent
+        ? now.diff(noPlanSites[0].createdAt, "hours").hours >= 1
+          ? 1
+          : null
+        : !sentLog.has("no_plan_2") && gapElapsed && now.diff(firstSent, "hours").hours >= 72
+          ? 2
+          : null;
+      if (stage) {
+        if (await unsubscribed()) return;
+        const sent = await this.sendOnce(u.id, u.email, `no_plan_${stage}`, null, async () => {
+          const trialOnOffer = await this.trialOnOffer([...new Set(noPlanSites.map(site => site.organizationId))]);
+          return (stage === 1 ? content.noPlan1 : content.noPlan2)(noPlanSites, trialOnOffer, u.name);
+        });
+        if (sent) return;
+      }
+    }
+
     // --- Install track: evaluated per site, so a working site doesn't
     // suppress install help for the owner's other new sites. Sent per user:
     // every site at the same stage goes into one email, and the track sends
     // at most one email per KIND_COOLDOWN_HOURS, snippet stage first ---
-    const noDataSites = userSites
-      .filter(site => !stats.get(site.siteId) && now.diff(site.createdAt, "days").days < COHORT_DAYS)
-      .sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+    const noDataSites = waitingSites.filter(site => !usageService.isSiteWithoutPlan(site.siteId));
 
     if (noDataSites.length > 0 && cooldownElapsed(lastInstallSent)) {
       // One install email per window, so the three stages share the key.
@@ -574,7 +658,9 @@ class LifecycleEmailService {
         if (await unsubscribed()) return;
         const sent = await this.sendOnce(u.id, u.email, `first_days:${site.siteId}`, site.siteId, async () => {
           const report = await this.fetchFirstDaysStats(site.siteId);
-          return report ? content.firstDays(site.domain, site.siteId, report, u.name) : null;
+          return report
+            ? content.firstDays(site.domain, site.siteId, report, Math.max(1, Math.floor(dataAgeDays)), u.name)
+            : null;
         });
         if (sent) return;
       }
@@ -647,10 +733,15 @@ class LifecycleEmailService {
     const candidates = quietRows.filter(r => establishedIds.has(Number(r.site_id)));
     if (candidates.length === 0) return;
 
-    const quietSites = await db
-      .select({ siteId: sites.siteId, domain: sites.domain, organizationId: sites.organizationId })
-      .from(sites)
-      .where(inArray(sites.siteId, candidates.map(r => Number(r.site_id))));
+    // A site that is blocked (no plan, or over its event limit) is quiet because
+    // we drop its events, not because the script came off. Its owner hears about
+    // that from the billing and usage emails.
+    const quietSites = (
+      await db
+        .select({ siteId: sites.siteId, domain: sites.domain, organizationId: sites.organizationId })
+        .from(sites)
+        .where(inArray(sites.siteId, candidates.map(r => Number(r.site_id))))
+    ).filter(site => !usageService.isSiteWithoutPlan(site.siteId) && !usageService.isSiteOverLimit(site.siteId));
     if (quietSites.length === 0) return;
 
     // 30-day per-site cooldown: a recovered-then-quiet-again site alerts at
@@ -719,7 +810,7 @@ class LifecycleEmailService {
               .map(site => ({
                 domain: site.domain,
                 siteId: site.siteId,
-                lastEventAt: lastEventBySite.get(site.siteId)?.toFormat("MMMM d 'at' HH:mm 'UTC'") ?? "two days ago",
+                lastEventAt: lastEventBySite.get(site.siteId)?.toFormat("LLL d 'at' HH:mm 'UTC'") ?? "two days ago",
               })),
             owner.name
           )
@@ -742,8 +833,12 @@ class LifecycleEmailService {
     try {
       await this.processOnboarding(now);
       // The went-quiet scan covers the whole events table (bounded to 14 days);
-      // hourly is plenty for a 48h-silence alert.
-      if (!this.lastWentQuietAt || now.diff(this.lastWentQuietAt, "minutes").minutes >= 55) {
+      // hourly is plenty for a 48h-silence alert. It waits for the blocked-site
+      // sets, which tell it which quiet sites are quiet because they're blocked.
+      if (
+        usageService.hasSiteBlocks() &&
+        (!this.lastWentQuietAt || now.diff(this.lastWentQuietAt, "minutes").minutes >= 55)
+      ) {
         this.lastWentQuietAt = now;
         await this.processWentQuiet(now);
       }

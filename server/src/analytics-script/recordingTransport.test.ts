@@ -16,9 +16,21 @@ afterEach(() => {
 });
 
 describe("recording transport", () => {
-  it("rejects HTTP failures so recording events remain available for retry", async () => {
-    vi.mocked(fetch).mockResolvedValue({ ok: false, status: 503 } as Response);
-    await expect(sendRecordingBatch(config, runtime, batch)).rejects.toThrow("Recording upload failed: 503");
+  it.each([408, 429, 502, 503, 504])("requeues batches after HTTP %i", async status => {
+    vi.mocked(fetch).mockResolvedValue({ ok: false, status } as Response);
+    await expect(sendRecordingBatch(config, runtime, batch)).rejects.toThrow(String(status));
+  });
+
+  it.each([400, 500])("discards batches after HTTP %i to avoid invalid uploads or duplicate events", async status => {
+    vi.mocked(fetch).mockResolvedValue({ ok: false, status } as Response);
+    await expect(sendRecordingBatch(config, runtime, batch)).resolves.toEqual({ recorded: false });
+  });
+
+  it("passes stop and full snapshot requests back to the recorder", async () => {
+    for (const response of [{ stopRecording: true }, { takeFullSnapshot: true }]) {
+      vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => response } as Response);
+      await expect(sendRecordingBatch(config, runtime, batch)).resolves.toEqual(response);
+    }
   });
 
   it("recognizes discarded recordings rather than treating them as stored backgrounds", async () => {
@@ -48,14 +60,23 @@ describe("recording transport", () => {
     released?.();
   });
 
-  it("uses ordinary uploads for recording batches and keepalive only for exit batches", async () => {
+  it("uses keepalive when regular and exit batches fit the shared budget", async () => {
     vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ recorded: true }) } as Response);
+    const batchWithText = (text: string): SessionReplayBatch => ({
+      ...batch,
+      events: [{ type: 3, data: text, timestamp: 1 }],
+    });
+    const mediumBatch = batchWithText("x".repeat(30 * 1024));
+
     await sendRecordingBatch(config, runtime, batch);
-    expect(fetch).toHaveBeenLastCalledWith(
+    await Promise.all([sendRecordingBatch(config, runtime, mediumBatch), sendRecordingBatch(config, runtime, mediumBatch)]);
+    await sendRecordingBatch(config, runtime, batchWithText("€".repeat(20_000)), true);
+
+    expect(fetch).toHaveBeenNthCalledWith(
+      1,
       expect.stringContaining("/session-replay/record/42"),
-      expect.objectContaining({ keepalive: false, credentials: "omit" })
+      expect.objectContaining({ credentials: "omit" })
     );
-    await sendRecordingBatch(config, runtime, batch, true);
-    expect(fetch).toHaveBeenLastCalledWith(expect.any(String), expect.objectContaining({ keepalive: true }));
+    expect(vi.mocked(fetch).mock.calls.map(([, options]) => options?.keepalive)).toEqual([true, true, false, false]);
   });
 });

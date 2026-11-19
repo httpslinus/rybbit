@@ -86,19 +86,13 @@ beforeEach(async () => {
 });
 
 describe("createCheckoutSession — one trial per organization", () => {
-  it("gives an organization with no subscription history the 7-day trial", async () => {
-    await createCheckoutSession(requestStub("u_owner", validBody), replyStub());
-
-    expect(mocks.checkoutSessionsCreate).toHaveBeenCalledWith(
-      expect.objectContaining({ subscription_data: { trial_period_days: 7 } })
-    );
-  });
-
   it("charges a returning customer straight away instead of starting another trial", async () => {
     mocks.subscriptionsList.mockResolvedValue({ data: [{ id: "sub_old", status: "canceled" }] });
+    const reply = replyStub();
 
-    await createCheckoutSession(requestStub("u_owner", validBody), replyStub());
+    await createCheckoutSession(requestStub("u_owner", validBody), reply);
 
+    expect(reply.statusCode).toBe(200);
     expect(mocks.subscriptionsList).toHaveBeenCalledWith(expect.objectContaining({ customer: "cus_1" }));
     expect(mocks.checkoutSessionsCreate.mock.calls[0][0]).not.toHaveProperty("subscription_data");
   });
@@ -121,6 +115,38 @@ describe("createCheckoutSession — one trial per organization", () => {
     expect(mocks.checkoutSessionsCreate).toHaveBeenCalledWith(
       expect.objectContaining({ subscription_data: { trial_period_days: 7 } })
     );
+  });
+});
+
+describe("createCheckoutSession — existing subscribers", () => {
+  it.each(["active", "trialing"])("refuses a second checkout when the org has a %s subscription", async status => {
+    mocks.subscriptionsList.mockResolvedValue({ data: [{ id: "sub_live", status }] });
+    const reply = replyStub();
+
+    await createCheckoutSession(requestStub("u_owner", validBody), reply);
+
+    expect(reply.statusCode).toBe(409);
+    expect(reply.body.error).toContain("already has an active subscription");
+    expect(mocks.checkoutSessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it("finds an active subscription behind a full page of newer canceled ones", async () => {
+    const canceled = Array.from({ length: 100 }, (_, i) => ({ id: `sub_old_${i}`, status: "canceled" }));
+    mocks.subscriptionsList.mockImplementation(async ({ status }: { status: string }) => ({
+      data: status === "all" ? canceled : status === "active" ? [{ id: "sub_live", status: "active" }] : [],
+    }));
+    const reply = replyStub();
+
+    await createCheckoutSession(requestStub("u_owner", validBody), reply);
+
+    expect(reply.statusCode).toBe(409);
+    expect(mocks.subscriptionsList).toHaveBeenCalledWith(
+      expect.objectContaining({ customer: "cus_1", status: "active" })
+    );
+    expect(mocks.subscriptionsList).toHaveBeenCalledWith(
+      expect.objectContaining({ customer: "cus_1", status: "trialing" })
+    );
+    expect(mocks.checkoutSessionsCreate).not.toHaveBeenCalled();
   });
 });
 

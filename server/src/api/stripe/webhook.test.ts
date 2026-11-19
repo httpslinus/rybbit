@@ -23,6 +23,8 @@ const mocks = vi.hoisted(() => {
     constructEvent: vi.fn(),
     invalidateStripeSubscriptionCache: vi.fn(),
     requestOrganizationRefresh: vi.fn(),
+    onPaymentFailed: vi.fn(async (_invoice: unknown) => undefined),
+    onSubscriptionCanceled: vi.fn(async (_subscription: unknown) => undefined),
     select,
     selectWhere,
     selectLimit,
@@ -48,6 +50,13 @@ vi.mock("../../services/usageService.js", () => ({
   usageService: { requestOrganizationRefresh: mocks.requestOrganizationRefresh },
 }));
 
+vi.mock("../../services/paymentRecovery/paymentFailedEmails.js", () => ({
+  paymentFailedEmails: {
+    onPaymentFailed: mocks.onPaymentFailed,
+    onSubscriptionCanceled: mocks.onSubscriptionCanceled,
+  },
+}));
+
 import { handleWebhook } from "./webhook.js";
 
 const dialect = new PgDialect();
@@ -71,7 +80,8 @@ function createRequest(overrides: RequestOverrides = {}) {
   return {
     headers: overrides.headers ?? { "stripe-signature": SIGNATURE },
     body: overrides.parsedBody,
-    raw: rawBody === null ? {} : { body: rawBody },
+    // The webhook route's parser (keepRawJsonBody) puts the exact bytes here.
+    rawBody: rawBody === null ? undefined : Buffer.isBuffer(rawBody) ? rawBody : Buffer.from(rawBody ?? ""),
     log: requestLogger,
   } as any;
 }
@@ -126,7 +136,7 @@ describe("handleWebhook — signature verification", () => {
     const reply = createReply();
     await handleWebhook(createRequest({ headers: {} }), reply);
 
-    expect(mocks.constructEvent).toHaveBeenCalledWith('{"id":"evt_raw"}', undefined, "whsec_test_secret");
+    expect(mocks.constructEvent).toHaveBeenCalledWith(Buffer.from('{"id":"evt_raw"}'), undefined, "whsec_test_secret");
     expect(reply.statusCode).toBe(400);
     expect(reply.payload).toContain("Webhook Error");
     expectNoDbWrites();
@@ -173,9 +183,10 @@ describe("handleWebhook — signature verification", () => {
     await handleWebhook(createRequest({ rawBody, parsedBody: { id: "evt_1", type: "tampered.event" } }), reply);
 
     expect(mocks.constructEvent).toHaveBeenCalledTimes(1);
-    expect(mocks.constructEvent).toHaveBeenCalledWith(rawBody, SIGNATURE, "whsec_test_secret");
+    expect(mocks.constructEvent).toHaveBeenCalledWith(Buffer.from(rawBody), SIGNATURE, "whsec_test_secret");
     const [firstArg] = mocks.constructEvent.mock.calls[0];
-    expect(typeof firstArg).toBe("string");
+    expect(Buffer.isBuffer(firstArg)).toBe(true);
+    expect(firstArg.toString("utf8")).toBe(rawBody);
     expect(firstArg).not.toEqual({ id: "evt_1", type: "tampered.event" });
   });
 
@@ -370,6 +381,35 @@ describe("handleWebhook — unhandled event types", () => {
     expectNoDbWrites();
     expect(mocks.invalidateStripeSubscriptionCache).not.toHaveBeenCalled();
     expect(reply.statusCode).toBe(200);
+    expect(reply.payload).toEqual({ received: true });
+  });
+});
+
+describe("handleWebhook — failed payments", () => {
+  it("hands a failed invoice to the payment recovery emails and acknowledges it", async () => {
+    const invoice = { id: "in_1", customer: "cus_1", billing_reason: "subscription_cycle" };
+    mocks.constructEvent.mockReturnValue(stripeEvent("invoice.payment_failed", invoice));
+
+    const reply = createReply();
+    await handleWebhook(createRequest(), reply);
+
+    expect(mocks.onPaymentFailed).toHaveBeenCalledWith(invoice);
+    expect(reply.payload).toEqual({ received: true });
+    expectNoDbWrites();
+  });
+
+  it("tells the recovery emails when a subscription is deleted, but not when it is only updated", async () => {
+    const subscription = { id: "sub_1", customer: "cus_1", cancellation_details: { reason: "payment_failed" } };
+
+    mocks.constructEvent.mockReturnValue(stripeEvent("customer.subscription.updated", subscription));
+    await handleWebhook(createRequest(), createReply());
+    expect(mocks.onSubscriptionCanceled).not.toHaveBeenCalled();
+
+    mocks.constructEvent.mockReturnValue(stripeEvent("customer.subscription.deleted", subscription));
+    const reply = createReply();
+    await handleWebhook(createRequest(), reply);
+
+    expect(mocks.onSubscriptionCanceled).toHaveBeenCalledWith(subscription);
     expect(reply.payload).toEqual({ received: true });
   });
 });

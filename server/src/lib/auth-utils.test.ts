@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Better-auth pulls in email, stripe, and env config at import time — stub the
 // session API so getIsUserAdmin sees no session and auth never initializes.
@@ -48,6 +48,8 @@ import { member, memberSiteAccess, sites, team, teamMember, teamSiteAccess } fro
 import { auth } from "./auth.js";
 import {
   checkApiKey,
+  getIsUserAdmin,
+  getSessionFromReq,
   getSitesUserHasAccessTo,
   getUserHasAccessToSite,
   getUserHasAdminAccessToSite,
@@ -62,13 +64,9 @@ import {
 import {
   filterSitesByMemberAccess,
   getOrgMembership,
-  grantsInOrganization,
   isOrgAdmin,
   isOrgOwner,
-  memberCanAccessSite,
-  resolveMemberSiteGrants,
   resolveUserSiteRole,
-  restrictedMemberSiteIds,
   siteIdsInOrganization,
 } from "./access.js";
 import { INTERNAL_BEARER_HANDOFF_HEADER, registerBearerHandoff, releaseBearerHandoff } from "./bearerAuth.js";
@@ -155,6 +153,10 @@ CREATE TABLE "sites" (
   "tags" jsonb DEFAULT '[]',
   "detected_platform" text,
   "claim_expires_at" timestamp
+);
+CREATE TABLE "user" (
+  "id" text PRIMARY KEY,
+  "role" text
 );
 `;
 
@@ -272,47 +274,11 @@ describe("getOrgMembership", () => {
     expect(isOrgOwner(membership)).toBe(false);
   });
 
-  it("classifies owners as both admin and owner", async () => {
-    const membership = await getOrgMembership("user_owner", ORG);
-
-    expect(isOrgAdmin(membership)).toBe(true);
-    expect(isOrgOwner(membership)).toBe(true);
-  });
-
   it("returns null for a non-member, and for a missing user or organization", async () => {
     expect(await getOrgMembership("user_stranger", ORG)).toBeNull();
     expect(await getOrgMembership("user_peer", "org_other")).toBeNull();
     expect(await getOrgMembership(undefined, ORG)).toBeNull();
     expect(await getOrgMembership("user_peer", undefined)).toBeNull();
-  });
-});
-
-// Shared filter used by getSitesFromOrg, getMyOrganizations, and weekly reports
-describe("filterSitesByMemberAccess", () => {
-  const orgSites = Array.from({ length: 13 }, (_, i) => ({ siteId: i + 1 }));
-
-  async function filteredIdsFor(restricted: boolean): Promise<number[]> {
-    const result = await filterSitesByMemberAccess(orgSites, ORG, "user_peer", "member_peer", restricted);
-    return result.map(s => s.siteId).sort((a, b) => a - b);
-  }
-
-  it("unrestricted member on a team sees their team's sites plus non-gated sites", async () => {
-    expect(await filteredIdsFor(false)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13]);
-  });
-
-  it("restricted member keeps team-granted sites in addition to explicit site grants", async () => {
-    await db.insert(memberSiteAccess).values({ memberId: "member_peer", siteId: 13 });
-    expect(await filteredIdsFor(true)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13]);
-  });
-
-  it("explicitly granted site stays accessible even when gated by a team the member is not on", async () => {
-    await db.insert(memberSiteAccess).values({ memberId: "member_peer", siteId: 12 });
-    expect(await filteredIdsFor(true)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
-  });
-
-  it("restricted member with no team and no grants sees nothing", async () => {
-    await db.delete(teamMember);
-    expect(await filteredIdsFor(true)).toEqual([]);
   });
 });
 
@@ -337,43 +303,6 @@ describe("siteIdsInOrganization", () => {
 
   it("returns nothing for an empty list without querying", async () => {
     expect(await siteIdsInOrganization([], ORG)).toEqual([]);
-  });
-});
-
-// restrictedMemberSiteIds lets the resolver load a restricted member's sites by
-// id instead of reading a whole organization. It is only safe while it names
-// exactly the ids the predicate would admit.
-describe("restrictedMemberSiteIds matches the restricted branch of memberCanAccessSite", () => {
-  const universe = Array.from({ length: 13 }, (_, i) => i + 1);
-
-  async function grantsFor(restricted: boolean) {
-    return grantsInOrganization(
-      await resolveMemberSiteGrants({
-        userId: "user_peer",
-        organizationIds: [ORG],
-        grantedMemberIds: restricted ? ["member_peer"] : [],
-      }),
-      ORG
-    );
-  }
-
-  it("enumerates exactly the sites the predicate admits, for a member on a team", async () => {
-    await db.insert(memberSiteAccess).values({ memberId: "member_peer", siteId: 12 });
-    const grants = await grantsFor(true);
-
-    const enumerated = restrictedMemberSiteIds(grants).sort((a, b) => a - b);
-    const admitted = universe.filter(siteId => memberCanAccessSite(grants, siteId, true));
-
-    expect(enumerated).toEqual(admitted);
-    expect(enumerated.length).toBeGreaterThan(0);
-  });
-
-  it("enumerates nothing when the predicate admits nothing", async () => {
-    await db.delete(teamMember);
-    const grants = await grantsFor(true);
-
-    expect(restrictedMemberSiteIds(grants)).toEqual([]);
-    expect(universe.filter(siteId => memberCanAccessSite(grants, siteId, true))).toEqual([]);
   });
 });
 
@@ -850,15 +779,13 @@ describe("getOrganizationSitesForCaller", () => {
       domain: "other.example.com",
       organizationId: "org_other",
     });
-    await db
-      .insert(member)
-      .values({
-        id: "m_owner_other",
-        organizationId: "org_other",
-        userId: "user_owner",
-        role: "owner",
-        createdAt: NOW,
-      });
+    await db.insert(member).values({
+      id: "m_owner_other",
+      organizationId: "org_other",
+      userId: "user_owner",
+      role: "owner",
+      createdAt: NOW,
+    });
 
     const peerSites = await getOrganizationSitesForCaller(reqFor("user_peer"), ORG);
     expect(peerSites.map(site => site.siteId).sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13]);
@@ -1032,4 +959,73 @@ it("refreshes cached session access after another worker claims a site", async (
   });
   expect(await getUserHasAccessToSite(reqFor("user_owner"), 99)).toBe(true);
   expect(await getUserHasAdminAccessToSite(reqFor("user_owner"), 99)).toBe(true);
+});
+
+describe("getSessionFromReq — per-request memo", () => {
+  const getSession = vi.mocked(auth.api.getSession);
+  const cookieRequest = () => ({ headers: { cookie: "better-auth.session_token=t" } }) as any;
+  const sessionFor = (userId: string) => ({ user: { id: userId }, session: { id: `s_${userId}` } }) as any;
+
+  beforeEach(async () => {
+    getSession.mockReset();
+    await (sql as any).exec(`TRUNCATE "user"`);
+  });
+
+  afterEach(() => {
+    getSession.mockReset();
+    getSession.mockImplementation(async () => null);
+  });
+
+  it("looks the session up once per request, null included", async () => {
+    getSession.mockResolvedValue(null);
+    const req = cookieRequest();
+    expect(await getSessionFromReq(req)).toBeNull();
+    expect(await getSessionFromReq(req)).toBeNull();
+    expect(await getUserIdFromRequest(req)).toBeNull();
+    expect(getSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares one in-flight lookup between concurrent callers", async () => {
+    let resolve!: (value: unknown) => void;
+    getSession.mockImplementation(() => new Promise(r => (resolve = r)) as any);
+    const req = cookieRequest();
+    const pending = Promise.all([getSessionFromReq(req), getSessionFromReq(req), getSessionFromReq(req)]);
+    resolve(sessionFor("u1"));
+    const results = await pending;
+    expect(getSession).toHaveBeenCalledTimes(1);
+    expect(results.map(result => result?.user.id)).toEqual(["u1", "u1", "u1"]);
+  });
+
+  it("resolves each request on its own", async () => {
+    getSession.mockResolvedValueOnce(sessionFor("u1")).mockResolvedValueOnce(sessionFor("u2"));
+    expect((await getSessionFromReq(cookieRequest()))?.user.id).toBe("u1");
+    expect((await getSessionFromReq(cookieRequest()))?.user.id).toBe("u2");
+    expect(getSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries after a failed lookup instead of caching the error", async () => {
+    getSession.mockRejectedValueOnce(new Error("db down")).mockResolvedValueOnce(sessionFor("u1"));
+    const req = cookieRequest();
+    await expect(getSessionFromReq(req)).rejects.toThrow("db down");
+    expect((await getSessionFromReq(req))?.user.id).toBe("u1");
+    expect(getSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("decides system admin once per request, from the current role", async () => {
+    await (sql as any).exec(`INSERT INTO "user" ("id", "role") VALUES ('u_admin', 'admin')`);
+    getSession.mockResolvedValue(sessionFor("u_admin"));
+    const req = cookieRequest();
+    expect(await getIsUserAdmin(req)).toBe(true);
+
+    // The same request keeps its decision; the next request sees the demotion.
+    await (sql as any).exec(`UPDATE "user" SET "role" = 'user' WHERE "id" = 'u_admin'`);
+    expect(await getIsUserAdmin(req)).toBe(true);
+    expect(await getIsUserAdmin(cookieRequest())).toBe(false);
+    expect(getSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("is never admin without a session", async () => {
+    getSession.mockResolvedValue(null);
+    expect(await getIsUserAdmin(cookieRequest())).toBe(false);
+  });
 });

@@ -10,6 +10,7 @@ window.rybbitModules.recording = {
       config,
       userId,
       (batch, exit) => sendRecordingBatch(config, runtime, batch, exit),
-      runtime.capture
+      runtime.capture,
+      runtime.getBotSignalMask
     ),
 };

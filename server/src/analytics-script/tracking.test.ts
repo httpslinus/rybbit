@@ -220,6 +220,27 @@ describe("Tracker", () => {
       expect(payload?.querystring).toBe("");
     });
 
+    it("cuts a long title and referrer to the server's limits without splitting a character", () => {
+      Object.defineProperty(document, "title", { value: `${"t".repeat(511)}😀`, writable: true });
+      Object.defineProperty(document, "referrer", { value: `https://google.com/${"r".repeat(3000)}`, writable: true });
+
+      const payload = tracker.createBasePayload()!;
+
+      expect(payload.referrer).toHaveLength(2048);
+      expect(payload.page_title).toBe("t".repeat(511));
+    });
+
+    it("sends a long path and query string whole, for the server's exclusions to see", () => {
+      // The server cuts them for storage only after matching Site Exclusions.
+      mockLocation.pathname = `/${"p".repeat(3000)}`;
+      mockLocation.search = `?padding=${"q".repeat(3000)}&preview=1`;
+
+      const payload = tracker.createBasePayload()!;
+
+      expect(payload.pathname).toBe(mockLocation.pathname);
+      expect(payload.querystring).toBe(mockLocation.search);
+    });
+
     it("should include user ID when set", () => {
       vi.mocked(window.localStorage.getItem).mockReturnValue("user-123");
       tracker = new Tracker(config);
@@ -246,6 +267,56 @@ describe("Tracker", () => {
       const payload = tracker.createBasePayload();
       expect(payload?.feature_flags).toEqual({ new_checkout: "true" });
       expect(tracker.getFeatureFlagPayload("new_checkout")).toEqual({ copy: "Try it now" });
+    });
+
+    it("should treat an unassigned multivariate flag as absent", () => {
+      config.featureFlags = {
+        checkout_test: {
+          key: "checkout_test",
+          value: false,
+          flagType: "multivariate",
+          version: 2,
+          reason: "disabled",
+          matched: false,
+          rolloutPercentage: 100,
+        },
+      };
+      tracker = new Tracker(config);
+
+      expect(tracker.getFeatureFlag("checkout_test", "control")).toBe("control");
+      expect(tracker.getFeatureFlags()).not.toHaveProperty("checkout_test");
+      expect(tracker.createBasePayload()?.feature_flags).toBeUndefined();
+      expect(global.fetch).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ body: expect.stringContaining("feature_flag_exposure") })
+      );
+    });
+
+    it("should keep false as a real value for boolean flags", () => {
+      config.featureFlags = {
+        dark_mode: {
+          key: "dark_mode",
+          value: false,
+          flagType: "boolean",
+          version: 1,
+          reason: "fallthrough",
+          matched: false,
+          rolloutPercentage: 50,
+        },
+      };
+      tracker = new Tracker(config);
+
+      expect(tracker.getFeatureFlag("dark_mode", true)).toBe(false);
+      expect(tracker.createBasePayload()?.feature_flags).toEqual({ dark_mode: "false" });
+    });
+
+    it("should send the visitor id only when feature flags are enabled", () => {
+      expect(tracker.createBasePayload()?.visitor_id).toBeUndefined();
+
+      config.featureFlagsEnabled = true;
+      tracker = new Tracker(config);
+
+      expect(tracker.createBasePayload()?.visitor_id).toBe("visitor-123");
     });
   });
 
@@ -332,6 +403,18 @@ describe("Tracker", () => {
           target: "_blank",
         })
       );
+    });
+
+    it("fits outbound properties within the server's limit", () => {
+      const url = `https://external.com/?ref=${"a".repeat(3000)}`;
+      tracker.trackOutbound(url, "card text ".repeat(500), "_blank");
+
+      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]!.body as string);
+      const properties = JSON.parse(body.properties);
+      expect(body.properties.length).toBeLessThanOrEqual(2048);
+      expect(properties.text).toHaveLength(500);
+      expect(properties.target).toBe("_blank");
+      expect(url.startsWith(properties.url)).toBe(true);
     });
 
     it("should track web vitals", async () => {

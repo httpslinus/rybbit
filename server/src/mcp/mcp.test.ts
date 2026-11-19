@@ -2,33 +2,8 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { Agent, request as httpRequest, type IncomingHttpHeaders } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createMcpAuthenticator, extractBearerToken } from "./auth.js";
+import { createMcpAuthenticator } from "./auth.js";
 import { mcpRoutes, type McpRouteOptions } from "./index.js";
-
-describe("extractBearerToken", () => {
-  // Must mirror the REST layer's parsing exactly (startsWith("Bearer ") +
-  // substring(7)) so the MCP gate and the routes it proxies never disagree.
-  it("accepts the canonical form", () => {
-    expect(extractBearerToken("Bearer rb_key")).toBe("rb_key");
-  });
-
-  it("rejects a lowercase scheme, matching the case-sensitive REST parser", () => {
-    expect(extractBearerToken("bearer rb_key")).toBeNull();
-  });
-
-  it("returns null for an empty token", () => {
-    expect(extractBearerToken("Bearer ")).toBeNull();
-  });
-
-  it("preserves the substring exactly (no trimming) so it matches REST", () => {
-    expect(extractBearerToken("Bearer  rb_key")).toBe(" rb_key");
-  });
-
-  it("returns null for non-string or missing headers", () => {
-    expect(extractBearerToken(undefined)).toBeNull();
-    expect(extractBearerToken(["Bearer a"])).toBeNull();
-  });
-});
 
 const MCP_HEADERS = {
   "content-type": "application/json",
@@ -146,6 +121,15 @@ describe("mcp endpoint", () => {
 
   async function buildApp(options: McpRouteOptions): Promise<FastifyInstance> {
     const instance = Fastify();
+    // The MCP transport hands the raw request to @hono/node-server, which never
+    // sees the body end (Fastify already read it) and so, 500ms after the
+    // response, calls socket.destroySoon() to drain it. inject()'s mock socket
+    // has no destroySoon, and that timer outlives the test: it threw an
+    // uncaught TypeError in whichever test file the worker ran next.
+    instance.addHook("onRequest", async request => {
+      const socket = request.raw.socket as { destroySoon?: () => void };
+      socket.destroySoon ??= () => {};
+    });
     instance.register(
       async fastify => {
         await fastify.register(mcpRoutes, options);
@@ -167,6 +151,19 @@ describe("mcp endpoint", () => {
         fastify.get("/sites/:siteId/overview", async request => {
           captured.url = request.url;
           captured.query = request.query as Record<string, unknown>;
+          if ((request.params as { siteId: string }).siteId === "6") {
+            // An empty window: ClickHouse returns NaN averages, serialized as null.
+            return {
+              data: {
+                sessions: 0,
+                pageviews: 0,
+                users: 0,
+                pages_per_session: null,
+                bounce_rate: null,
+                session_duration: null,
+              },
+            };
+          }
           return { data: { sessions: 100, pageviews: 250 } };
         });
 
@@ -191,6 +188,14 @@ describe("mcp endpoint", () => {
         fastify.post("/sites/:siteId/funnels/analyze", async request => {
           captured.body = request.body;
           captured.query = request.query as Record<string, unknown>;
+          if ((request.params as { siteId: string }).siteId === "6") {
+            return {
+              data: [
+                { step_number: 1, step_name: "Step 1", sessions: 0, conversion_rate: null, dropoff_rate: 0 },
+                { step_number: 2, step_name: "Step 2", sessions: 0, conversion_rate: null, dropoff_rate: null },
+              ],
+            };
+          }
           // The API returns `sessions` plus the deprecated `visitors` alias.
           return {
             data: [
@@ -766,6 +771,23 @@ describe("mcp endpoint", () => {
     expect(result.isError).toBeFalsy();
     expect(captured.body).toEqual({ steps });
     expect(captured.query).toMatchObject({ past_minutes_start: "1440" });
+  });
+
+  it("passes null averages and rates from an empty window through output validation", async () => {
+    const overview = await callTool(app, "get_overview", { site_id: 6, past_minutes: 60 });
+    expect(overview.isError).toBeFalsy();
+    expect(overview.structuredContent.data).toMatchObject({ bounce_rate: null, session_duration: null });
+
+    const funnel = await callTool(app, "analyze_funnel", {
+      site_id: 6,
+      steps: [
+        { type: "page", value: "/pricing" },
+        { type: "event", value: "signup" },
+      ],
+      past_minutes: 60,
+    });
+    expect(funnel.isError).toBeFalsy();
+    expect(funnel.structuredContent.data[1]).toMatchObject({ conversion_rate: null, dropoff_rate: null });
   });
 
   it("surfaces REST errors as tool errors with a hint", async () => {

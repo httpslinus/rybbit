@@ -55,6 +55,11 @@
       return false;
     }
   }
+  function truncateText(value, maxLength) {
+    if (value.length <= maxLength) return value;
+    const lastCode = value.charCodeAt(maxLength - 1);
+    return value.slice(0, lastCode >= 55296 && lastCode <= 56319 ? maxLength - 1 : maxLength);
+  }
   function parseJsonSafely(value, fallback) {
     if (!value) return fallback;
     try {
@@ -96,11 +101,12 @@
     }
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
   }
+  var MAX_VISITOR_ID_LENGTH = 64;
   function getOrCreateVisitorId(namespace) {
     const key = `${namespace}-visitor-id`;
     try {
       const stored = localStorage.getItem(key);
-      if (stored) return stored;
+      if (stored && stored.length <= MAX_VISITOR_ID_LENGTH) return stored;
       const visitorId = createVisitorId();
       localStorage.setItem(key, visitorId);
       return visitorId;
@@ -422,9 +428,9 @@
   // keepalive.ts
   var MAX_KEEPALIVE_BYTES = 64 * 1024;
   var outstandingBytes = 0;
-  function reserveKeepalive(body) {
-    const bytes = new TextEncoder().encode(body).byteLength;
-    if (bytes > MAX_KEEPALIVE_BYTES || outstandingBytes + bytes > MAX_KEEPALIVE_BYTES) return null;
+  function reserveKeepalive(body, limit = MAX_KEEPALIVE_BYTES) {
+    const bytes = typeof body === "number" ? body : new TextEncoder().encode(body).byteLength;
+    if (outstandingBytes + bytes > limit) return null;
     outstandingBytes += bytes;
     let released = false;
     return () => {
@@ -632,6 +638,10 @@
 
   // tracking.ts
   var FEATURE_FLAG_REQUEST_TIMEOUT_MS2 = 2e3;
+  var MAX_REFERRER_LENGTH = 2048;
+  var MAX_PAGE_TITLE_LENGTH = 512;
+  var MAX_PROPERTIES_LENGTH = 2048;
+  var MAX_OUTBOUND_TEXT_LENGTH = 500;
   var Tracker = class {
     constructor(config, pageAlreadyClicked = false) {
       this.customUserId = null;
@@ -641,7 +651,7 @@
       this.config = config;
       this.lastPageviewUrl = this.getPageviewUrl();
       this.loadUserId();
-      const runtime = { capture: {}, reserveKeepalive, pageAlreadyClicked };
+      const runtime = { capture: {}, reserveKeepalive, pageAlreadyClicked, getBotSignalMask };
       if (config.enableSessionReplay) {
         this.sessionRecorder = new FeatureLoader("recording", config, this.customUserId || "", runtime);
         if (sampleRecording(config.sessionReplaySampleRate)) this.loadFeature(this.sessionRecorder);
@@ -664,9 +674,13 @@
         return "";
       }
     }
+    isUnassignedVariant(assignment) {
+      return assignment.flagType === "multivariate" && typeof assignment.value !== "string";
+    }
     getFeatureFlagEventPayload() {
       const payload = {};
       for (const [key, assignment] of Object.entries(this.config.featureFlags || {})) {
+        if (this.isUnassignedVariant(assignment)) continue;
         payload[key] = this.serializeFeatureFlagValue(assignment.value);
       }
       return payload;
@@ -737,8 +751,8 @@
         screenWidth: screen.width,
         screenHeight: screen.height,
         language: navigator.language,
-        page_title: document.title,
-        referrer: document.referrer,
+        page_title: truncateText(document.title, MAX_PAGE_TITLE_LENGTH),
+        referrer: truncateText(document.referrer, MAX_REFERRER_LENGTH),
         _bs: getBotScore(),
         _bsm: getBotSignalMask()
       };
@@ -751,6 +765,9 @@
       const featureFlagPayload = this.getFeatureFlagEventPayload();
       if (Object.keys(featureFlagPayload).length > 0) {
         payload.feature_flags = featureFlagPayload;
+      }
+      if (this.config.featureFlagsEnabled) {
+        payload.visitor_id = this.config.visitorId;
       }
       return payload;
     }
@@ -822,7 +839,7 @@
     }
     getFeatureFlag(key, fallback) {
       const assignment = this.config.featureFlags?.[key];
-      if (!assignment) {
+      if (!assignment || this.isUnassignedVariant(assignment)) {
         return fallback;
       }
       const exposureKey = `${key}:${assignment.version}:${this.serializeFeatureFlagValue(assignment.value)}`;
@@ -839,7 +856,7 @@
     }
     getFeatureFlags() {
       return Object.fromEntries(
-        Object.entries(this.config.featureFlags || {}).map(([key, assignment]) => [key, assignment.value])
+        Object.entries(this.config.featureFlags || {}).filter(([, assignment]) => !this.isUnassignedVariant(assignment)).map(([key, assignment]) => [key, assignment.value])
       );
     }
     getFeatureFlagPayload(key, fallback) {
@@ -855,7 +872,12 @@
       );
     }
     trackOutbound(url, text = "", target = "_self") {
-      this.track("outbound", "", { url, text, target });
+      const properties = { url, text: truncateText(text, MAX_OUTBOUND_TEXT_LENGTH), target };
+      const overflow = JSON.stringify(properties).length - MAX_PROPERTIES_LENGTH;
+      if (overflow > 0) {
+        properties.url = truncateText(url, Math.max(0, url.length - overflow));
+      }
+      this.track("outbound", "", properties);
     }
     trackWebVitals(vitals) {
       const basePayload = this.createBasePayload();
@@ -1298,6 +1320,7 @@
   };
 
   // webVitals.ts
+  var SEND_DELAY_MS = 2e4;
   var WebVitalsCollector = class {
     constructor(onReady) {
       this.data = {
@@ -1314,21 +1337,18 @@
     }
     initialize() {
       try {
-        x(this.collectMetric.bind(this));
-        L(this.collectMetric.bind(this));
-        S(this.collectMetric.bind(this));
+        x(this.collectMetric.bind(this), { reportAllChanges: true });
+        L(this.collectMetric.bind(this), { reportAllChanges: true });
+        S(this.collectMetric.bind(this), { reportAllChanges: true });
         E(this.collectMetric.bind(this));
         $(this.collectMetric.bind(this));
-        this.timeout = setTimeout(() => {
-          if (!this.sent) {
-            this.sendData();
-          }
-        }, 2e4);
-        window.addEventListener("beforeunload", () => {
-          if (!this.sent) {
+        this.timeout = setTimeout(() => this.sendData(), SEND_DELAY_MS);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") {
             this.sendData();
           }
         });
+        window.addEventListener("pagehide", () => this.sendData());
       } catch (e2) {
         console.warn("Error initializing web vitals tracking:", e2);
       }
@@ -1337,10 +1357,6 @@
       if (this.sent) return;
       const metricName = metric.name.toLowerCase();
       this.data[metricName] = metric.value;
-      const allCollected = Object.values(this.data).every((value) => value !== null);
-      if (allCollected) {
-        this.sendData();
-      }
     }
     sendData() {
       if (this.sent) return;
@@ -1481,6 +1497,9 @@
   };
 
   // formTracking.ts
+  function getFormProperty(form, key) {
+    return Object.getOwnPropertyDescriptor(HTMLFormElement.prototype, key)?.get?.call(form);
+  }
   var FormTrackingManager = class {
     constructor(tracker, config) {
       this.tracker = tracker;
@@ -1498,13 +1517,13 @@
     }
     handleSubmit(event) {
       const form = event.target;
-      if (form.tagName !== "FORM") return;
+      if (!(form instanceof HTMLFormElement)) return;
       const properties = {
-        formId: form.id || "",
-        formName: form.name || "",
-        formAction: form.action || "",
-        method: (form.method || "get").toUpperCase(),
-        fieldCount: form.elements.length,
+        formId: form.getAttribute("id") || "",
+        formName: form.getAttribute("name") || "",
+        formAction: getFormProperty(form, "action") || "",
+        method: (getFormProperty(form, "method") || "get").toUpperCase(),
+        fieldCount: getFormProperty(form, "elements")?.length ?? 0,
         ariaLabel: form.getAttribute("aria-label") || void 0,
         ...this.extractDataAttributes(form)
       };
@@ -1526,8 +1545,8 @@
         element: tagName.toLowerCase(),
         inputType: tagName === "INPUT" ? target.type?.toLowerCase() : void 0,
         inputName,
-        formId: target.form?.id || void 0,
-        formName: target.form?.name || void 0,
+        formId: target.form?.getAttribute("id") || void 0,
+        formName: target.form?.getAttribute("name") || void 0,
         ...this.extractDataAttributes(target)
       };
       this.tracker.trackInputChange(properties);
@@ -1545,6 +1564,14 @@
   };
 
   // index.ts
+  function hasOptedOut(optOutKey) {
+    if (window.__RYBBIT_OPTOUT__) return true;
+    try {
+      return localStorage.getItem(optOutKey) !== null;
+    } catch {
+      return false;
+    }
+  }
   (async function() {
     const scriptTag = document.currentScript || document.querySelector('script[src*="/script.js"]');
     if (!scriptTag) {
@@ -1553,12 +1580,7 @@
     }
     const namespace = scriptTag.getAttribute("data-namespace") || "rybbit";
     const optOutKey = `disable-${namespace}`;
-    let storedOptOut = false;
-    try {
-      storedOptOut = localStorage.getItem(optOutKey) !== null;
-    } catch {
-    }
-    if (window.__RYBBIT_OPTOUT__ || storedOptOut) {
+    if (hasOptedOut(optOutKey)) {
       window[namespace] = {
         pageview: () => {
         },
@@ -1738,6 +1760,7 @@
       tracker.flushForExit();
     });
     window.addEventListener("pagehide", (event) => {
+      tracker.flushForExit();
       if (event.persisted) return;
       clickManager?.cleanup();
       copyManager?.cleanup();

@@ -27,10 +27,7 @@ describe("correctReplayClockSkew", () => {
   it("preserves the gaps between events, so playback timing survives", () => {
     const year2076 = Date.UTC(2076, 1, 3, 12, 56, 50);
     const gaps = [0, 250, 1750, 187_000];
-    const { events } = correctReplayClockSkew(
-      batch(...gaps.map(g => year2076 + g)),
-      NOW
-    );
+    const { events } = correctReplayClockSkew(batch(...gaps.map(g => year2076 + g)), NOW);
 
     const shifted = events.map(e => e.timestamp - events[0].timestamp);
     expect(shifted).toEqual(gaps);
@@ -52,6 +49,11 @@ describe("correctReplayClockSkew", () => {
 
     expect(skewMs).toBeLessThan(0);
     expect(events[0].timestamp).toBeGreaterThanOrEqual(NOW - MAX_PAST_SKEW_MS);
+  });
+
+  it("leaves a batch sitting exactly on both bounds untouched", () => {
+    const events = batch(NOW - MAX_PAST_SKEW_MS, NOW, NOW + MAX_FUTURE_SKEW_MS);
+    expect(correctReplayClockSkew(events, NOW)).toEqual({ events, skewMs: 0 });
   });
 
   it("handles an empty batch", () => {

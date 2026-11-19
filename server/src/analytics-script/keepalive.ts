@@ -3,9 +3,9 @@
 const MAX_KEEPALIVE_BYTES = 64 * 1024;
 let outstandingBytes = 0;
 
-export function reserveKeepalive(body: string): (() => void) | null {
-  const bytes = new TextEncoder().encode(body).byteLength;
-  if (bytes > MAX_KEEPALIVE_BYTES || outstandingBytes + bytes > MAX_KEEPALIVE_BYTES) return null;
+export function reserveKeepalive(body: string | number, limit = MAX_KEEPALIVE_BYTES): (() => void) | null {
+  const bytes = typeof body === "number" ? body : new TextEncoder().encode(body).byteLength;
+  if (outstandingBytes + bytes > limit) return null;
   outstandingBytes += bytes;
   let released = false;
   return () => {

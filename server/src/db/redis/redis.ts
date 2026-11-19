@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { API_RATE_LIMIT_LUA } from "./apiRateLimitLua.js";
+import { IMPORT_LOCK_RELEASE_LUA, IMPORT_QUOTA_RESERVE_LUA } from "./importQuotaLua.js";
 import { REPLAY_BUDGET_LUA } from "./replayBudgetLua.js";
 import { STICKY_RESOLVE_LUA } from "./stickyResolveLua.js";
 
@@ -279,6 +280,12 @@ export async function apiRateLimitConsume(input: ApiRateLimitInput): Promise<Api
 // paths or distinct actors, where the true cardinality can reach tens of
 // thousands and a sorted set holding every member would be far too large.
 //
+// The three fixed-bucket kinds also have a read-only form (an upper-case wire
+// code), which reports the bucket without adding to it. Some rules count one
+// kind of event and must be consulted on another — "has this actor clicked
+// anything today?" is asked on a pageview, and must not be answered by counting
+// the pageview as a click.
+//
 // numberOfKeys is omitted so the key count can be passed per call. KEYS holds the
 // counter keys; ARGV is [nowMs, then (kind, member, windowMs, maxSize) per key].
 // Every key yields three results — [count, 0, 0] for rolling counters, plain
@@ -296,13 +303,16 @@ redis.defineCommand("anomalyObserve", {
       local windowMs = tonumber(ARGV[base + 3])
       local maxSize = tonumber(ARGV[base + 4])
       local out = (i - 1) * 3
-      if kind == 'h' then
+      if kind == 'h' or kind == 'H' then
         -- Only admit a new field while under the cap; already-tracked fields keep
         -- counting, so a high-cardinality flood cannot grow the hash without bound.
-        if maxSize <= 0 or redis.call('HEXISTS', key, member) == 1 or redis.call('HLEN', key) < maxSize then
-          redis.call('HINCRBY', key, member, 1)
+        -- 'H' is the read-only form: it reports the bucket without touching it.
+        if kind == 'h' then
+          if maxSize <= 0 or redis.call('HEXISTS', key, member) == 1 or redis.call('HLEN', key) < maxSize then
+            redis.call('HINCRBY', key, member, 1)
+          end
+          redis.call('PEXPIRE', key, windowMs)
         end
-        redis.call('PEXPIRE', key, windowMs)
         local total = 0
         local top = 0
         local values = redis.call('HVALS', key)
@@ -318,6 +328,16 @@ redis.defineCommand("anomalyObserve", {
         -- Plain monotonic counter inside the caller-encoded bucket; member unused.
         results[out + 1] = redis.call('INCR', key)
         redis.call('PEXPIRE', key, windowMs)
+        results[out + 2] = 0
+        results[out + 3] = 0
+      elseif kind == 'C' then
+        -- Read-only counter: the bucket's value as it stands, 0 if it never began.
+        results[out + 1] = tonumber(redis.call('GET', key) or '0')
+        results[out + 2] = 0
+        results[out + 3] = 0
+      elseif kind == 'P' then
+        -- Read-only cardinality. PFCOUNT on a missing key is 0.
+        results[out + 1] = redis.call('PFCOUNT', key)
         results[out + 2] = 0
         results[out + 3] = 0
       elseif kind == 'p' then
@@ -363,6 +383,12 @@ export interface AnomalyCounterSpec {
    * they only expire rather than trim.
    */
   kind?: "rolling" | "distribution" | "counter" | "cardinality";
+  /**
+   * Report the bucket without adding this event to it. Only the fixed-bucket
+   * kinds support it; a rolling window trims as it counts, so it has no
+   * read-only form and the flag is ignored there.
+   */
+  readOnly?: boolean;
   /** Unique per-event token (rate counters) or observed value (distinct/distribution/cardinality counters). */
   member: string;
   /** Rolling window for `rolling`; key TTL for the fixed-bucket kinds. */
@@ -402,7 +428,14 @@ export async function anomalyObserve(nowMs: number, specs: AnomalyCounterSpec[])
   const keys = specs.map(spec => spec.key);
   const args: (string | number)[] = [specs.length, ...keys, nowMs];
   for (const spec of specs) {
-    args.push(ANOMALY_KIND_CODES[spec.kind ?? "rolling"], spec.member, spec.windowMs, spec.maxSize);
+    const kind = spec.kind ?? "rolling";
+    const code = ANOMALY_KIND_CODES[kind];
+    args.push(
+      spec.readOnly && kind !== "rolling" ? code.toUpperCase() : code,
+      spec.member,
+      spec.windowMs,
+      spec.maxSize
+    );
   }
   const flat = await (redis as AnomalyRedis).anomalyObserve(...args);
   return specs.map((_, index) => ({
@@ -410,4 +443,51 @@ export async function anomalyObserve(nowMs: number, specs: AnomalyCounterSpec[])
     top: flat[index * 3 + 1] ?? 0,
     distinct: flat[index * 3 + 2] ?? 0,
   }));
+}
+
+// Data import lock and monthly quota (importQuotaManager), shared so every cluster
+// worker enforces one import per organization and one quota. Imports are rare and
+// each call is a single small script, so they use the main connection.
+redis.defineCommand("importLockRelease", { numberOfKeys: 1, lua: IMPORT_LOCK_RELEASE_LUA });
+redis.defineCommand("importQuotaReserve", { numberOfKeys: 1, lua: IMPORT_QUOTA_RESERVE_LUA });
+
+interface ImportRedis extends Redis {
+  importLockRelease(key: string, owner: string): Promise<number>;
+  importQuotaReserve(key: string, ...args: (string | number)[]): Promise<number[]>;
+}
+
+/** Takes the lock for `owner` unless someone holds it. Atomic across all workers. */
+export async function importLockAcquire(key: string, owner: string, ttlMs: number): Promise<boolean> {
+  return (await redis.set(key, owner, "PX", ttlMs, "NX")) === "OK";
+}
+
+/** Releases the lock if `owner` still holds it. */
+export async function importLockRelease(key: string, owner: string): Promise<boolean> {
+  return (await (redis as ImportRedis).importLockRelease(key, owner)) === 1;
+}
+
+export interface ImportQuotaRequest {
+  /** yyyyMM */
+  month: string;
+  /** Events the caller knows are counted for the month; the shared count never drops below it. */
+  baseline: number;
+  requested: number;
+}
+
+/**
+ * Reserves up to `requested` events per month against `monthlyLimit` and returns how many
+ * were granted, in the same order. Atomic across all workers; one round-trip.
+ */
+export async function importQuotaReserve(
+  key: string,
+  monthlyLimit: number,
+  ttlMs: number,
+  requests: ImportQuotaRequest[]
+): Promise<number[]> {
+  const args: (string | number)[] = [monthlyLimit, ttlMs];
+  for (const request of requests) {
+    args.push(request.month, request.baseline, request.requested);
+  }
+  const granted = await (redis as ImportRedis).importQuotaReserve(key, ...args);
+  return requests.map((_, index) => Number(granted[index] ?? 0));
 }

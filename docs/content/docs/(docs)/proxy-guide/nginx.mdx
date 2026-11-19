@@ -7,18 +7,18 @@ import { Steps } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
 
-Nginx is a powerful web server and reverse proxy that makes it easy to proxy Rybbit tracking through your own domain. This guide shows how to configure Nginx to forward tracking requests to Rybbit servers while caching static scripts for better performance.
+Nginx is a web server and reverse proxy that makes it easy to proxy Rybbit tracking through your own domain. This guide shows how to configure Nginx to forward tracking requests to Rybbit servers while caching static scripts for better performance.
 
 <Callout type="warn">
 **Two settings make or break a first-party proxy:**
 
 1. Enable **First-Party Proxy** in your Rybbit **Site Settings → Privacy & Security**, so the visitor IP your proxy forwards in `X-Forwarded-For` is trusted directly.
-2. Forward **all** of the browser's request headers, not a hand-picked few. Rybbit's bot detection expects the headers every real browser sends (`Accept`, `Accept-Language`, `Accept-Encoding`, `Sec-Fetch-*`) — proxies that forward only `User-Agent` get their events accepted with `200 OK` but classified as bot traffic. Use `X-Forwarded-For` for the visitor IP; `X-Real-IP` does not survive Rybbit Cloud's edge.
+2. Forward **all** of the browser's request headers, not a hand-picked few. Rybbit's bot detection expects the headers every real browser sends (`Accept`, `Accept-Language`, `Accept-Encoding`, `Sec-Fetch-*`). Proxies that forward only `User-Agent` get their events accepted with `200 OK` but classified as bot traffic. Use `X-Forwarded-For` for the visitor IP; `X-Real-IP` does not survive Rybbit Cloud's edge.
 </Callout>
 
 ## Overview
 
-Nginx's `proxy_pass` directive lets you forward requests from your domain to Rybbit's servers. Combined with caching, this provides excellent performance and reliability for proxying analytics.
+Nginx's `proxy_pass` directive lets you forward requests from your domain to Rybbit's servers.
 
 **What you'll achieve:**
 - Proxy all Rybbit endpoints through your domain
@@ -62,7 +62,9 @@ server {
     }
 
     # Rybbit Analytics Proxy
-    # Main tracking script (cached)
+    # nginx passes the browser's other request headers through unchanged.
+
+    # Main tracking script
     location = /analytics/script.js {
         proxy_pass https://app.rybbit.io/api/script.js;
         proxy_set_header Host app.rybbit.io;
@@ -70,14 +72,9 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_ssl_server_name on;
-
-        # Cache for 1 hour
-        proxy_cache_valid 200 1h;
-        proxy_cache_bypass $http_cache_control;
-        add_header X-Cache-Status $upstream_cache_status;
     }
 
-    # Session replay script (cached)
+    # Session replay script (loaded only when session replay is on)
     location = /analytics/replay.js {
         proxy_pass https://app.rybbit.io/api/replay.js;
         proxy_set_header Host app.rybbit.io;
@@ -142,7 +139,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Content-Type application/json;
         proxy_ssl_server_name on;
     }
 
@@ -153,18 +149,37 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Content-Type application/json;
         proxy_ssl_server_name on;
     }
 
-    # Session replay recording endpoint (not cached)
-    location ~ ^/analytics/session-replay/record/(.*)$ {
-        proxy_pass https://app.rybbit.io/api/session-replay/record/$1;
+    # Site configuration endpoint
+    location /analytics/site/tracking-config/ {
+        proxy_pass https://app.rybbit.io/api/site/tracking-config/;
         proxy_set_header Host app.rybbit.io;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Content-Type application/json;
+        proxy_ssl_server_name on;
+    }
+
+    # Feature flag evaluation (not cached)
+    location ~ ^/analytics/site/[^/]+/feature-flags/evaluate$ {
+        rewrite ^/analytics/(.*)$ /api/$1 break;
+        proxy_pass https://app.rybbit.io;
+        proxy_set_header Host app.rybbit.io;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_ssl_server_name on;
+    }
+
+    # Session replay recording endpoint (not cached)
+    location /analytics/session-replay/record/ {
+        proxy_pass https://app.rybbit.io/api/session-replay/record/;
+        proxy_set_header Host app.rybbit.io;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_ssl_server_name on;
 
         # Allow larger uploads for session replay
@@ -213,14 +228,20 @@ server {
 }
 ```
 
+This covers every endpoint the tracking script calls. Web vitals are bundled into `script.js`; `replay.js` loads only when session replay is on. If the feature-flag route isn't proxied, `rybbit.flag()` silently returns your fallback.
+
 <Callout type="info">
 Replace `app.rybbit.io` with your self-hosted Rybbit instance URL if you're not using the cloud version.
+</Callout>
+
+<Callout type="warn">
+Keep variables out of `proxy_pass`. With a variable such as `$1`, nginx resolves the upstream hostname per request and returns `502` unless you configure a `resolver`. And in a regex location (`location ~`), a `proxy_pass` with a fixed path such as `/api/track` fails `nginx -t`; only a path built from variables is allowed there, and that brings back the `resolver` requirement. That's why the paths with a site ID use prefix locations, or a `rewrite` followed by a `proxy_pass` without a path.
 </Callout>
 
 </Tab>
 <Tab>
 
-Minimal configuration for basic tracking:
+Minimal configuration with just the script and the event endpoint:
 
 ```nginx
 # /etc/nginx/sites-available/yourdomain.com
@@ -239,8 +260,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_ssl_server_name on;
-
-        proxy_cache_valid 200 1h;
     }
 
     # Event tracking
@@ -254,10 +273,14 @@ server {
 }
 ```
 
+<Callout type="warn">
+A minimal setup proxies only `script.js` and `/track`. The script then can't fetch your site's tracking config, so it ignores every setting on the site's **Tracking** tab and runs on built-in defaults: pageviews, SPA navigation, query strings and outbound links are tracked; web vitals, error tracking, session replay, button clicks, copy and form tracking stay off; feature flags return their fallback; and `identify()` and `setTraits()` can't reach `/identify`, so traits aren't stored and earlier anonymous activity isn't linked to the user. Use the full proxy unless that's what you want.
+</Callout>
+
 </Tab>
 <Tab>
 
-For better performance with caching, define a cache zone:
+The other tabs don't cache anything: `proxy_cache_valid` has no effect without a `proxy_cache` zone. To cache the scripts at your proxy, define a cache zone:
 
 ```nginx
 # /etc/nginx/nginx.conf (http block)
@@ -274,7 +297,7 @@ http {
 }
 ```
 
-Then in your site config:
+Then add the cache directives to the script locations in your site config:
 
 ```nginx
 # /etc/nginx/sites-available/yourdomain.com
@@ -298,6 +321,8 @@ server {
     # ... other locations
 }
 ```
+
+Do the same for `replay.js`. If you also cache `/analytics/site/tracking-config/`, keep it short (`proxy_cache_valid 200 5m;`) so changes you make in the dashboard reach visitors. Never cache the POST endpoints.
 
 </Tab>
 </Tabs>
@@ -351,7 +376,7 @@ Update your HTML to load the script from your proxied domain:
 <html>
 <head>
     <!-- ... other head elements -->
-    <script src="/analytics/script.js" async data-site-id="YOUR_SITE_ID"></script>
+    <script src="/analytics/script.js?siteId=YOUR_SITE_ID" defer></script>
 </head>
 <body>
     <!-- Your content -->
@@ -359,7 +384,9 @@ Update your HTML to load the script from your proxied domain:
 </html>
 ```
 
-Replace `YOUR_SITE_ID` with your actual site ID from the Rybbit dashboard.
+Replace `YOUR_SITE_ID` with your actual site ID from the Rybbit dashboard. Older snippets that pass the ID as `data-site-id` still work.
+
+Keep the proxied file named `script.js`. The script cuts its own URL at `/script.js` to find where to send events, so a renamed file (for example `/analytics/a.js`) sends every request to the wrong place.
 
 ### Verify the Setup
 
@@ -379,10 +406,10 @@ Test your configuration:
    ```
    HTTP/2 200
    content-type: application/javascript
-   x-cache-status: MISS  # First request
+   x-cache-status: MISS  # First request, only if you set up the cache zone
    ```
 
-3. **Test again to verify caching**:
+3. **If you set up the cache zone, test again to verify caching**:
    ```bash
    curl -I https://yourdomain.com/analytics/script.js
    ```
@@ -416,27 +443,31 @@ The Rybbit script auto-detects it's being served from your domain and sends all 
 
 ### Caching Strategy
 
-Configure different cache durations based on content type:
+Configure different cache durations based on content type (requires the cache zone from the **With Cache Zone** tab). These blocks replace the matching ones from the **Full Proxy** tab; don't add them alongside. nginx picks an exact-match `location =` over a regex one, and a repeated prefix location fails `nginx -t`.
 
 ```nginx
-# Scripts - cache for 1 hour
-location ~ ^/analytics/(script|replay|metrics)\.js$ {
-    proxy_pass https://app.rybbit.io/api/$1.js;
+# Scripts - nginx follows Rybbit's Cache-Control: 1 hour for script.js, 1 day for replay.js
+location ~ ^/analytics/(script|replay)\.js$ {
+    rewrite ^/analytics/(.*)$ /api/$1 break;
+    proxy_pass https://app.rybbit.io;
     # ... proxy headers
+    proxy_cache rybbit_cache;
     proxy_cache_valid 200 1h;
     proxy_cache_valid 404 1m;  # Cache 404s briefly
 }
 
 # Config - cache for 5 minutes (changes when you update dashboard settings)
-location ~ ^/analytics/site/tracking-config/(.*)$ {
-    proxy_pass https://app.rybbit.io/api/site/tracking-config/$1;
+location /analytics/site/tracking-config/ {
+    proxy_pass https://app.rybbit.io/api/site/tracking-config/;
     # ... proxy headers
+    proxy_cache rybbit_cache;
     proxy_cache_valid 200 5m;
 }
 
 # Tracking - never cache (each request is unique)
 location ~ ^/analytics/(track|identify)$ {
-    proxy_pass https://app.rybbit.io/api/$1;
+    rewrite ^/analytics/(.*)$ /api/$1 break;
+    proxy_pass https://app.rybbit.io;
     # ... proxy headers
     # No caching directives
 }
@@ -468,6 +499,10 @@ location /analytics/ {
     proxy_pass https://rybbit_backend/api/;
     proxy_http_version 1.1;
     proxy_set_header Connection "";
+    # With an upstream block, Host and SNI default to "rybbit_backend"
+    proxy_set_header Host app.rybbit.io;
+    proxy_ssl_server_name on;
+    proxy_ssl_name app.rybbit.io;
     # ... other proxy headers
 }
 ```
@@ -477,7 +512,7 @@ location /analytics/ {
 For better performance with larger session replay uploads:
 
 ```nginx
-location ~ ^/analytics/session-replay/record/ {
+location /analytics/session-replay/record/ {
     proxy_pass https://app.rybbit.io/api/session-replay/record/;
     # ... proxy headers
 
@@ -522,7 +557,7 @@ Set appropriate limits for different endpoints:
 client_max_body_size 1M;
 
 # Larger limit for session replay
-location ~ ^/analytics/session-replay/record/ {
+location /analytics/session-replay/record/ {
     client_max_body_size 10M;
     # ... proxy config
 }
@@ -550,10 +585,25 @@ add_header Referrer-Policy strict-origin-when-cross-origin;
    curl -I https://app.rybbit.io/api/script.js
    ```
 2. Verify `proxy_ssl_server_name on` is set
-3. Check Nginx error logs:
+3. If the error log says `no resolver defined to resolve app.rybbit.io`, a `proxy_pass` contains a variable (such as `$1`). Remove the variable (use a prefix location, or `rewrite ... break` with a `proxy_pass` that has no path), or add a `resolver` directive
+4. Check Nginx error logs:
    ```bash
    sudo tail -f /var/log/nginx/error.log
    ```
+
+### `nginx -t` fails on a regex location
+
+**Problem**: `nginx -t` reports `"proxy_pass" cannot have URI part in location given by regular expression`.
+
+**Solution**: A `location ~` block can't use a `proxy_pass` with a fixed path such as `/api/...` (a path built from variables is allowed, but then nginx needs a `resolver`). Use a prefix location (`location /analytics/session-replay/record/`), or keep the regex and rewrite the URI first:
+
+```nginx
+location ~ ^/analytics/site/[^/]+/feature-flags/evaluate$ {
+    rewrite ^/analytics/(.*)$ /api/$1 break;
+    proxy_pass https://app.rybbit.io;
+    # ... proxy headers
+}
+```
 
 ### Cache not working
 
@@ -573,7 +623,7 @@ add_header Referrer-Policy strict-origin-when-cross-origin;
 **Problem**: All visitors show same location (your server's location).
 
 **Solution**:
-Ensure you're forwarding client IP headers:
+Ensure you're forwarding client IP headers, and that **First-Party Proxy** is on in your site settings:
 ```nginx
 proxy_set_header X-Real-IP $remote_addr;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -621,7 +671,7 @@ server {
 
 Then use:
 ```html
-<script src="https://analytics.yourdomain.com/script.js" data-site-id="123"></script>
+<script src="https://analytics.yourdomain.com/script.js?siteId=123" defer></script>
 ```
 
 ### Multiple Rybbit Instances

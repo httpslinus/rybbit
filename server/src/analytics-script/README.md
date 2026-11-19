@@ -48,23 +48,23 @@ budget, including ordinary analytics and identity requests.
 
 ## Sizes
 
-Measured 18 October 2026, gzip, decimal kB, cold cache. Upstream is its verified
-`master` at [`1a8f1ff9`](https://github.com/rybbit-io/rybbit/commit/1a8f1ff9ca8beca1c2207866d659d34be3cdcae8).
+Measured 19 November 2026, gzip, decimal kB, cold cache. Upstream is its verified
+`master` at [`ee11b416`](https://github.com/rybbit-io/rybbit/commit/ee11b4168cbce900731262964857928d340f3d06).
 
 | Download                        | Upstream Rybbit | This fork |
 | ------------------------------- | --------------: | --------: |
-| Core tracker                    |         11.1 kB |   11.1 kB |
-| Session recording module        |         82.1 kB |   24.5 kB |
-| Heatmap module                  |   Not available |    7.2 kB |
+| Core tracker                    |         11.8 kB |   11.4 kB |
+| Session recording module        |         82.1 kB |   25.0 kB |
+| Heatmap module                  |   Not available |    7.3 kB |
 | Standalone page capture         |   Not available |    8.1 kB |
-| Core + recording                |         93.1 kB |   35.6 kB |
-| Core + heatmaps + recording     |   Not available |   42.9 kB |
-| All modules, including fallback |   Not available |   51.0 kB |
+| Core + recording                |         93.9 kB |   36.4 kB |
+| Core + heatmaps + recording     |   Not available |   43.6 kB |
+| All modules, including fallback |   Not available |   51.8 kB |
 
 The fallback is an additional download only when needed. The last row covers
 cases such as recording stopping after its module loaded. Collected event data
-is excluded. Exact current gzip sizes: core 11,118 bytes, recording 24,514 bytes,
-heatmaps 7,243 bytes, standalone capture 8,134 bytes. Production scripts use
+is excluded. Exact current gzip sizes: core 11,411 bytes, recording 24,956 bytes,
+heatmaps 7,255 bytes, standalone capture 8,134 bytes. Production scripts use
 esbuild for bundling, tree shaking and minification.
 
 Reproduce the comparison from `server/` after building:
@@ -117,7 +117,7 @@ pnpm run test:analytics-bundles
 node ../plans/heatmap-verification/snapshot-browser.mjs
 ```
 
-Bundle checks enforce an 11,200-byte gzip core budget, test privacy and dashboard
+Bundle checks enforce an 11,600-byte gzip core budget, test privacy and dashboard
 playback, and compare standalone capture with its complete dependency. Sixteen
 Chromium scenarios exercise all feature combinations, sampling, stopped/capped
 recording, script and upload failures, discarded recordings, download order and

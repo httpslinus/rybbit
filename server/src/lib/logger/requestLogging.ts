@@ -1,5 +1,7 @@
 import type { FastifyError, FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
+// Routes the tracking script hits on customer pages. Their successes are logged at
+// debug; failures keep their normal level.
 const HIGH_VOLUME_SUCCESS_ROUTES = new Set([
   "/api/identify",
   "/api/metrics.js",
@@ -9,6 +11,8 @@ const HIGH_VOLUME_SUCCESS_ROUTES = new Set([
   "/api/page-capture.js",
   "/api/heatmap-snapshot.js",
   "/api/script.js",
+  "/api/site/:siteId/feature-flags/evaluate",
+  "/api/site/tracking-config/:siteId",
   "/api/track",
 ]);
 
@@ -20,7 +24,10 @@ function requestPath(request: FastifyRequest): string {
   return request.url.split("?", 1)[0];
 }
 
-function isHighVolumeSuccessRoute(route: string): boolean {
+function isHighVolumeSuccess(request: FastifyRequest, route: string): boolean {
+  // CORS preflights are answered by @fastify/cors before routing; a rejected one
+  // is a 404 and still logs as a client error.
+  if (request.method === "OPTIONS") return true;
   return (
     HIGH_VOLUME_SUCCESS_ROUTES.has(route) ||
     route.endsWith("/session-replay/record/:siteId") ||
@@ -77,7 +84,7 @@ export function registerRequestLogging(fastify: FastifyInstance): void {
       request.log.error(context, "Request completed with server error");
     } else if (reply.statusCode >= 400) {
       request.log.warn(context, "Request completed with client error");
-    } else if (isHighVolumeSuccessRoute(context.route)) {
+    } else if (isHighVolumeSuccess(request, context.route)) {
       request.log.debug(context, "Request completed");
     } else {
       request.log.info(context, "Request completed");

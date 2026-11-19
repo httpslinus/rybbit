@@ -68,6 +68,7 @@ export interface BasePayload {
   user_id?: string;
   tag?: string;
   feature_flags?: Record<string, string>;
+  visitor_id?: string;
   _bs?: number; // Client-side weighted bot detection score
   _bsm?: number; // Client-side bot detection signal bitmask
 }
@@ -171,6 +172,8 @@ export interface SessionReplayBatchResult {
   recorded?: boolean;
   /** The session hit its replay size cap; stop recording for this page. */
   stopRecording?: boolean;
+  /** The server needs a full snapshot to move the replay to a new session. */
+  takeFullSnapshot?: boolean;
 }
 
 export interface SessionReplayBatch {
@@ -182,4 +185,5 @@ export interface SessionReplayBatch {
     viewportHeight?: number;
     language?: string;
   };
+  _bsm?: number; // Client-side bot detection signal bitmask, as on events
 }

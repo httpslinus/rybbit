@@ -98,8 +98,7 @@ beforeEach(async () => {
   mocks.subscriptionsList.mockImplementation(async ({ status }: any) =>
     status === "active" ? { data: [fakeSubscription("active")] } : { data: [] }
   );
-  mocks.subscriptionsUpdate.mockResolvedValue({ id: "sub_1" });
-  mocks.subscriptionsRetrieve.mockResolvedValue({
+  mocks.subscriptionsUpdate.mockResolvedValue({
     id: "sub_1",
     status: "active",
     items: { data: [{ current_period_end: 1760000000 }] },

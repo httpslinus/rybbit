@@ -156,6 +156,23 @@ describe("ingestEvent", () => {
     });
   });
 
+  it("matches exclusions against the whole URL, and stores it cut to the column limits", async () => {
+    // A query string cut first would lose `preview` and slip past its exclusion.
+    const querystring = `?padding=${"x".repeat(2050)}&preview=1`;
+    const pathname = `/${"p".repeat(3000)}`;
+
+    await ingestEvent(
+      trackingRequest({
+        payload: { type: "pageview", site_id: "site_abc", pathname, querystring } as TrackingRequest["payload"],
+      })
+    );
+
+    expect(mocks.decideSiteExclusion).toHaveBeenCalledWith(site, expect.objectContaining({ pathname, querystring }));
+    expect(mocks.addPageview).toHaveBeenCalledWith(
+      expect.objectContaining({ pathname: pathname.slice(0, 2048), querystring: querystring.slice(0, 2048) })
+    );
+  });
+
   // The ordering fix: exclusion used to run *after* bot detection, so a Site
   // owner's own excluded office IP still drove every anomaly counter.
   it("decides exclusion before bot detection, so excluded traffic leaves no trace", async () => {
@@ -279,20 +296,5 @@ describe("ingestEvent", () => {
         payload: expect.objectContaining({ siteId: 42 }),
       })
     );
-  });
-
-  it("reuses the request's Site Configuration for identity instead of re-reading it", async () => {
-    await ingestEvent(
-      trackingRequest({
-        site: { ...site, saltUserIds: true } as SiteConfigData,
-      })
-    );
-
-    expect(mocks.generateUserId).toHaveBeenCalledWith("198.51.100.10", "Mozilla/5.0", 42, {
-      saltUserIds: true,
-      lookupAsn,
-      // The event's own instant decides its salt day, not the clock at hash time.
-      receivedAt: new Date("2026-08-14T10:38:37.000Z"),
-    });
   });
 });

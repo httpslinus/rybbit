@@ -1,5 +1,6 @@
 import {
   BasePayload,
+  FeatureFlagAssignment,
   ScriptConfig,
   TrackingPayload,
   WebVitalsData,
@@ -11,10 +12,20 @@ import {
 import { FeatureLoader, sampleRecording } from "./featureLoader.js";
 import type { FeatureRuntime } from "./featureTypes.js";
 import { reserveKeepalive } from "./keepalive.js";
+import { truncateText } from "./utils.js";
 import { getBotScore, getBotSignalMask } from "./botSignals.js";
 import { getTrackedPage, getTrackedPathname } from "./url.js";
 
 const FEATURE_FLAG_REQUEST_TIMEOUT_MS = 2000;
+
+// The server's limits (services/tracker/trackingPayload.ts). A value past one
+// used to fail validation, dropping the whole event. The path and query string
+// are sent whole: the server matches Site Exclusions against them before it
+// cuts them for storage, and a cut here could drop the parameter one names.
+const MAX_REFERRER_LENGTH = 2048;
+const MAX_PAGE_TITLE_LENGTH = 512;
+const MAX_PROPERTIES_LENGTH = 2048;
+const MAX_OUTBOUND_TEXT_LENGTH = 500;
 
 export class Tracker {
   private config: ScriptConfig;
@@ -30,7 +41,7 @@ export class Tracker {
     this.lastPageviewUrl = this.getPageviewUrl();
     this.loadUserId();
 
-    const runtime: FeatureRuntime = { capture: {}, reserveKeepalive, pageAlreadyClicked };
+    const runtime: FeatureRuntime = { capture: {}, reserveKeepalive, pageAlreadyClicked, getBotSignalMask };
     if (config.enableSessionReplay) {
       this.sessionRecorder = new FeatureLoader("recording", config, this.customUserId || "", runtime);
       if (sampleRecording(config.sessionReplaySampleRate)) this.loadFeature(this.sessionRecorder);
@@ -57,10 +68,15 @@ export class Tracker {
     }
   }
 
+  private isUnassignedVariant(assignment: FeatureFlagAssignment): boolean {
+    return assignment.flagType === "multivariate" && typeof assignment.value !== "string";
+  }
+
   private getFeatureFlagEventPayload(): Record<string, string> {
     const payload: Record<string, string> = {};
 
     for (const [key, assignment] of Object.entries(this.config.featureFlags || {})) {
+      if (this.isUnassignedVariant(assignment)) continue;
       payload[key] = this.serializeFeatureFlagValue(assignment.value);
     }
 
@@ -143,8 +159,8 @@ export class Tracker {
       screenWidth: screen.width,
       screenHeight: screen.height,
       language: navigator.language,
-      page_title: document.title,
-      referrer: document.referrer,
+      page_title: truncateText(document.title, MAX_PAGE_TITLE_LENGTH),
+      referrer: truncateText(document.referrer, MAX_REFERRER_LENGTH),
       _bs: getBotScore(),
       _bsm: getBotSignalMask(),
     };
@@ -160,6 +176,10 @@ export class Tracker {
     const featureFlagPayload = this.getFeatureFlagEventPayload();
     if (Object.keys(featureFlagPayload).length > 0) {
       payload.feature_flags = featureFlagPayload;
+    }
+
+    if (this.config.featureFlagsEnabled) {
+      payload.visitor_id = this.config.visitorId;
     }
 
     return payload;
@@ -243,7 +263,7 @@ export class Tracker {
   getFeatureFlag<T = unknown>(key: string, fallback?: T): T {
     const assignment = this.config.featureFlags?.[key];
 
-    if (!assignment) {
+    if (!assignment || this.isUnassignedVariant(assignment)) {
       return fallback as T;
     }
 
@@ -263,7 +283,9 @@ export class Tracker {
 
   getFeatureFlags(): Record<string, unknown> {
     return Object.fromEntries(
-      Object.entries(this.config.featureFlags || {}).map(([key, assignment]) => [key, assignment.value])
+      Object.entries(this.config.featureFlags || {})
+        .filter(([, assignment]) => !this.isUnassignedVariant(assignment))
+        .map(([key, assignment]) => [key, assignment.value])
     );
   }
 
@@ -286,7 +308,15 @@ export class Tracker {
   }
 
   trackOutbound(url: string, text: string = "", target: string = "_self"): void {
-    this.track("outbound", "", { url, text, target });
+    // A link wrapping a whole card carries all of its text, and the serialized
+    // properties must fit the server's limit. Text goes first; a URL still too
+    // long is cut by the overflow, which stays a parseable URL.
+    const properties = { url, text: truncateText(text, MAX_OUTBOUND_TEXT_LENGTH), target };
+    const overflow = JSON.stringify(properties).length - MAX_PROPERTIES_LENGTH;
+    if (overflow > 0) {
+      properties.url = truncateText(url, Math.max(0, url.length - overflow));
+    }
+    this.track("outbound", "", properties);
   }
 
   trackWebVitals(vitals: WebVitalsData): void {

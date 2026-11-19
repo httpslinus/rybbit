@@ -1,7 +1,8 @@
 "use client";
 
 import { useExtracted } from "next-intl";
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { ErrorState } from "@/components/ErrorState";
 import { NoOrganization } from "@/components/NoOrganization";
 import { AppSumoPlan } from "@/components/subscription/AppSumoPlan";
@@ -9,6 +10,7 @@ import { CustomPlan } from "@/components/subscription/CustomPlan";
 import { ExpiredTrialPlan } from "@/components/subscription/ExpiredTrialPlan";
 import { FreePlan } from "@/components/subscription/FreePlan";
 import { OverridePlan } from "@/components/subscription/OverridePlan";
+import { useChargeUpdatedCard } from "@/components/subscription/PaymentFailedNotice";
 import { PaidPlan } from "@/components/subscription/PaidPlain/PaidPlan";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCanInOrg } from "@/hooks/usePermissions";
@@ -60,6 +62,32 @@ export default function OrganizationBillingPage() {
 
   const { data: activeOrg, isPending } = authClient.useActiveOrganization();
   const { data: session } = authClient.useSession();
+  const router = useRouter();
+  const orgParamHandled = useRef(false);
+  const [requestedOrgId, setRequestedOrgId] = useState<string | null>(null);
+
+  // Emails link to ?organization=<id> so an owner of several organizations lands on the one the
+  // email is about, not whichever is active. better-auth refuses organizations the user isn't in;
+  // the page then stays on the active one.
+  useEffect(() => {
+    if (isPending || orgParamHandled.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const organizationId = params.get("organization");
+    if (!organizationId) return;
+    orgParamHandled.current = true;
+    params.delete("organization");
+    router.replace(params.size ? `${window.location.pathname}?${params}` : window.location.pathname);
+    if (organizationId === activeOrg?.id) return;
+    setRequestedOrgId(organizationId);
+    authClient.organization.setActive({ organizationId }).then(
+      ({ error }) => error && setRequestedOrgId(null),
+      () => setRequestedOrgId(null)
+    );
+  }, [isPending, activeOrg?.id, router]);
+
+  // setActive resolves before the active organization is refetched, so wait for the switch to
+  // land rather than show the previous organization's billing in the meantime.
+  const isSwitchingOrg = requestedOrgId !== null && activeOrg?.id !== requestedOrgId;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -68,9 +96,11 @@ export default function OrganizationBillingPage() {
     }
   }, [session?.user?.email]);
 
+  useChargeUpdatedCard();
+
   const canManageBilling = useCanInOrg("billing:manage", activeOrg?.id);
 
-  const isLoading = isLoadingSubscription || isPending;
+  const isLoading = isLoadingSubscription || isPending || isSwitchingOrg;
 
   if (isLoading) {
     return <BillingSkeleton />;

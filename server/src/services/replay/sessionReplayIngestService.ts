@@ -1,5 +1,6 @@
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { toClickHouseDateTime } from "../../db/clickhouse/dateTime.js";
+import type { AsnLookup } from "../../db/geolocation/asn.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { correctReplayClockSkew } from "./replayClockSkew.js";
@@ -27,13 +28,48 @@ type BatchStats = {
 export type RecordEventsResult = {
   /** The session is over its replay size cap; nothing from this batch was stored. */
   capped: boolean;
+  /**
+   * The recorder should take a full snapshot: the replay is waiting to follow
+   * the visitor's new session, or has none where it is.
+   */
+  needsFullSnapshot?: boolean;
 };
+
+// rrweb's EventType.FullSnapshot: the page's DOM, which playback starts from.
+const FULL_SNAPSHOT_EVENT_TYPE = 2;
 
 export interface RequestMetadata {
   userAgent: string;
   ipAddress: string;
   origin: string;
   referrer: string;
+  /**
+   * Persistent client id sent with the batch. Like `anonymous_id` on `/track`,
+   * it replaces the IP + user agent fingerprint, so replay and events agree on
+   * the visitor and therefore on the session.
+   */
+  anonymousId?: string;
+  /** The Site's salting setting, from the configuration the handler loaded. */
+  saltUserIds?: boolean;
+  /** When the batch arrived: picks a salted fingerprint's day, as on `/track`. */
+  receivedAt?: Date;
+  lookupAsn?: AsnLookup;
+}
+
+/**
+ * Earliest and latest timestamp in a non-empty batch. A loop rather than
+ * Math.min(...spread): spreading a large batch can exceed the engine's argument
+ * limit and throw. Timestamps are finite here (correctReplayClockSkew sanitizes
+ * them), so plain comparisons match Math.min/Math.max.
+ */
+function timestampRange(events: { timestamp: number }[]): { startMs: number; endMs: number } {
+  let startMs = events[0].timestamp;
+  let endMs = startMs;
+  for (const { timestamp } of events) {
+    if (timestamp < startMs) startMs = timestamp;
+    if (timestamp > endMs) endMs = timestamp;
+  }
+  return { startMs, endMs };
 }
 
 /**
@@ -55,12 +91,16 @@ export class SessionReplayIngestService {
       logger.warn({ siteId, skewMs, eventCount: events.length }, "Corrected replay clock skew");
     }
 
-    // Always generate device fingerprint (anonymous user ID) server-side
-    const deviceFingerprint = await userIdService.generateUserId(
-      requestMeta?.ipAddress || "",
-      requestMeta?.userAgent || "",
-      siteId
-    );
+    // The anonymous user ID, derived exactly as event ingestion derives it
+    // (createBasePayload): from the persistent client id when one is sent,
+    // otherwise from the IP + user agent fingerprint.
+    const identityOptions = { saltUserIds: requestMeta?.saltUserIds, receivedAt: requestMeta?.receivedAt };
+    const deviceFingerprint = requestMeta?.anonymousId
+      ? await userIdService.generateUserIdFromClientId(requestMeta.anonymousId, siteId, identityOptions)
+      : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", siteId, {
+          ...identityOptions,
+          lookupAsn: requestMeta?.lookupAsn,
+        });
 
     // Check if client provided an identified user ID (different from device fingerprint)
     const trimmedClientUserId = clientUserId?.trim() || "";
@@ -71,11 +111,15 @@ export class SessionReplayIngestService {
     // scopes session assignment so stored user identity semantics stay unchanged.
     const userId = deviceFingerprint;
 
-    // Get or create a session ID from the sessions service
-    const { sessionId } = await sessionsService.updateSession({
+    // Join the visitor's analytics session without renewing it: an open tab
+    // sends batches on DOM churn alone, and that used to keep the session alive
+    // indefinitely. A replay moves to a new session only on a full snapshot,
+    // which every replay needs to be played or listed.
+    const { sessionId, needsFullSnapshot } = await sessionsService.resolveReplaySession({
       userId,
       identifiedUserId,
       siteId,
+      hasFullSnapshot: events.some(event => Number(event.type) === FULL_SNAPSHOT_EVENT_TYPE),
     });
 
     // Serialize once: the sizes gate the batch before anything is written, and
@@ -92,15 +136,11 @@ export class SessionReplayIngestService {
 
     // Check if R2 storage is enabled for cloud deployments
     let r2BatchKey: string | null = null;
-    let eventDataArray: any[] = [];
 
     if (r2Storage.isEnabled()) {
-      // Extract event data for R2 storage
-      eventDataArray = events.map(event => event.data);
-
       try {
-        // Store event data batch in R2
-        r2BatchKey = await r2Storage.storeBatch(siteId, sessionId, eventDataArray);
+        // Store event data batch in R2, reusing the strings serialized above
+        r2BatchKey = await r2Storage.storeBatch(siteId, sessionId, serializedEvents);
       } catch (error) {
         console.error("Failed to store in R2, falling back to ClickHouse:", error);
         r2BatchKey = null;
@@ -190,10 +230,11 @@ export class SessionReplayIngestService {
       // An events-free batch still carries metadata worth recording, but it has
       // no timestamps to bound it — anchor those on server time rather than
       // letting Math.min of nothing produce an epoch-dated row.
-      const timestamps = events.length > 0 ? events.map(event => event.timestamp) : [Date.now()];
+      const nowMs = Date.now();
+      const { startMs, endMs } = events.length > 0 ? timestampRange(events) : { startMs: nowMs, endMs: nowMs };
       const batchStats: BatchStats = {
-        startTime: new Date(Math.min(...timestamps)),
-        endTime: new Date(Math.max(...timestamps)),
+        startTime: new Date(startMs),
+        endTime: new Date(endMs),
         eventCount: eventsToInsert.length,
         compressedSizeBytes: eventsToInsert.reduce((total, event) => total + event.event_size_bytes, 0),
         screenWidth: metadata.viewportWidth || 0,
@@ -203,7 +244,7 @@ export class SessionReplayIngestService {
       await this.updateSessionMetadata(siteId, sessionId, userId, identifiedUserId, metadata, batchStats, requestMeta);
     }
 
-    return { capped: false };
+    return { capped: false, needsFullSnapshot };
   }
 
   private async updateSessionMetadata(

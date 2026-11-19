@@ -15,6 +15,16 @@ declare global {
   }
 }
 
+function hasOptedOut(optOutKey: string): boolean {
+  if (window.__RYBBIT_OPTOUT__) return true;
+  try {
+    return localStorage.getItem(optOutKey) !== null;
+  } catch {
+    // Storage is blocked (cookies disabled, sandboxed iframe): not opted out.
+    return false;
+  }
+}
+
 (async function () {
   // Script optimizers that re-inject the tag can leave `document.currentScript`
   // null; fall back to locating our own tag by its URL.
@@ -29,15 +39,9 @@ declare global {
   // Parse namespace early for opt-out check
   const namespace = scriptTag.getAttribute("data-namespace") || "rybbit";
   const optOutKey = `disable-${namespace}`;
-  let storedOptOut = false;
-  try {
-    storedOptOut = localStorage.getItem(optOutKey) !== null;
-  } catch {
-    // Storage may be denied even though cookie-free analytics is allowed.
-  }
 
   // Check if user has opted out
-  if (window.__RYBBIT_OPTOUT__ || storedOptOut) {
+  if (hasOptedOut(optOutKey)) {
     // Create no-op implementation
     window[namespace] = {
       pageview: () => {},
@@ -258,6 +262,7 @@ declare global {
     tracker.flushForExit();
   });
   window.addEventListener("pagehide", event => {
+    tracker.flushForExit();
     if (event.persisted) return;
     clickManager?.cleanup();
     copyManager?.cleanup();

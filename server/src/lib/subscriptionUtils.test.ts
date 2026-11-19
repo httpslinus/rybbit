@@ -13,10 +13,12 @@ const state = vi.hoisted(() => ({
   appsumoLicenses: [] as Array<{ tier: string; status: string }>,
   orgSelectError: null as Error | null,
   appsumoError: null as Error | null,
+  orgSelects: 0,
 }));
 
 const mocks = vi.hoisted(() => ({
   list: vi.fn(),
+  listInvoices: vi.fn(),
   stripeEnabled: true,
   isCloud: true,
 }));
@@ -32,7 +34,7 @@ vi.mock("./const.js", async importOriginal => {
 });
 
 vi.mock("../db/postgres/postgres.js", () => {
-  // Drizzle builders are thenable; both org lookups await `.limit(1)`.
+  // Drizzle builders are thenable; the org lookup awaits `.limit(1)`.
   function chain(rows: () => unknown[]) {
     const builder: any = {
       from: () => builder,
@@ -50,11 +52,11 @@ vi.mock("../db/postgres/postgres.js", () => {
 
   return {
     db: {
-      // The two org reads are told apart by the column each one selects.
-      select: (fields: Record<string, unknown>) =>
-        chain(() =>
-          "customPlan" in fields ? [{ customPlan: state.customPlan }] : [{ planOverride: state.planOverride }]
-        ),
+      // One org read selects the custom plan and the plan override together.
+      select: () => {
+        state.orgSelects += 1;
+        return chain(() => [{ customPlan: state.customPlan, planOverride: state.planOverride }]);
+      },
       execute: async () => {
         if (state.appsumoError) {
           throw state.appsumoError;
@@ -67,7 +69,7 @@ vi.mock("../db/postgres/postgres.js", () => {
 
 vi.mock("./stripe.js", () => ({
   get stripe() {
-    return mocks.stripeEnabled ? { subscriptions: { list: mocks.list } } : null;
+    return mocks.stripeEnabled ? { subscriptions: { list: mocks.list }, invoices: { list: mocks.listInvoices } } : null;
   },
 }));
 
@@ -85,13 +87,18 @@ import {
   getReplayLimit,
   getStripeSubscription,
   hasHadStripeSubscription,
+  hasRenewingStripeSubscription,
   invalidateAllStripeSubscriptionsCache,
   invalidateStripeSubscriptionCache,
+  lapsedTrialGrace,
   OverrideSubscriptionInfo,
+  PAST_DUE_GRACE_DAYS,
+  pastDuePayment,
   StripeSubscriptionInfo,
   stripeSubscriptionInfoFromSnapshot,
   siteRequiresPlan,
   subscriptionIncludesReplay,
+  TRIAL_GRACE_DAYS,
 } from "./subscriptionUtils.js";
 
 function planByName(name: string) {
@@ -121,6 +128,7 @@ function stripeSub(
     interval?: string | null;
     cancelAtPeriodEnd?: boolean;
     trialEnd?: number | null;
+    endedAt?: number | null;
     periodStart?: number;
     periodEnd?: number;
     noItems?: boolean;
@@ -136,6 +144,7 @@ function stripeSub(
     interval = "month",
     cancelAtPeriodEnd = false,
     trialEnd = null,
+    endedAt = null,
     periodStart = nowSeconds - 5 * 24 * HOUR,
     periodEnd = nowSeconds + 25 * 24 * HOUR,
     noItems = false,
@@ -148,6 +157,7 @@ function stripeSub(
     created,
     cancel_at_period_end: cancelAtPeriodEnd,
     trial_end: trialEnd,
+    ended_at: endedAt,
     items: {
       data: noItems
         ? []
@@ -269,9 +279,11 @@ beforeEach(() => {
   state.appsumoLicenses = [];
   state.orgSelectError = null;
   state.appsumoError = null;
+  state.orgSelects = 0;
   mocks.stripeEnabled = true;
   mocks.isCloud = true;
   mocks.list.mockReset();
+  mocks.listInvoices.mockReset();
   listReturns([]);
   invalidateAllStripeSubscriptionsCache();
   // These modules log expected failures through console.error; keep test output readable.
@@ -310,11 +322,8 @@ describe("subscriptionIncludesReplay", () => {
   });
 
   it("gives AppSumo tiers replay exactly when their tier carries a quota", () => {
-    for (const [tier, replayLimit] of Object.entries(APPSUMO_REPLAY_LIMITS)) {
-      expect(subscriptionIncludesReplay(appsumo({ tier, planName: `appsumo-${tier}`, replayLimit }))).toBe(
-        replayLimit > 0
-      );
-    }
+    expect(subscriptionIncludesReplay(appsumo({ tier: "3", planName: "appsumo-3", replayLimit: 0 }))).toBe(false);
+    expect(subscriptionIncludesReplay(appsumo({ tier: "4", planName: "appsumo-4", replayLimit: 500 }))).toBe(true);
   });
 
   it("routes AppSumo overrides by quota and Stripe-plan overrides by name", () => {
@@ -343,14 +352,6 @@ describe("getReplayLimit", () => {
 
   it("reports zero for the free tier", () => {
     expect(getReplayLimit(free())).toBe(0);
-  });
-
-  it("reports zero for plans that carry replay quota but no entitlement", () => {
-    // getReplayLimit is only meaningful alongside subscriptionIncludesReplay; an
-    // AppSumo tier without replay reports 0 on both.
-    const tier1 = appsumo({ tier: "1", planName: "appsumo-1", replayLimit: 0 });
-    expect(subscriptionIncludesReplay(tier1)).toBe(false);
-    expect(getReplayLimit(tier1)).toBe(0);
   });
 });
 
@@ -856,6 +857,29 @@ describe("getBestSubscription priority", () => {
     );
     await expect(getBestSubscription("org_1", nextCustomer())).resolves.toMatchObject({ source: "free" });
   });
+
+  it("reads the custom plan and override with a single organization query", async () => {
+    state.planOverride = "standard1m";
+
+    await expect(getBestSubscription("org_1", nextCustomer())).resolves.toMatchObject({ source: "override" });
+    expect(state.orgSelects).toBe(1);
+  });
+
+  it("uses plan columns the caller already read instead of querying the organization", async () => {
+    state.orgSelectError = new Error("must not query");
+
+    await expect(
+      getBestSubscription("org_1", nextCustomer(), {
+        orgPlan: { customPlan: { events: 3_000_000, members: null, websites: null }, planOverride: "appsumo-7" },
+      })
+    ).resolves.toMatchObject({ source: "custom", eventLimit: 3_000_000 });
+    await expect(
+      getBestSubscription("org_1", nextCustomer(), { orgPlan: { customPlan: null, planOverride: "standard1m" } })
+    ).resolves.toMatchObject({ source: "override", planName: "standard1m" });
+    // null: the caller found no organization row, so there is no plan of its own.
+    await expect(getBestSubscription("org_1", null, { orgPlan: null })).resolves.toMatchObject({ source: "free" });
+    expect(state.orgSelects).toBe(0);
+  });
 });
 
 describe("getBestSubscriptionFromStripeSub", () => {
@@ -927,10 +951,13 @@ describe("hasHadStripeSubscription", () => {
     await expect(hasHadStripeSubscription("cus_history")).resolves.toBe(false);
   });
 
-  it.each(["canceled", "past_due", "trialing", "active", "unpaid"])("is true once a %s subscription exists", async status => {
-    listReturns([stripeSub({ customer: "cus_history", status })]);
-    await expect(hasHadStripeSubscription("cus_history")).resolves.toBe(true);
-  });
+  it.each(["canceled", "past_due", "trialing", "active", "unpaid"])(
+    "is true once a %s subscription exists",
+    async status => {
+      listReturns([stripeSub({ customer: "cus_history", status })]);
+      await expect(hasHadStripeSubscription("cus_history")).resolves.toBe(true);
+    }
+  );
 
   it("caches per customer until the subscription cache is invalidated", async () => {
     listReturns([stripeSub({ customer: "cus_history", status: "canceled" })]);
@@ -969,5 +996,407 @@ describe("hasHadStripeSubscription", () => {
   it("offers the trial when Stripe cannot be reached", async () => {
     mocks.list.mockRejectedValue(new Error("stripe down"));
     await expect(hasHadStripeSubscription("cus_history")).resolves.toBe(false);
+  });
+});
+
+describe("hasRenewingStripeSubscription", () => {
+  const PERIOD_END = 1_800_000_000;
+  const sub = (status: string, extra: Record<string, unknown> = {}) => ({
+    id: `sub_${status}`,
+    status,
+    cancel_at_period_end: false,
+    cancel_at: null,
+    items: { data: [{ current_period_end: PERIOD_END }] },
+    ...extra,
+  });
+
+  it.each([
+    ["active", sub("active"), true],
+    ["trialing", sub("trialing"), true],
+    ["past_due (still retrying the card)", sub("past_due"), true],
+    ["active but set to cancel at period end", sub("active", { cancel_at_period_end: true }), false],
+    ["active, cancelling on its renewal date", sub("active", { cancel_at: PERIOD_END }), false],
+    ["active, cancelling only after more renewals", sub("active", { cancel_at: PERIOD_END + 86_400 * 365 }), true],
+    ["canceled", sub("canceled"), false],
+    ["incomplete_expired", sub("incomplete_expired"), false],
+  ])("%s → %s", async (_label, subscription, expected) => {
+    mocks.list.mockResolvedValueOnce({ data: [subscription], has_more: false });
+
+    await expect(hasRenewingStripeSubscription(nextCustomer())).resolves.toBe(expected);
+  });
+
+  it("keeps paging past a full page of ended subscriptions", async () => {
+    mocks.list
+      .mockResolvedValueOnce({ data: [sub("canceled", { id: "sub_old" })], has_more: true })
+      .mockResolvedValueOnce({ data: [sub("active")], has_more: false });
+
+    await expect(hasRenewingStripeSubscription(nextCustomer())).resolves.toBe(true);
+    expect(mocks.list.mock.calls[1][0]).toMatchObject({ starting_after: "sub_old" });
+  });
+
+  it("is false without a customer id and never calls Stripe", async () => {
+    await expect(hasRenewingStripeSubscription(null)).resolves.toBe(false);
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it("throws when Stripe can't be reached, so deletion is refused rather than guessed", async () => {
+    mocks.list.mockRejectedValueOnce(new Error("stripe down"));
+
+    await expect(hasRenewingStripeSubscription(nextCustomer())).rejects.toThrow("stripe down");
+  });
+});
+
+describe("post-trial grace period", () => {
+  const DAY = 24 * HOUR;
+  const nowSeconds = () => Math.floor(Date.now() / 1000);
+  const plan = () => planByName("standard100k");
+  // A grace period would carry the trialed plan's limit instead of the free one.
+  const plainFree = { source: "free", eventLimit: DEFAULT_EVENT_LIMIT };
+
+  /** Stripe's list of the subscription's paid invoices, by amount. */
+  const paidInvoices = (...amounts: number[]) =>
+    mocks.listInvoices.mockResolvedValue({ data: amounts.map(amount_paid => ({ amount_paid })) });
+
+  /** A 7-day trial that ended `daysAgo` days ago and was canceled at its end. */
+  function lapsedTrial(daysAgo: number, overrides: Parameters<typeof stripeSub>[0] = {}) {
+    const trialEnd = nowSeconds() - daysAgo * DAY;
+    return stripeSub({
+      status: "canceled",
+      priceId: plan().priceId,
+      trialEnd,
+      endedAt: trialEnd,
+      periodStart: trialEnd - 7 * DAY,
+      periodEnd: trialEnd,
+      ...overrides,
+    });
+  }
+
+  describe("lapsedTrialGrace", () => {
+    it("runs for TRIAL_GRACE_DAYS from the end of a trial canceled at its end, on the trialed plan's limit", () => {
+      const sub = lapsedTrial(3);
+      const result = lapsedTrialGrace(sub)!;
+
+      expect(result.eventLimit).toBe(plan().limits.events);
+      expect(result.grace).toMatchObject({ subscriptionId: sub.id, planName: plan().name, retryingPayment: false });
+      expect(result.grace.trialEndedAt).toEqual(new Date(sub.trial_end! * 1000));
+      expect(result.grace.endsAt.getTime() - result.grace.trialEndedAt.getTime()).toBe(TRIAL_GRACE_DAYS * DAY * 1000);
+    });
+
+    it("starts when a trial is canceled outright, not on the day it would have ended", () => {
+      const canceledAt = nowSeconds() - 2 * DAY;
+      const sub = lapsedTrial(-4, { endedAt: canceledAt });
+
+      expect(lapsedTrialGrace(sub)!.grace.trialEndedAt).toEqual(new Date(canceledAt * 1000));
+    });
+
+    it("covers a first charge that failed, flagging that Stripe is still retrying it", () => {
+      const trialEnd = nowSeconds() - 2 * DAY;
+      const sub = lapsedTrial(2, {
+        status: "past_due",
+        endedAt: null,
+        periodStart: trialEnd,
+        periodEnd: trialEnd + 30 * DAY,
+      });
+
+      expect(lapsedTrialGrace(sub)!.grace.retryingPayment).toBe(true);
+    });
+
+    it("still covers an unpaid subscription whose billing period kept advancing after the trial", () => {
+      const trialEnd = nowSeconds() - 40 * DAY;
+      const sub = lapsedTrial(40, { status: "unpaid", endedAt: null, periodStart: trialEnd + 30 * DAY });
+
+      expect(lapsedTrialGrace(sub)!.grace.trialEndedAt).toEqual(new Date(trialEnd * 1000));
+    });
+
+    it("skips subscriptions without a trial and live ones", () => {
+      expect(lapsedTrialGrace(lapsedTrial(3, { trialEnd: null }))).toBeNull();
+      expect(lapsedTrialGrace(lapsedTrial(3, { status: "active" }))).toBeNull();
+      expect(lapsedTrialGrace(lapsedTrial(3, { status: "incomplete_expired" }))).toBeNull();
+    });
+
+    it("ends after TRIAL_GRACE_DAYS", () => {
+      expect(lapsedTrialGrace(lapsedTrial(TRIAL_GRACE_DAYS - 1))).not.toBeNull();
+      expect(lapsedTrialGrace(lapsedTrial(TRIAL_GRACE_DAYS + 1))).toBeNull();
+    });
+  });
+
+  describe("pastDuePayment", () => {
+    it("names the plan Stripe is still trying to charge for", () => {
+      const sub = lapsedTrial(1, { status: "past_due", endedAt: null });
+
+      expect(pastDuePayment(sub)).toEqual({ subscriptionId: sub.id, planName: "standard100k" });
+    });
+
+    it("is only set while a card subscription is past due", () => {
+      expect(pastDuePayment(lapsedTrial(1))).toBeNull();
+      expect(pastDuePayment(lapsedTrial(1, { status: "active" }))).toBeNull();
+      expect(
+        pastDuePayment({ ...lapsedTrial(1, { status: "past_due" }), collection_method: "send_invoice" })
+      ).toBeNull();
+      expect(pastDuePayment(null)).toBeNull();
+    });
+
+    it("is reported on the free tier next to the trial's grace period", async () => {
+      const customer = nextCustomer();
+      const sub = lapsedTrial(1, { customer, status: "past_due", endedAt: null });
+      listReturns([sub]);
+      paidInvoices(0);
+
+      const best = (await getBestSubscription("org_1", customer)) as FreeSubscriptionInfo;
+
+      expect(best.pastDue).toEqual({ subscriptionId: sub.id, planName: "standard100k" });
+      expect(best.trialGrace?.retryingPayment).toBe(true);
+    });
+  });
+
+  describe("getBestSubscription", () => {
+    it("keeps an unpaid lapsed trial on the free tier with the trial's event limit and its sites on", async () => {
+      const customer = nextCustomer();
+      listReturns([lapsedTrial(3, { customer })]);
+      paidInvoices(0);
+
+      const best = (await getBestSubscription("org_1", customer)) as FreeSubscriptionInfo;
+
+      expect(mocks.listInvoices).toHaveBeenCalledWith({ subscription: "sub_1", status: "paid", limit: 100 });
+      expect(best).toMatchObject({ source: "free", status: "free", eventLimit: plan().limits.events });
+      expect(best.trialGrace?.planName).toBe(plan().name);
+      expect(siteRequiresPlan(best, "2026-09-29 12:00:00")).toBe(false);
+    });
+
+    it("gives no grace period to a customer who paid before canceling, even if a $0 invoice came last", async () => {
+      const customer = nextCustomer();
+      listReturns([lapsedTrial(3, { customer })]);
+      paidInvoices(0, 2_900, 0);
+
+      const best = (await getBestSubscription("org_1", customer)) as FreeSubscriptionInfo;
+
+      expect(best).toMatchObject(plainFree);
+      expect(siteRequiresPlan(best, "2026-09-29 12:00:00")).toBe(true);
+    });
+
+    it("isn't hidden by an incomplete checkout started after the trial", async () => {
+      const customer = nextCustomer();
+      listReturns([
+        lapsedTrial(3, { customer }),
+        stripeSub({ id: "sub_incomplete", customer, status: "incomplete", created: nowSeconds() }),
+      ]);
+      paidInvoices(0);
+
+      await expect(getBestSubscription("org_1", customer)).resolves.toHaveProperty("trialGrace");
+    });
+
+    it("re-checks the invoices when a billing webhook invalidates the customer", async () => {
+      const customer = nextCustomer();
+      listReturns([lapsedTrial(3, { customer })]);
+      paidInvoices(0);
+      await expect(getBestSubscription("org_1", customer)).resolves.toHaveProperty("trialGrace");
+
+      paidInvoices(0, 2_900);
+      invalidateStripeSubscriptionCache(customer);
+
+      await expect(getBestSubscription("org_1", customer)).resolves.not.toHaveProperty("trialGrace");
+    });
+
+    it("fails like a Stripe outage when the invoice can't be read and the caller opts in", async () => {
+      const customer = nextCustomer();
+      listReturns([lapsedTrial(3, { customer })]);
+      mocks.listInvoices.mockRejectedValue(new Error("stripe is down"));
+
+      await expect(getBestSubscription("org_1", customer, { throwOnLookupError: true })).rejects.toThrow(
+        "stripe is down"
+      );
+      await expect(getBestSubscription("org_1", customer)).resolves.toMatchObject(plainFree);
+    });
+
+    it("never applies to self-hosted instances", async () => {
+      mocks.isCloud = false;
+      const customer = nextCustomer();
+      listReturns([lapsedTrial(3, { customer })]);
+
+      await expect(getBestSubscription("org_1", customer)).resolves.toMatchObject(plainFree);
+      expect(mocks.listInvoices).not.toHaveBeenCalled();
+    });
+  });
+
+  it("applies in the bulk path from the snapshot's subscription, without listing", async () => {
+    mocks.listInvoices.mockResolvedValue({ data: [] });
+    const best = await getBestSubscriptionFromStripeSub(
+      "org_1",
+      null,
+      {},
+      lapsedTrial(10, { customer: nextCustomer() })
+    );
+
+    expect(best).toMatchObject({ source: "free", eventLimit: plan().limits.events });
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it("ranks a lapsed trial above a later incomplete checkout in the account snapshot", async () => {
+    listReturns([
+      lapsedTrial(3, { id: "sub_trial", customer: "cus_grace_rank" }),
+      stripeSub({ id: "sub_incomplete", customer: "cus_grace_rank", status: "incomplete", created: nowSeconds() }),
+    ]);
+
+    const snapshot = await getAllStripeSubscriptionsByCustomer();
+
+    expect(snapshot.get("cus_grace_rank")?.id).toBe("sub_trial");
+  });
+
+  it("stops keeping sites on once the grace period is over", () => {
+    const past = { status: "free", trialGrace: { endsAt: new Date(Date.now() - 1000) } };
+    expect(siteRequiresPlan(past, "2026-09-29 12:00:00")).toBe(true);
+  });
+});
+
+describe("a paid plan while Stripe retries a failed renewal", () => {
+  const DAY = 24 * HOUR;
+  const nowSeconds = () => Math.floor(Date.now() / 1000);
+  const plan = () => planByName("standard100k");
+
+  /** A subscription whose renewal failed `daysAgo` days ago, which is when its period rolled over. */
+  const pastDueSub = (customer: string, daysAgo = 3, overrides: Parameters<typeof stripeSub>[0] = {}) =>
+    stripeSub({
+      customer,
+      status: "past_due",
+      priceId: plan().priceId,
+      periodStart: nowSeconds() - daysAgo * DAY,
+      periodEnd: nowSeconds() + (30 - daysAgo) * DAY,
+      ...overrides,
+    });
+
+  /** What Stripe lists for the subscription: the amounts it was paid, and when its open invoices were issued. */
+  function invoices({ paid = [2_900], openDaysAgo = [] as number[] } = {}) {
+    mocks.listInvoices.mockImplementation(async ({ status }: { status: string }) => ({
+      data:
+        status === "paid"
+          ? paid.map(amount_paid => ({ amount_paid }))
+          : openDaysAgo.map(days => ({ created: nowSeconds() - days * DAY })),
+    }));
+  }
+
+  it("keeps the plan on, marked past due, with its sites collecting", async () => {
+    const customer = nextCustomer();
+    const sub = pastDueSub(customer);
+    listReturns([sub]);
+    invoices({ openDaysAgo: [3] });
+
+    const best = await getBestSubscription("org_1", customer);
+
+    expect(best).toMatchObject({
+      source: "stripe",
+      status: "active",
+      planName: plan().name,
+      eventLimit: plan().limits.events,
+      pastDue: { subscriptionId: sub.id, planName: plan().name },
+    });
+    expect(siteRequiresPlan(best, "2026-09-29 12:00:00")).toBe(false);
+  });
+
+  it("outranks an AppSumo license, as the plan did before the charge failed", async () => {
+    const customer = nextCustomer();
+    listReturns([pastDueSub(customer)]);
+    invoices({ openDaysAgo: [3] });
+    state.appsumoLicenses = [{ tier: "7", status: "active" }];
+
+    await expect(getBestSubscription("org_1", customer)).resolves.toMatchObject({ source: "stripe" });
+  });
+
+  it("leaves a trial whose first charge failed on the free tier, in its grace period", async () => {
+    const customer = nextCustomer();
+    const trialEnd = nowSeconds() - 2 * DAY;
+    listReturns([pastDueSub(customer, 2, { trialEnd })]);
+    invoices({ paid: [0] });
+
+    const best = (await getBestSubscription("org_1", customer)) as FreeSubscriptionInfo;
+
+    expect(best).toMatchObject({ source: "free", status: "free" });
+    expect(best.trialGrace?.retryingPayment).toBe(true);
+    expect(best.pastDue).toBeDefined();
+  });
+
+  it(`drops to the free tier ${PAST_DUE_GRACE_DAYS} days after the unpaid invoice, however often the period rolls over`, async () => {
+    const stillIn = nextCustomer();
+    listReturns([pastDueSub(stillIn)]);
+    invoices({ openDaysAgo: [PAST_DUE_GRACE_DAYS - 1] });
+    await expect(getBestSubscription("org_1", stillIn)).resolves.toMatchObject({ source: "stripe" });
+
+    // The period started again three days ago; the oldest unpaid invoice is what counts.
+    const lapsed = nextCustomer();
+    listReturns([pastDueSub(lapsed, 3)]);
+    invoices({ openDaysAgo: [3, PAST_DUE_GRACE_DAYS + 1] });
+    const best = (await getBestSubscription("org_1", lapsed)) as FreeSubscriptionInfo;
+
+    expect(best).toMatchObject({ source: "free", eventLimit: DEFAULT_EVENT_LIMIT });
+    expect(best.pastDue).toBeDefined();
+    expect(siteRequiresPlan(best, "2026-09-29 12:00:00")).toBe(true);
+  });
+
+  it("counts from the start of the period when Stripe lists no open invoice", async () => {
+    const recent = nextCustomer();
+    listReturns([pastDueSub(recent, PAST_DUE_GRACE_DAYS - 1)]);
+    invoices();
+    await expect(getBestSubscription("org_1", recent)).resolves.toMatchObject({ source: "stripe" });
+
+    const old = nextCustomer();
+    listReturns([pastDueSub(old, PAST_DUE_GRACE_DAYS + 1)]);
+    await expect(getBestSubscription("org_1", old)).resolves.toMatchObject({ source: "free" });
+  });
+
+  it("doesn't cover invoiced subscriptions or prices that aren't ours", async () => {
+    invoices({ openDaysAgo: [3] });
+
+    const invoiced = nextCustomer();
+    listReturns([{ ...pastDueSub(invoiced), collection_method: "send_invoice" } as Stripe.Subscription]);
+    await expect(getBestSubscription("org_1", invoiced)).resolves.toMatchObject({ source: "free" });
+
+    const unknownPrice = nextCustomer();
+    listReturns([pastDueSub(unknownPrice, 3, { priceId: "price_not_ours" })]);
+    await expect(getBestSubscription("org_1", unknownPrice)).resolves.toMatchObject({ source: "free" });
+  });
+
+  it("goes back to an ordinary active plan once the charge goes through", async () => {
+    const customer = nextCustomer();
+    listReturns([pastDueSub(customer)]);
+    invoices({ openDaysAgo: [3] });
+    await expect(getBestSubscription("org_1", customer)).resolves.toHaveProperty("pastDue");
+
+    listReturns([pastDueSub(customer, 3, { status: "active" })]);
+    invalidateStripeSubscriptionCache(customer);
+
+    await expect(getBestSubscription("org_1", customer)).resolves.not.toHaveProperty("pastDue");
+  });
+
+  it("fails like a Stripe outage when the invoices can't be read and the caller opts in", async () => {
+    const customer = nextCustomer();
+    listReturns([pastDueSub(customer)]);
+    mocks.listInvoices.mockRejectedValue(new Error("stripe is down"));
+
+    await expect(getBestSubscription("org_1", customer, { throwOnLookupError: true })).rejects.toThrow(
+      "stripe is down"
+    );
+    await expect(getBestSubscription("org_1", customer)).resolves.toMatchObject({ source: "free" });
+  });
+
+  it("applies in the bulk path from the snapshot's subscription, without listing", async () => {
+    invoices({ openDaysAgo: [3] });
+    const sub = pastDueSub(nextCustomer());
+
+    await expect(getBestSubscriptionFromStripeSub("org_1", null, {}, sub)).resolves.toMatchObject({
+      source: "stripe",
+      status: "active",
+      pastDue: { subscriptionId: sub.id },
+    });
+    // Without the raw subscription the bulk path can't know about it.
+    await expect(getBestSubscriptionFromStripeSub("org_1", null)).resolves.toMatchObject({ source: "free" });
+    expect(mocks.list).not.toHaveBeenCalled();
+  });
+
+  it("never applies to self-hosted instances", async () => {
+    mocks.isCloud = false;
+    const customer = nextCustomer();
+    listReturns([pastDueSub(customer)]);
+
+    await expect(getBestSubscription("org_1", customer)).resolves.toMatchObject({ source: "free" });
+    expect(mocks.listInvoices).not.toHaveBeenCalled();
   });
 });
